@@ -65,13 +65,11 @@ class HelpDesk_Module_Model extends Vtiger_Module_Model {
 		$db = PearDatabase::getInstance();
 		//TODO need to handle security
 		$params = array();
-		if(vtws_isRoleBasedPicklist('ticketstatus')) {
-			$currentUserModel = Users_Record_Model::getCurrentUserModel();
-			$picklistvaluesmap = getAssignedPicklistValues("ticketstatus",$currentUserModel->getRole(), $db);
-			if(in_array('Open', $picklistvaluesmap)) $params[] = 'Open';
-		}
+		$picklistvaluesmap = getAllPickListValues("ticketstatus");
+        if(in_array('Open', $picklistvaluesmap)) $params[] = 'Open';
+        
 		if(count($params) > 0) {
-		$result = $db->pquery('SELECT count(*) AS count, COALESCE(vtiger_groups.groupname,concat(vtiger_users.first_name, " " ,vtiger_users.last_name)) as name, COALESCE(vtiger_groups.groupid,vtiger_users.id) as id  FROM vtiger_troubletickets
+		$result = $db->pquery('SELECT count(*) AS count, COALESCE(vtiger_groups.groupname,vtiger_users.userlabel) as name, COALESCE(vtiger_groups.groupid,vtiger_users.id) as id  FROM vtiger_troubletickets
 						INNER JOIN vtiger_crmentity ON vtiger_troubletickets.ticketid = vtiger_crmentity.crmid
 						LEFT JOIN vtiger_users ON vtiger_users.id=vtiger_crmentity.smownerid AND vtiger_users.status="ACTIVE"
 						LEFT JOIN vtiger_groups ON vtiger_groups.groupid=vtiger_crmentity.smownerid
@@ -107,11 +105,10 @@ class HelpDesk_Module_Model extends Vtiger_Module_Model {
 			$params[] = $dateFilter['start'];
 			$params[] = $dateFilter['end'];
 		}
-		if(vtws_isRoleBasedPicklist('ticketstatus')) {
-			$currentUserModel = Users_Record_Model::getCurrentUserModel();
-			$picklistvaluesmap = getAssignedPicklistValues("ticketstatus",$currentUserModel->getRole(), $db);
-			foreach($picklistvaluesmap as $picklistValue) $params[] = $picklistValue;
-		}
+		$picklistvaluesmap = getAllPickListValues("ticketstatus");
+        foreach($picklistvaluesmap as $picklistValue) {
+            $params[] = $picklistValue;
+        }
 
 		$result = $db->pquery('SELECT COUNT(*) as count, CASE WHEN vtiger_troubletickets.status IS NULL OR vtiger_troubletickets.status = "" THEN "" ELSE vtiger_troubletickets.status END AS statusvalue 
 							FROM vtiger_troubletickets INNER JOIN vtiger_crmentity ON vtiger_troubletickets.ticketid = vtiger_crmentity.crmid AND vtiger_crmentity.deleted=0
@@ -190,7 +187,9 @@ class HelpDesk_Module_Model extends Vtiger_Module_Model {
 	 */
 	public function getQueryByModuleField($sourceModule, $field, $record, $listQuery) {
 		if (in_array($sourceModule, array('Assets', 'Project', 'ServiceContracts', 'Services'))) {
-			$condition = " vtiger_troubletickets.ticketid NOT IN (SELECT relcrmid FROM vtiger_crmentityrel WHERE crmid = '$record' UNION SELECT crmid FROM vtiger_crmentityrel WHERE relcrmid = '$record') ";
+			$condition = " vtiger_troubletickets.ticketid NOT IN (SELECT relcrmid FROM vtiger_crmentityrel WHERE crmid = ? UNION SELECT crmid FROM vtiger_crmentityrel WHERE relcrmid = ?) ";
+			$db = PearDatabase::getInstance();
+            		$condition = $db->convert2Sql($condition, array($record, $record));
 			$pos = stripos($listQuery, 'where');
 
 			if ($pos) {

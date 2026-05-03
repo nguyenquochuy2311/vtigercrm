@@ -10,14 +10,6 @@
 
 class Documents_EditAjax_View extends Vtiger_QuickCreateAjax_View {
 
-	public function checkPermission(Vtiger_Request $request) {
-		$moduleName = $request->getModule();
-
-		if (!(Users_Privileges_Model::isPermitted($moduleName, 'CreateView'))) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED', $moduleName));
-		}
-	}
-
 	public function getFields($documentType){
 		switch($documentType){
 			case 'I' : case 'E' : return array('filename','assigned_user_id','folderid');

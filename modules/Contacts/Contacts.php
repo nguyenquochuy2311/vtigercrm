@@ -144,11 +144,13 @@ class Contacts extends CRMEntity {
 		'Emails' => array('table_name' => 'vtiger_seactivityrel', 'table_index' => 'crmid', 'rel_index' => 'activityid'),
         'Vendors' => array('table_name' => 'vtiger_vendorcontactrel', 'table_index' => 'vendorid', 'rel_index' => 'contactid'),
 	);
-
+        function __construct() {
+            $this->log = Logger::getLogger('contact');
+            $this->db = PearDatabase::getInstance();
+            $this->column_fields = getColumnFields('Contacts');
+        }       
 	function Contacts() {
-		$this->log = LoggerManager::getLogger('contact');
-		$this->db = PearDatabase::getInstance();
-		$this->column_fields = getColumnFields('Contacts');
+            self::__construct();
 	}
 
 	// Mike Crowe Mod --------------------------------------------------------Default ordering for us
@@ -197,7 +199,7 @@ class Contacts extends CRMEntity {
 	global $log;
 	$log->debug("Entering process_list_query1(".$query.") method ...");
 
-        $result =& $this->db->query($query,true,"Error retrieving $this->object_name list: ");
+        $result =& $this->db->pquery($query,array(),true,"Error retrieving $this->object_name list: ");
         $list = Array();
         $rows_found =  $this->db->getRowCount($result);
         if($rows_found != 0)
@@ -266,7 +268,7 @@ class Contacts extends CRMEntity {
               $permitted_field_lists[] = $adb->query_result($result1,$i,'columnname');
           }
 
-          $result =& $this->db->query($query,true,"Error retrieving $this->object_name list: ");
+          $result =& $this->db->pquery($query,array(),true,"Error retrieving $this->object_name list: ");
           $list = Array();
           $rows_found =  $this->db->getRowCount($result);
           if($rows_found != 0)
@@ -1307,53 +1309,53 @@ function get_contactsforol($user_name)
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryplanner){
-		$matrix = $queryplanner->newDependencyMatrix();
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner){
+		$matrix = $queryPlanner->newDependencyMatrix();
 		$matrix->setDependency('vtiger_crmentityContacts',array('vtiger_groupsContacts','vtiger_usersContacts','vtiger_lastModifiedByContacts'));
 		
-		if (!$queryplanner->requireTable('vtiger_contactdetails', $matrix)) {
+		if (!$queryPlanner->requireTable('vtiger_contactdetails', $matrix)) {
 			return '';
 		}
 
         $matrix->setDependency('vtiger_contactdetails', array('vtiger_crmentityContacts','vtiger_contactaddress',
 								'vtiger_customerdetails','vtiger_contactsubdetails','vtiger_contactscf'));
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_contactdetails","contactid", $queryplanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_contactdetails","contactid", $queryPlanner);
 
-		if ($queryplanner->requireTable("vtiger_crmentityContacts",$matrix)){
+		if ($queryPlanner->requireTable("vtiger_crmentityContacts",$matrix)){
 			$query .= " left join vtiger_crmentity as vtiger_crmentityContacts on vtiger_crmentityContacts.crmid = vtiger_contactdetails.contactid  and vtiger_crmentityContacts.deleted=0";
 		}
-		if ($queryplanner->requireTable("vtiger_contactdetailsContacts")){
+		if ($queryPlanner->requireTable("vtiger_contactdetailsContacts")){
 			$query .= " left join vtiger_contactdetails as vtiger_contactdetailsContacts on vtiger_contactdetailsContacts.contactid = vtiger_contactdetails.reportsto";
 		}
-		if ($queryplanner->requireTable("vtiger_contactaddress")){
+		if ($queryPlanner->requireTable("vtiger_contactaddress")){
 			$query .= " left join vtiger_contactaddress on vtiger_contactdetails.contactid = vtiger_contactaddress.contactaddressid";
 		}
-		if ($queryplanner->requireTable("vtiger_customerdetails")){
+		if ($queryPlanner->requireTable("vtiger_customerdetails")){
 			$query .= " left join vtiger_customerdetails on vtiger_customerdetails.customerid = vtiger_contactdetails.contactid";
 		}
-		if ($queryplanner->requireTable("vtiger_contactsubdetails")){
+		if ($queryPlanner->requireTable("vtiger_contactsubdetails")){
 			$query .= " left join vtiger_contactsubdetails on vtiger_contactdetails.contactid = vtiger_contactsubdetails.contactsubscriptionid";
 		}
-		if ($queryplanner->requireTable("vtiger_accountContacts")){
+		if ($queryPlanner->requireTable("vtiger_accountContacts")){
 			$query .= " left join vtiger_account as vtiger_accountContacts on vtiger_accountContacts.accountid = vtiger_contactdetails.accountid";
 		}
-		if ($queryplanner->requireTable("vtiger_contactscf")){
+		if ($queryPlanner->requireTable("vtiger_contactscf")){
 			$query .= " left join vtiger_contactscf on vtiger_contactdetails.contactid = vtiger_contactscf.contactid";
 		}
-		if ($queryplanner->requireTable("vtiger_email_trackContacts")){
+		if ($queryPlanner->requireTable("vtiger_email_trackContacts")){
 			$query .= " LEFT JOIN vtiger_email_track AS vtiger_email_trackContacts ON vtiger_email_trackContacts.crmid = vtiger_contactdetails.contactid";
 		}
-		if ($queryplanner->requireTable("vtiger_groupsContacts")){
+		if ($queryPlanner->requireTable("vtiger_groupsContacts")){
 			$query .= " left join vtiger_groups as vtiger_groupsContacts on vtiger_groupsContacts.groupid = vtiger_crmentityContacts.smownerid";
 		}
-		if ($queryplanner->requireTable("vtiger_usersContacts")){
+		if ($queryPlanner->requireTable("vtiger_usersContacts")){
 			$query .= " left join vtiger_users as vtiger_usersContacts on vtiger_usersContacts.id = vtiger_crmentityContacts.smownerid";
 		}
-		if ($queryplanner->requireTable("vtiger_lastModifiedByContacts")){
+		if ($queryPlanner->requireTable("vtiger_lastModifiedByContacts")){
 			$query .= " left join vtiger_users as vtiger_lastModifiedByContacts on vtiger_lastModifiedByContacts.id = vtiger_crmentityContacts.modifiedby ";
 		}
-        if ($queryplanner->requireTable("vtiger_createdbyContacts")){
+        if ($queryPlanner->requireTable("vtiger_createdbyContacts")){
 			$query .= " left join vtiger_users as vtiger_createdbyContacts on vtiger_createdbyContacts.id = vtiger_crmentityContacts.smcreatorid ";
 		}
 
@@ -1534,13 +1536,6 @@ function get_contactsforol($user_name)
 		$contents = str_replace('$URL$',$portalURL,$contents);
 		$contents = str_replace('$support_team$',getTranslatedString('Support Team', $moduleName),$contents);
 		$contents = str_replace('$logo$','<img src="cid:logo" />',$contents);
-
-		//Company Details
-		$contents = str_replace('$address$',$companyDetails['address'],$contents);
-		$contents = str_replace('$companyname$',$companyDetails['companyname'],$contents);
-		$contents = str_replace('$phone$',$companyDetails['phone'],$contents);
-		$contents = str_replace('$companywebsite$',$companyDetails['website'],$contents);
-		$contents = str_replace('$supportemail$',$HELPDESK_SUPPORT_EMAIL_ID,$contents);
 
 		if($type == "LoginDetails") {
 			$temp=$contents;

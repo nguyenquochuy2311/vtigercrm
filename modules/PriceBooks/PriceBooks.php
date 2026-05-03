@@ -54,12 +54,15 @@ class PriceBooks extends CRMEntity {
 
 	/**	Constructor which will set the column_fields in this object
 	 */
+        function __construct() {
+            $this->log =Logger::getLogger('pricebook');
+            $this->log->debug("Entering PriceBooks() method ...");
+            $this->db = PearDatabase::getInstance();
+            $this->column_fields = getColumnFields('PriceBooks');
+            $this->log->debug("Exiting PriceBook method ...");
+        }
 	function PriceBooks() {
-		$this->log =LoggerManager::getLogger('pricebook');
-		$this->log->debug("Entering PriceBooks() method ...");
-		$this->db = PearDatabase::getInstance();
-		$this->column_fields = getColumnFields('PriceBooks');
-		$this->log->debug("Exiting PriceBook method ...");
+            self::__construct();
 	}
 
 	function save_module($module)
@@ -286,34 +289,34 @@ class PriceBooks extends CRMEntity {
 	 * @param - $secmodule secondary module name
 	 * returns the query string formed on fetching the related data for report for secondary module
 	 */
-	function generateReportsSecQuery($module,$secmodule,$queryplanner) {
+	function generateReportsSecQuery($module,$secmodule,$queryPlanner) {
 
-		$matrix = $queryplanner->newDependencyMatrix();
+		$matrix = $queryPlanner->newDependencyMatrix();
 
 		$matrix->setDependency("vtiger_crmentityPriceBooks",array("vtiger_usersPriceBooks","vtiger_groupsPriceBooks"));
-		if (!$queryplanner->requireTable('vtiger_pricebook', $matrix)) {
+		if (!$queryPlanner->requireTable('vtiger_pricebook', $matrix)) {
 			return '';
 		}
         $matrix->setDependency("vtiger_pricebook",array("vtiger_crmentityPriceBooks","vtiger_currency_infoPriceBooks"));
 
-		$query = $this->getRelationQuery($module,$secmodule,"vtiger_pricebook","pricebookid", $queryplanner);
+		$query = $this->getRelationQuery($module,$secmodule,"vtiger_pricebook","pricebookid", $queryPlanner);
 		// TODO Support query planner
-		if ($queryplanner->requireTable("vtiger_crmentityPriceBooks",$matrix)){
+		if ($queryPlanner->requireTable("vtiger_crmentityPriceBooks",$matrix)){
 		$query .=" left join vtiger_crmentity as vtiger_crmentityPriceBooks on vtiger_crmentityPriceBooks.crmid=vtiger_pricebook.pricebookid and vtiger_crmentityPriceBooks.deleted=0";
 		}
-		if ($queryplanner->requireTable("vtiger_currency_infoPriceBooks")){
+		if ($queryPlanner->requireTable("vtiger_currency_infoPriceBooks")){
 		$query .=" left join vtiger_currency_info as vtiger_currency_infoPriceBooks on vtiger_currency_infoPriceBooks.id = vtiger_pricebook.currency_id";
 		}
-		if ($queryplanner->requireTable("vtiger_usersPriceBooks")){
+		if ($queryPlanner->requireTable("vtiger_usersPriceBooks")){
 		    $query .=" left join vtiger_users as vtiger_usersPriceBooks on vtiger_usersPriceBooks.id = vtiger_crmentityPriceBooks.smownerid";
 		}
-		if ($queryplanner->requireTable("vtiger_groupsPriceBooks")){
+		if ($queryPlanner->requireTable("vtiger_groupsPriceBooks")){
 		    $query .=" left join vtiger_groups as vtiger_groupsPriceBooks on vtiger_groupsPriceBooks.groupid = vtiger_crmentityPriceBooks.smownerid";
 		}
-		if ($queryplanner->requireTable("vtiger_lastModifiedByPriceBooks")){
+		if ($queryPlanner->requireTable("vtiger_lastModifiedByPriceBooks")){
 		    $query .=" left join vtiger_users as vtiger_lastModifiedByPriceBooks on vtiger_lastModifiedByPriceBooks.id = vtiger_crmentityPriceBooks.smownerid";
 		}
-        if ($queryplanner->requireTable("vtiger_createdbyPriceBooks")){
+        if ($queryPlanner->requireTable("vtiger_createdbyPriceBooks")){
 			$query .= " left join vtiger_users as vtiger_createdbyPriceBooks on vtiger_createdbyPriceBooks.id = vtiger_crmentityPriceBooks.smcreatorid ";
 		}
 
@@ -346,14 +349,16 @@ class PriceBooks extends CRMEntity {
 		$focus = CRMEntity::getInstance($moduleName);
         $moduleSubject = 'bookname';
 
+        $params = array();
 		$tableName = Import_Utils_Helper::getDbTableName($obj->user);
-		$sql = 'SELECT * FROM ' . $tableName . ' WHERE status = '. Import_Data_Action::$IMPORT_RECORD_NONE .' GROUP BY '. $moduleSubject;
-
+		$sql = 'SELECT * FROM ' . $tableName . ' WHERE status = ? GROUP BY ?';
+        array_push($params, Import_Data_Action::$IMPORT_RECORD_NONE);
+        array_push($params, $moduleSubject);
 		if($obj->batchImport) {
 			$importBatchLimit = getImportBatchLimit();
 			$sql .= ' LIMIT '. $importBatchLimit;
 		}
-		$result = $adb->query($sql);
+		$result = $adb->pquery($sql, $params);
 		$numberOfRecords = $adb->num_rows($result);
 
 		if ($numberOfRecords <= 0) {
@@ -370,8 +375,11 @@ class PriceBooks extends CRMEntity {
 			$fieldData = array();
 			$subject = str_replace("\\", "\\\\", $subject);
 			$subject = str_replace('"', '""', $subject);
-			$sql = 'SELECT * FROM ' . $tableName . ' WHERE status = '. Import_Data_Action::$IMPORT_RECORD_NONE .' AND '. $moduleSubject . ' = "'. $subject .'"';
-			$subjectResult = $adb->query($sql);
+            $params = array();
+			$sql = 'SELECT * FROM ' . $tableName . ' WHERE status = ? AND '. $moduleSubject . ' = ? ';
+            array_push($params, Import_Data_Action::$IMPORT_RECORD_NONE);
+            array_push($params, $subject);
+			$subjectResult = $adb->pquery($sql, $params);
 			$count = $adb->num_rows($subjectResult);
 			$subjectRowIDs = $fieldArray = $productList = array();
 			for ($j = 0; $j < $count; ++$j) {

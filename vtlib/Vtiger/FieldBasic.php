@@ -40,6 +40,7 @@ class Vtiger_FieldBasic {
 	var	$info_type     = 'BAS';
 	var $isunique = false;
 	var $block;
+	var $headerfield = 0;
 
 	/**
 	 * Constructor
@@ -210,7 +211,7 @@ class Vtiger_FieldBasic {
 	 * @internal TODO
 	 */
 	function __update() {
-		self::log("Updating Field $this->name ... DONE");
+		self::log("Make use of Vtiger_Field_Model => __update() api.");
 	}
 
 	/**

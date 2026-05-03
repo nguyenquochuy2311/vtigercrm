@@ -20,17 +20,17 @@ class Vtiger_ComposeEmail_View extends Vtiger_Footer_View {
 		$this->exposeMethod('emailReply');
 		$this->exposeMethod('emailReplyAll');
 	}
-
-	public function checkPermission(Vtiger_Request $request) {
-		$moduleName = $request->getModule();
-		$record = $request->get('record');
-		$actionName = ($record) ? 'EditView' : 'CreateView';
-		if(!Users_Privileges_Model::isPermitted($moduleName, $actionName, $record)) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
-		}
+	
+	public function requiresPermission(Vtiger_Request $request){
+		$permissions = parent::requiresPermission($request);
+		
+		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView', 'record_parameter' => 'record');
+		$permissions[] = array('module_parameter' => 'custom_module', 'action' => 'DetailView');
+		$request->set('custom_module', 'Emails');
+		return $permissions;
 	}
 
-	function preProcess(Vtiger_Request $request, $display=true) {
+	  function preProcess(Vtiger_Request $request, $display=true) {
 		if($request->getMode() == 'previewPrint'){
 			return;
 		}
@@ -273,6 +273,27 @@ class Vtiger_ComposeEmail_View extends Vtiger_Footer_View {
 		$cvId = $request->get('viewname');
 		$selectedIds = $request->get('selected_ids');
 		$excludedIds = $request->get('excluded_ids');
+        $tagParams = $request->get('tag_params');
+		$tag = $request->get('tag');
+		$listViewSessionKey = $moduleName.'_'.$cvId;
+
+		if(!empty($tag)) {
+			$listViewSessionKey .='_'.$tag;
+		}
+
+		$orderParams = Vtiger_ListView_Model::getSortParamsSession($listViewSessionKey);
+		if(!empty($tag) && empty($tagParams)){
+			$tagParams = $orderParams['tag_params'];
+		}
+
+		if(empty($tagParams)){
+			$tagParams = array();
+		}
+        
+        if(!is_array($tagParams))
+        {
+            $tagParams = array($tagParams);
+        }
 
 		if(!empty($selectedIds) && $selectedIds != 'all') {
 			if(!empty($selectedIds) && count($selectedIds) > 0) {
@@ -280,6 +301,11 @@ class Vtiger_ComposeEmail_View extends Vtiger_Footer_View {
 			}
 		}
 
+        $searchParams = $request->get('search_params');
+		if(empty($searchParams) && !is_array($searchParams)){
+			$searchParams = array();
+		}
+        $searchAndTagParams = array_merge($searchParams, $tagParams);
 		$sourceRecord = $request->get('sourceRecord');
 		$sourceModule = $request->get('sourceModule');
 		if ($sourceRecord && $sourceModule) {
@@ -297,7 +323,7 @@ class Vtiger_ComposeEmail_View extends Vtiger_Footer_View {
 				$customViewModel->set('search_key', $searchKey);
 				$customViewModel->set('search_value', $searchValue);
 			}
-			$customViewModel->set('search_params', $request->get('search_params'));
+			$customViewModel->set('search_params', $searchAndTagParams);
 			return $customViewModel->getRecordIds($excludedIds);
 		}
 		return array();
@@ -486,7 +512,13 @@ class Vtiger_ComposeEmail_View extends Vtiger_Footer_View {
 	function emailForward($request){
 		$viewer = $this->getViewer($request);
 		$moduleName = $request->getModule();
-		$this->emailActionsData($request);
+                $this->emailActionsData($request);
+                
+                $parentId = $request->get('parentId');
+                $recordModel = Vtiger_Record_Model::getInstanceById($parentId);
+                $parentModuleName = $recordModel->getModuleName();
+                
+                $viewer->assign('FIELD_MODULE',$parentModuleName);
 		$viewer->assign('TO', '');
 		$viewer->assign('TOMAIL_INFO', array());
 		$viewer->assign('RELATED_LOAD', true);
@@ -535,6 +567,11 @@ class Vtiger_ComposeEmail_View extends Vtiger_Footer_View {
 		if($recordModel->get('email_flag') == 'MailManager' || $recordModel->get('email_flag') == 'MAILSCANNER') {
 			$TO = array($recordModel->get('from_email'));
 		}
+                $parentId = $request->get('parentId');
+                $parentIdRecordModel = Vtiger_Record_Model::getInstanceById($parentId);
+                $parentModuleName = $parentIdRecordModel->getModuleName();
+                
+                $viewer->assign('FIELD_MODULE',$parentModuleName);
 		$viewer->assign('TO',$TO);
 		$viewer->assign('TOMAIL_INFO', $toMailInfo);
 		$viewer->assign('TOMAIL_NAMES_LIST', json_encode($toMailNamesList, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP));

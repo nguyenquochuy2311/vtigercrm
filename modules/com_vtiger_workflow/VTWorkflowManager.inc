@@ -24,6 +24,7 @@ class VTWorkflowManager{
 
 	function __construct($adb){
 		$this->adb = $adb;
+                $this->setMaxAllowedScheduledWorkflows();
 	}
 
 	function save($workflow){
@@ -105,13 +106,25 @@ class VTWorkflowManager{
 		$result = $adb->pquery($query, $params);
 		return $adb->query_result($result, 0, 'count');
 	}
+        
+        /**
+         * Function to set max allowed scheduled workflow count as per global defaults
+         */
+        function setMaxAllowedScheduledWorkflows(){
+            global $max_scheduled_workflows;
+            if(!empty($max_scheduled_workflows)){
+                vglobal('max_scheduled_workflows', $max_scheduled_workflows);
+            }else{
+                vglobal('max_scheduled_workflows', 10);
+            }
+        }
 
 	/**
 	 * Function returns the maximum allowed scheduled workflows
 	 * @return int
 	 */
 	function getMaxAllowedScheduledWorkflows() {
-		return 10;
+            return vglobal('max_scheduled_workflows');
 	}
 
 	function getWorkflowsForModule($moduleName){
@@ -122,7 +135,7 @@ class VTWorkflowManager{
 		} else {
 		//my changes
 		$result=$adb->getColumnNames("com_vtiger_workflows");
-		if(in_array(defaultworkflow,$result)){
+		if(in_array('defaultworkflow',$result)){
 			$result = $adb->pquery("select workflow_id, module_name, summary, test, execution_condition, defaultworkflow, type, filtersavedinnew
 								from com_vtiger_workflows where module_name=? and status=?",array($moduleName,1));
 		}

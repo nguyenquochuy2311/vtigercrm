@@ -87,6 +87,10 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		}
 	}
 
+	private function valForSql($value) {
+		return Vtiger_Util_Helper::validateStringForSql($value);
+	}
+
 	protected function pullDetails($start, $end, &$result, $type, $fieldName, $color = null, $textColor = 'white', $conditions = '') {
 		$moduleModel = Vtiger_Module_Model::getInstance($type);
 		$nameFields = $moduleModel->getNameFields();
@@ -108,7 +112,9 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 
 			$queryGenerator->setFields(array_merge(array_merge($nameFields, array('id')), $fieldsList));
 			$query = $queryGenerator->getQuery();
-			$query.= " AND (($fieldsList[0] >= ? AND $fieldsList[1] < ?) OR ($fieldsList[1] >= ?)) ";
+			$startDateColumn = Vtiger_Util_Helper::validateStringForSql($fieldsList[0]);
+			$endDateColumn = Vtiger_Util_Helper::validateStringForSql($fieldsList[1]);
+			$query.= " AND (($startDateColumn >= ? AND $endDateColumn < ?) OR ($endDateColumn >= ?)) ";
 			$params = array($start,$end,$start);
 			$query.= " AND vtiger_crmentity.smownerid IN (".generateQuestionMarks($userAndGroupIds).")";
 			$params = array_merge($params, $userAndGroupIds);
@@ -132,12 +138,12 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 
 				$queryGenerator->setFields(array_merge(array_merge($nameFields, array('id')), $fieldsList));
 				$query = $queryGenerator->getQuery();
-				$query.= " AND ((CONCAT('$year-', date_format(birthday,'%m-%d')) >= ? AND CONCAT('$year-', date_format(birthday,'%m-%d')) <= ? )";
-				$params = array($start,$end);
+				$query.= " AND ((CONCAT(?, date_format(birthday,'%m-%d')) >= ? AND CONCAT(?, date_format(birthday,'%m-%d')) <= ? )";
+				$params = array("$year-",$start,"$year-",$end);
 				$endDateYear = $endDateComponents[0]; 
 				if ($year !== $endDateYear) {
-					$query .= " OR (CONCAT('$endDateYear-', date_format(birthday,'%m-%d')) >= ?  AND CONCAT('$endDateYear-', date_format(birthday,'%m-%d')) <= ? )"; 
-					$params = array_merge($params,array($start,$end));
+					$query .= " OR (CONCAT(?, date_format(birthday,'%m-%d')) >= ?  AND CONCAT(?, date_format(birthday,'%m-%d')) <= ? )"; 
+					$params = array_merge($params,array("$endDateYear-",$start,"$endDateYear-",$end));
 				} 
 				$query .= ")";
 				$query.= " AND vtiger_crmentity.smownerid IN (".  generateQuestionMarks($userAndGroupIds).")";
@@ -202,10 +208,11 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$item['sourceModule'] = $moduleModel->getName();
 			$item['fieldName'] = $fieldName;
 			$item['conditions'] = '';
-			if(!empty($conditions)) {
-				$item['conditions'] = Zend_Json::encode(Zend_Json::encode($conditions));
-			}
-			$result[] = $item;
+			$item['end'] = date('Y-m-d', strtotime(($item['end'] ?: $item['start']).' +1day'));
+                        if(!empty($conditions)) {
+                            $item['conditions'] = Zend_Json::encode(Zend_Json::encode($conditions));
+                        }
+                        $result[] = $item;
 		}
 	}
 
@@ -216,7 +223,9 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		}
 
 		if(!empty($operator) && !empty($conditions['fieldname']) && !empty($conditions['value'])) {
-			$conditionQuery = ' '.$conditions['fieldname'].$operator.'\'' .$conditions['value'].'\' ';
+			$fieldname = vtlib_purifyForSql($conditions['fieldname']);
+			if (empty($fieldname)) throw new Exception('Invalid fieldname.');
+			$conditionQuery = ' '.$fieldname.$operator.'\'' .Vtiger_Functions::realEscapeString($conditions['value']).'\' ';
 		}
 		return $conditionQuery;
 	}
@@ -284,18 +293,17 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 			$conditions = Zend_Json::decode(Zend_Json::decode($conditions));
 			$query .=  $this->generateCalendarViewConditionQuery($conditions).'AND ';
 		}
-		$query.= " ((concat(date_start, '', time_start)  >= '$dbStartDateTime' AND concat(due_date, '', time_end) < '$dbEndDateTime') OR ( due_date >= '$dbStartDate'))";
-
-		$params = array();
+		$query.= " ((concat(date_start, '', time_start)  >= ? AND concat(due_date, '', time_end) < ? ) OR ( due_date >= ? ))";
+		$params=array($dbStartDateTime,$dbEndDateTime,$dbStartDate);
 		if(empty($userid)){
 			$eventUserId  = $currentUser->getId();
-			$params = array_merge(array($eventUserId), $this->getGroupsIdsForUsers($eventUserId));
 		}else{
 			$eventUserId = $userid;
-			$params = array($eventUserId);
 		}
-
-		$query.= " AND vtiger_crmentity.smownerid IN (".  generateQuestionMarks($params).")";
+		$userIds = array_merge(array($eventUserId), $this->getGroupsIdsForUsers($eventUserId));
+		
+		$query.= " AND vtiger_crmentity.smownerid IN (".  generateQuestionMarks($userIds).")";
+		$params= array_merge($params,$userIds);
 		$queryResult = $db->pquery($query, $params);
 
 		while($record = $db->fetchByAssoc($queryResult)){
@@ -391,9 +399,11 @@ class Calendar_Feed_Action extends Vtiger_BasicAjax_Action {
 		$hideCompleted = $currentUser->get('hidecompletedevents');
 		if($hideCompleted)
 			$query.= "vtiger_activity.status != 'Completed' AND ";
-		$query.= " ((date_start >= '$start' AND due_date < '$end') OR ( due_date >= '$start'))";
-		$params = $userAndGroupIds;
-		$query.= " AND vtiger_crmentity.smownerid IN (".generateQuestionMarks($params).")";
+		$query.= " ((date_start >= ? AND due_date < ? ) OR ( due_date >= ? ))";
+		$params=array($start,$end,$start);
+		$userIds = $userAndGroupIds;
+		$query.= " AND vtiger_crmentity.smownerid IN (".generateQuestionMarks($userIds).")";
+		$params=array_merge($params,$userIds);
 		$queryResult = $db->pquery($query,$params);
 
 		while($record = $db->fetchByAssoc($queryResult)){

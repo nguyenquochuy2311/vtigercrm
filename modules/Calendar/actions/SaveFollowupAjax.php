@@ -9,19 +9,12 @@
  *************************************************************************************/
 
 class Calendar_SaveFollowupAjax_Action extends Calendar_SaveAjax_Action {
-
+    
 	public function checkPermission(Vtiger_Request $request) {
 		$moduleName = $request->getModule();
 		$record = $request->get('record');
 
-		$actionName = ($record && $request->getMode() != 'createFollowupEvent') ? 'EditView' : 'CreateView';
-		if(!Users_Privileges_Model::isPermitted($moduleName, $actionName, $record)) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
-		}
-
-		if(!Users_Privileges_Model::isPermitted($moduleName, 'Save', $record)) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
-		}
+		parent::checkPermission($request);
 
 		if ($record) {
 			$activityModulesList = array('Calendar', 'Events');
@@ -108,9 +101,7 @@ class Calendar_SaveFollowupAjax_Action extends Calendar_SaveAjax_Action {
         }
         else{
             //checking if the event can be marked as Held (status validation)
-            $startDateTime[] = $recordModel->get('date_start');
-            $startDateTime[] = $recordModel->get('time_start');
-            $startDateTime = implode(' ',$startDateTime);
+            $startDateTime = $this->getFormattedDateTime($recordModel->get('date_start'), $recordModel->get('time_start'));
             $startDateTime = new DateTime($startDateTime);
             $currentDateTime = date("Y-m-d H:i:s");
             $currentDateTime = new DateTime($currentDateTime);

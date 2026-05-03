@@ -9,6 +9,11 @@
  *************************************************************************************/
 
 class CustomView_Save_Action extends Vtiger_Action_Controller {
+	public function requiresPermission(\Vtiger_Request $request) {
+		$permissions = parent::requiresPermission($request);
+		$permissions[] = array('module_parameter' => 'source_module', 'action' => 'DetailView');
+		return $permissions;
+	}
 
 	public function process(Vtiger_Request $request) {
         $sourceModuleName = $request->get('source_module');

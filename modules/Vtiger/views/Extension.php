@@ -10,20 +10,26 @@
 
 class Vtiger_Extension_View extends Vtiger_List_View {
     
-    public function checkPermission(Vtiger_Request $request) {
+    public function requiresPermission(\Vtiger_Request $request) {
+		$permissions = parent::requiresPermission($request);
+		
+		return $permissions;
+	}
+	
+	public function checkPermission(Vtiger_Request $request) {
+		parent::checkPermission($request);
 		$moduleName = $request->get('extensionModule');
-
+		
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
-		if (empty($moduleModel)) {
+		if(empty($moduleModel)) {
 			throw new AppException(vtranslate('LBL_HANDLER_NOT_FOUND'));
 		}
-
+		
 		$userPrivilegesModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
 		$permission = $userPrivilegesModel->hasModulePermission($moduleModel->getId());
-		if (!$permission) {
-			throw new AppException(vtranslate($moduleName, $moduleName).' '.vtranslate('LBL_NOT_ACCESSIBLE'));
+		if(!$permission) {
+			throw new AppException(vtranslate($moduleName).' '.vtranslate('LBL_NOT_ACCESSIBLE'));
 		}
-
 		return true;
 	}
 

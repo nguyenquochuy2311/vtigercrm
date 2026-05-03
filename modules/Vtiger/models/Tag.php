@@ -276,14 +276,10 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
 		$db = PearDatabase::getInstance();
 		$query = "SELECT * FROM vtiger_freetags WHERE (tag=? OR raw_tag=?) AND (owner=? OR visibility=?)";
 		$params = array($name, $name, $userId, self::PUBLIC_TYPE);
-		global $log;
-		$log->fatal($excludedTagId);
 		if($excludedTagId !== false) {
 			$query .= ' AND id != ?';
 			array_push($params, $excludedTagId);
 		}
-		global $log;
-		$log->fatal($db->convert2Sql($query , $params));
 		$result = $db->pquery($query, $params);
 		$tagModel = false;
 		if($db->num_rows($result) > 0) {
@@ -303,6 +299,43 @@ class Vtiger_Tag_Model extends Vtiger_Base_Model {
 		$result = $db->pquery($checkQuery, array($tagId, $userIdToExclude));
 		return $db->num_rows($result) > 0 ? true : false;
 	}
+    
+    /**
+     * Function used to return tags for list for records
+     * @param <Array> $records - record ids
+     * @return <Array> tags
+     */
+    public static function getAllAccessibleTags($records) {
+        $tagsList = array();
+        if(count($records) == 0) return $tagsList;
+        
+        $currentUser = Users_Record_Model::getCurrentUserModel();
+        
+        $db = PearDatabase::getInstance();
+        $query = "SELECT tag,object_id FROM vtiger_freetags 
+                    INNER JOIN vtiger_freetagged_objects ON vtiger_freetags.id = vtiger_freetagged_objects.tag_id 
+                    WHERE (vtiger_freetagged_objects.tagger_id = ? OR vtiger_freetags.visibility='public') 
+                    AND vtiger_freetagged_objects.object_id IN 
+                    (" . generateQuestionMarks($records) . ")";
+        $params = array($currentUser->getId());
+        $params = array_merge($params, $records);
+        
+        $result = $db->pquery($query , $params);
+        $num_rows = $db->num_rows($result);
+
+        
+        for($i=0; $i<$num_rows; $i++) {
+            $tagName = decode_html($db->query_result($result, $i, 'tag'));
+            $record = decode_html($db->query_result($result, $i, 'object_id'));
+            
+            if(empty($tagsList[$record])) {
+                $tagsList[$record] = $tagName;
+            } else {
+                $tagsList[$record] .= ','.$tagName;
+            }
+        }
+        return $tagsList;
+    }
 }
 
 ?>

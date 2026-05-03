@@ -22,7 +22,7 @@ $mailserveresult = $adb->pquery("SELECT server,server_username,server_password,s
 $mailrow = $adb->fetch_array($mailserveresult);
 $mailserver = $mailrow[0];
 $mailuname = $mailrow[1];
-$mailpwd = $mailrow[2];
+$mailpwd = Vtiger_Functions::fromProtectedText($mailrow[2]);
 $smtp_auth = $mailrow[3];
 // End Email Setup
 
@@ -39,7 +39,7 @@ if($activevalue[0] == 1)
 
 	//get all those activities where the status is not completed even after the passing of 24 hours
 	$today = date("Ymd"); 
-	$result = $adb->pquery("select vtiger_activity.status,vtiger_activity.activityid,subject,(vtiger_activity.date_start +1),vtiger_crmentity.smownerid from vtiger_activity inner join vtiger_crmentity on vtiger_crmentity.crmid=vtiger_activity.activityid where vtiger_crmentity.deleted=0 and vtiger_activity.status <> 'Completed' and activitytype='Task' and ".$today." > (vtiger_activity.date_start+1)", array());
+	$result = $adb->pquery("select vtiger_activity.status,vtiger_activity.activityid,subject,(vtiger_activity.date_start +1),vtiger_crmentity.smownerid from vtiger_activity inner join vtiger_crmentity on vtiger_crmentity.crmid=vtiger_activity.activityid where vtiger_crmentity.deleted=0 and vtiger_activity.status <> 'Completed' and activitytype='Task' and ? > (vtiger_activity.date_start+1)", array($today));
 
 	while ($myrow = $adb->fetch_array($result))
 	{

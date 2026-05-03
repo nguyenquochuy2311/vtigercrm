@@ -14,25 +14,29 @@ Class Vtiger_Edit_View extends Vtiger_Index_View {
 		parent::__construct();
 	}
 
-	public function checkPermission(Vtiger_Request $request) {
-		$moduleName = $request->getModule();
+	public function requiresPermission(\Vtiger_Request $request) {
+		$permissions = parent::requiresPermission($request);
 		$record = $request->get('record');
-
 		$actionName = 'CreateView';
 		if ($record && !$request->get('isDuplicate')) {
 			$actionName = 'EditView';
 		}
+		$permissions[] = array('module_parameter' => 'module', 'action' => $actionName, 'record_parameter' => 'record');
+		return $permissions;
+	}
+	
+	public function checkPermission(Vtiger_Request $request) {
+		$moduleName = $request->getModule();
+		$record = $request->get('record');
 
-		if(!Users_Privileges_Model::isPermitted($moduleName, $actionName, $record)) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
-		}
-
-		if ($record) {
+		$nonEntityModules = array('Users', 'Events', 'Calendar', 'Portal', 'Reports', 'Rss', 'EmailTemplates');
+		if ($record && !in_array($moduleName, $nonEntityModules)) {
 			$recordEntityName = getSalesEntityType($record);
 			if ($recordEntityName !== $moduleName) {
 				throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
 			}
 		}
+		return parent::checkPermission($request);
 	}
 
 	public function setModuleInfo($request, $moduleModel) {

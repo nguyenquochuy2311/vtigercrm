@@ -623,6 +623,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 		foreach ($this->conditionals as $index => $conditionInfo) {
 			$parentReferenceField = '';
 			$baseFieldName = $fieldName = $conditionInfo['name'];
+			$parentReferenceField = $referenceModule = '';
 			$field = $moduleFieldList[$fieldName];
 
 			// if its a reference field then we need to add the fieldname to table name
@@ -666,27 +667,36 @@ class EnhancedQueryGenerator extends QueryGenerator {
 			}
 			foreach ($valueSqlList as $valueSql) {
 				if (in_array($baseFieldName, $this->referenceFieldList)) {
-					if ($conditionInfo['operator'] == 'y') {
+                    			$trim = 'TRIM';
+					$moduleList = $this->referenceFieldInfoList[$baseFieldName];
+					if(in_array('Users', $moduleList)) {
+						$columnSqlTable = 'vtiger_users'.$parentReferenceField.$fieldName;
+						$columnSql = getSqlForNameInDisplayFormat(array('first_name'=>$columnSqlTable.'.first_name',
+																		'last_name'=>$columnSqlTable.'.last_name'),'Users');
+					} else if(in_array('DocumentFolders', $moduleList)) {
+						$columnSql = "vtiger_attachmentsfolder".$fieldName.".foldername";
+					} else if(in_array('Currency', $moduleList)) {
+						$columnSql = "vtiger_currency_info$parentReferenceField$fieldName.currency_name";
+						if($fieldName == 'currency_id' && is_numeric($conditionInfo['value'])){
+							$columnSql = "vtiger_currency_info$parentReferenceField$fieldName.id";
+						}
+					} else if ($baseFieldName == 'roleid'){
+						$columnSql = 'vtiger_role.rolename';
+					}else {
+                        			$trim = '';
+						$columnSql = 'vtiger_crmentity'.$parentReferenceField.$fieldName.'.label';
+					}
+					if($conditionInfo['operator'] == 'y' || ($conditionInfo['operator'] == 'e' && $valueSql == "= ''")) {
 						$columnName = $field->getColumnName();
 						// We are checking for zero since many reference fields will be set to 0 if it doest not have any value
-						$fieldSql .= "$fieldGlue $tableName.$columnName $valueSql OR $tableName.$columnName = '0'";
+						// We are checking for NULL as well since for custom relationships if the record is deleted the value will be retained and will not become 0
+						$fieldSql .= "$fieldGlue $trim($columnSql) IS NULL OR $tableName.$columnName $valueSql OR $tableName.$columnName = '0'";
 						$fieldGlue = ' OR';
-					} else {
-						$moduleList = $this->referenceFieldInfoList[$baseFieldName];
-						if (in_array('Users', $moduleList)) {
-							$columnSqlTable = 'vtiger_users'.$parentReferenceField.$fieldName;
-							$columnSql = getSqlForNameInDisplayFormat(array('first_name' => $columnSqlTable.'.first_name',
-								'last_name' => $columnSqlTable.'.last_name'), 'Users');
-						} else if (in_array('DocumentFolders', $moduleList)) {
-							$columnSql = "vtiger_attachmentsfolder".$fieldName.".foldername";
-						} else if (in_array('Currency', $moduleList)) {
-							$columnSql = "vtiger_currency_info$parentReferenceField$fieldName.currency_name";
-						} else if ($baseFieldName == 'roleid') {
-							$columnSql = 'vtiger_role.rolename';
-						} else {
-							$columnSql = 'vtiger_crmentity'.$parentReferenceField.$fieldName.'.label';
-						}
-						$fieldSql .= "$fieldGlue trim($columnSql) $valueSql";
+					} else if ($conditionInfo['operator'] == 'k' || $conditionInfo['operator'] == 'n') {
+						$fieldSql .= " $fieldGlue ( $trim($columnSql) $valueSql OR $trim($columnSql) IS NULL )";
+						$fieldGlue = 'OR';
+					} else{
+						$fieldSql .= "$fieldGlue $trim($columnSql) $valueSql";
 						$fieldGlue = ' OR';
 					}
 				} elseif (in_array($baseFieldName, $this->ownerFields)) {
@@ -716,7 +726,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 						$startDateValue = explode(' ', $values[0]);
 						$endDateValue = explode(' ', $values[1]);
 						if (count($startDateValue) == 2 && count($endDateValue) == 2) {
-							$fieldSql .= " CAST(CONCAT($dateFieldColumnName,' ',$timeFieldColumnName) AS DATETIME) $valueSql";
+							$fieldSql .= " CONCAT($dateFieldColumnName,' ',$timeFieldColumnName) $valueSql";
 						} else {
 							$fieldSql .= "$dateFieldColumnName $valueSql";
 						}
@@ -726,7 +736,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 						}
 						$values = explode(' ', $value);
 						if (count($values) == 2) {
-							$fieldSql .= "$fieldGlue CAST(CONCAT($dateFieldColumnName,' ',$timeFieldColumnName) AS DATETIME) $valueSql ";
+							$fieldSql .= "$fieldGlue CONCAT($dateFieldColumnName,' ',$timeFieldColumnName) $valueSql ";
 						} else {
 							$fieldSql .= "$fieldGlue $dateFieldColumnName $valueSql";
 						}

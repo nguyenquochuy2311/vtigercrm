@@ -242,7 +242,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		}
 	},
 	getFeedRequestParams: function (start, end, feedCheckbox) {
-		var dateFormat = 'YYYY-MM-DD';
+		var userFormat = jQuery('body').data('userDateformat').toUpperCase();
+		var dateFormat = userFormat;
 		var startDate = start.format(dateFormat);
 		var endDate = end.format(dateFormat);
 		return {
@@ -557,6 +558,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					var feedIndicatorTemplate = jQuery('#calendarview-feeds').find('ul.dummy > li.feed-indicator-template');
 					feedIndicatorTemplate.removeClass('.feed-indicator-template');
 					var newFeedIndicator = feedIndicatorTemplate.clone(true, true);
+					//replacing module name prefix with translated module name and concatinating with field name
+					feedIndicatorTitle = translatedModuleName + feedIndicatorTitle.substr(feedIndicatorTitle.indexOf('-'));
 					newFeedIndicator.find('span:first').text(feedIndicatorTitle);
 					var newFeedCheckbox = newFeedIndicator.find('.toggleCalendarFeed');
 					newFeedCheckbox.attr('data-calendar-sourcekey', calendarSourceKey).
@@ -909,8 +912,30 @@ Vtiger.Class("Calendar_Calendar_Js", {
 					thisInstance.registerFeedChangeEvent();
 					thisInstance.registerFeedsColorEditEvent();
 					thisInstance.registerFeedDeleteEvent();
+					thisInstance.registerFeedMassSelectEvent();
 				});
 	},
+
+	/**
+	 * Event listener for change on mass select checkbox.
+	 * Click/set true/false on all non-matching checkboxes & 
+	 * trigger change event. Contributed by Libertus Solutions
+	**/
+	registerFeedMassSelectEvent : function() {
+		var container = jQuery('#calendarview-feeds');
+		var calendarFeeds = jQuery('ul.feedslist input.toggleCalendarFeed', container);
+		jQuery('input.mass-select', container).on('change', function() {
+			var massSelectchecked = this.checked;
+			calendarFeeds.each(function(i) {
+				// Only trigger change where necessary
+				if(this.checked != massSelectchecked) {
+					this.checked = massSelectchecked;
+					jQuery(this).change();
+				}
+			});
+		});
+	},
+
 	changeWidgetDisplayState: function (widget, state) {
 		var key = widget.data('widgetName') + '_WIDGET_DISPLAY_STATE';
 		app.storage.set(key, state);
@@ -950,6 +975,8 @@ Vtiger.Class("Calendar_Calendar_Js", {
 			app.request.post({data: dataParams}).then(function (e, data) {
 				if (!e) {
 					widgetBody.html(data);
+                                        let fullCalendarViewHeight = $('.fc-view-container').height();
+                                        widgetBody.css('max-height', (fullCalendarViewHeight - 10) + 'px');
 					app.helper.showVerticalScroll(
 							widgetBody,
 							{
@@ -1567,16 +1594,41 @@ Vtiger.Class("Calendar_Calendar_Js", {
 		var thisInstance = this;
 		var userDefaultActivityView = thisInstance.getDefaultCalendarView();
 		var userDefaultTimeFormat = thisInstance.getDefaultCalendarTimeFormat();
+                
+                var dateFormat = app.getDateFormat();
+                //Converting to fullcalendar accepting date format
+                var monthPos = dateFormat.search("mm");
+                var datePos = dateFormat.search("dd");
+                if (monthPos < datePos) {
+                    dateFormat = "M/D";
+                } else {
+                    dateFormat = "D/M";
+                }
+            
 		var calenderConfigs = {
 			header: {
 				left: 'month,agendaWeek,agendaDay,vtAgendaList',
 				center: 'title',
 				right: 'today prev,next',
 			},
+                        columnFormat: {
+                            month: 'ddd',
+                            week: 'ddd '+dateFormat,
+                            day: 'dddd '+dateFormat
+                        },
 			views: {
-				vtAgendaList: {
-					duration: {days: Calendar_Calendar_Js.numberOfDaysInAgendaView}
-				}
+                            vtAgendaList: {
+                                    duration: {days: Calendar_Calendar_Js.numberOfDaysInAgendaView}
+                            },
+                            month:{
+                                columnFormat:'ddd'
+                            },
+                            agendaWeek: {
+                                columnFormat: 'ddd ' + dateFormat
+                            },
+                            agendaDay: {
+                                columnFormat: 'dddd '+dateFormat
+                            }
 			},
 			fixedWeekCount: false,
 			firstDay: thisInstance.daysOfWeek[thisInstance.getUserPrefered('start_day')],

@@ -12,13 +12,17 @@ class Vtiger_Dashboard_View extends Vtiger_Index_View {
 
 	protected static $selectable_dashboards;
 
-	function checkPermission(Vtiger_Request $request) {
-		$moduleName = $request->getModule();
-		if(!Users_Privileges_Model::isPermitted($moduleName, $actionName)) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
+	public function requiresPermission(\Vtiger_Request $request) {
+		$permissions = parent::requiresPermission($request);
+		if($request->get('module') != 'Dashboard'){
+			$request->set('custom_module', 'Dashboard');
+			$permissions[] = array('module_parameter' => 'custom_module', 'action' => 'DetailView');
+		}else{
+			$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView');
 		}
+		return $permissions;
 	}
-
+	
 	function preProcess(Vtiger_Request $request, $display=true) {
 		parent::preProcess($request, false);
 		$viewer = $this->getViewer($request);
@@ -30,17 +34,17 @@ class Vtiger_Dashboard_View extends Vtiger_Index_View {
 		$userPrivilegesModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
 		$permission = $userPrivilegesModel->hasModulePermission($moduleModel->getId());
 		if($permission) {
-			// TODO : Need to optimize the widget which are retrieving twice
-			$dashboardTabs = $dashBoardModel->getActiveTabs();
-			if ($request->get("tabid")) {
-				$tabid = $request->get("tabid");
-			} else {
-				// If no tab, then select first tab of the user
-				$tabid = $dashboardTabs[0]["id"];
-			}
-			$dashBoardModel->set("tabid", $tabid);
-			$widgets = $dashBoardModel->getSelectableDashboard();
-			self::$selectable_dashboards = $widgets;
+		// TODO : Need to optimize the widget which are retrieving twice
+		$dashboardTabs = $dashBoardModel->getActiveTabs();
+		if ($request->get("tabid")) {
+			$tabid = $request->get("tabid");
+		} else {
+			// If no tab, then select first tab of the user
+			$tabid = $dashboardTabs[0]["id"];
+		}
+		$dashBoardModel->set("tabid", $tabid);
+		$widgets = $dashBoardModel->getSelectableDashboard();
+		self::$selectable_dashboards = $widgets;
 		} else {
 			$widgets = array();
 		}

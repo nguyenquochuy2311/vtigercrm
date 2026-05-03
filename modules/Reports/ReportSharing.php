@@ -21,7 +21,7 @@ $current_module_strings = return_module_language($current_language, 'Reports');
 global $list_max_entries_per_page;
 global $urlPrefix;
 
-$log = LoggerManager::getLogger('report_type');
+$log = Logger::getLogger('report_type');
 global $currentModule;
 global $image_path;
 global $theme;
@@ -32,7 +32,7 @@ $report_std_filter->assign("MOD", $mod_strings);
 $report_std_filter->assign("APP", $app_strings);
 $report_std_filter->assign("IMAGE_PATH",$image_path);
 $report_std_filter->assign("DATEFORMAT",$current_user->date_format);
-$report_std_filter->assign("JS_DATEFORMAT",parse_calendardate($app_strings['NTC_DATE_FORMAT']));
+$report_std_filter->assign('JS_DATEFORMAT', parse_calendardate());
 
 $roleid = $current_user->column_fields['roleid'];
 $user_array = getAllUserName();
@@ -107,7 +107,7 @@ function getVisibleCriteria($recordid='')
 	if($selcriteria == ""){
 		$selcriteria = 'Public';
 	}
-	$filter_result = $adb->query("select * from vtiger_reportfilters");
+	$filter_result = $adb->pquery("select * from vtiger_reportfilters", array());
 	$numrows = $adb->num_rows($filter_result);
 	for($j=0;$j<$numrows;$j++)
 	{

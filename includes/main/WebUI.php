@@ -151,7 +151,7 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 
 			if(empty($module)) {
 				if ($this->hasLogin()) {
-					$defaultModule = vglobal('default_module');
+					$defaultModule = $currentUser->defaultlandingpage;
 					$moduleModel = Vtiger_Module_Model::getInstance($defaultModule);
 					if(!empty($defaultModule) && $defaultModule != 'Home' && $moduleModel && $moduleModel->isActive()) {
 						$module = $defaultModule; $qualifiedModuleName = $defaultModule; $view = 'List';
@@ -194,16 +194,16 @@ class Vtiger_WebUI extends Vtiger_EntryPoint {
 				}
 
 				//TODO : Need to review the design as there can potential security threat
-				$skipList = array('Users', 'Home', 'CustomView', 'Import', 'Export', 'Inventory', 'Vtiger', 'PriceBooks', 'Migration', 'Install');
-
-				if(!in_array($module, $skipList) && stripos($qualifiedModuleName, 'Settings') === false) {
-					$this->triggerCheckPermission($handler, $request);
-				}
+//				$skipList = array('Users', 'Home', 'CustomView', 'Import', 'Export', 'Inventory', 'Vtiger', 'PriceBooks', 'Migration', 'Install');
+//
+//				if(!in_array($module, $skipList) && stripos($qualifiedModuleName, 'Settings') === false) {
+//					$this->triggerCheckPermission($handler, $request);
+//				}
 
 				// Every settings page handler should implement this method
-				if(stripos($qualifiedModuleName, 'Settings') === 0 || ($module == 'Users')) {
-					$handler->checkPermission($request);
-				}
+//				if(stripos($qualifiedModuleName, 'Settings') === 0 || ($module == 'Users')) {
+				$handler->checkPermission($request);
+//				}
 
 				$notPermittedModules = array('ModComments','Integration','DashBoard');
 

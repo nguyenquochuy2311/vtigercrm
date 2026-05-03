@@ -217,6 +217,11 @@ jQuery.Class("Vtiger_AdvanceFilter_Js",{
 		var fieldSelected = fieldSelect.find('option:selected');
 		var fieldSpecificType = this.getFieldSpecificType(fieldSelected)
 		var conditionList = this.getConditionListFromType(fieldSpecificType);
+
+		var fieldInfo = fieldSelected.data('fieldinfo');
+		if(typeof fieldInfo != 'undefined') {
+			fieldType = fieldInfo.type;
+		}
 		//for none in field name
 		if(typeof conditionList == 'undefined') {
 			conditionList = {};
@@ -225,6 +230,8 @@ jQuery.Class("Vtiger_AdvanceFilter_Js",{
 
 		var options = '';
 		for(var key in conditionList) {
+			if (fieldType == 'multipicklist' && (conditionList[key] == "e" || conditionList[key] == "n" )) { continue; } 
+			
 			//IE Browser consider the prototype properties also, it should consider has own properties only.
 			if(conditionList.hasOwnProperty(key)) {
 				var conditionValue = conditionList[key];
@@ -332,15 +339,15 @@ jQuery.Class("Vtiger_AdvanceFilter_Js",{
 		fieldUiHolder.html(fieldSpecificUi);
 
 		if(fieldSpecificUi.is('input.select2')){
-			var tagElements = fieldSpecificUi.data('tags');
-			var params = {tags : tagElements,tokenSeparators: [","]}
-            vtUtils.showSelect2ElementView(fieldSpecificUi, params);
+                    var tagElements = fieldSpecificUi.data('tags');
+                    var params = {tags : tagElements,tokenSeparators: [","]}
+                    vtUtils.showSelect2ElementView(fieldSpecificUi, params);
 		} else if(fieldSpecificUi.is('select')){
-			if(fieldSpecificUi.hasClass('chzn-select')) {
-				app.changeSelectElementView(fieldSpecificUi)
-			}else{
-                vtUtils.showSelect2ElementView(fieldSpecificUi);
-			}
+                    if(fieldSpecificUi.hasClass('chzn-select')) {
+                        app.changeSelectElementView(fieldSpecificUi)
+                    }else{
+                        vtUtils.showSelect2ElementView(fieldSpecificUi);
+                    }
 		} else if (fieldSpecificUi.has('input.dateField').length > 0){
                         vtUtils.registerEventForDateFields(fieldSpecificUi);
 		} else if(fieldSpecificUi.has('input.timepicker-default').length > 0){
@@ -675,6 +682,12 @@ Vtiger_Currencylist_Field_Js('AdvanceFilter_Currencylist_Field_Js',{},{
 
 Vtiger_Picklist_Field_Js('AdvanceFilter_Picklist_Field_Js',{},{
 
+    /**
+	 * Function to get the picklist values
+	 */
+	getPickListValues : function() {
+            return this.get('picklistvalues');
+	},
 	getUi : function(){
 		var comparatorSelectedOptionVal = this.get('comparatorElementVal');
 		if(comparatorSelectedOptionVal == 'e' || comparatorSelectedOptionVal =='n'){
@@ -701,9 +714,29 @@ Vtiger_Picklist_Field_Js('AdvanceFilter_Picklist_Field_Js',{},{
 				tagsArray.push(app.htmlDecode(val));
 			});
 			var pickListValuesArrayFlip = {};
+                        var translatedValues = new Array();
+			var selectedValues = selectedOption.split(",");
 			for(var key in pickListValues){
-				var pickListValue = pickListValues[key];
-				pickListValuesArrayFlip[pickListValue] = key;
+                            var pickListValue = pickListValues[key];
+                            pickListValuesArrayFlip[pickListValue] = key;
+                            if(selectedValues.length > 1){
+                                for(var index in selectedValues){
+                                    var selectedValue = selectedValues[index];
+                                    if(selectedValue == key){
+                                        translatedValues.push(pickListValue);
+                                    } else {
+                                        //if condition is startswith, endswith, contains, doesnot contains should be retain the selected value in the picklist
+                                        translatedValues.push(selectedValue);
+                                    }
+                                }
+                            }else{
+                                if(selectedOption == key){
+                                        selectedOption = pickListValue;
+                                }
+                            }
+			}
+                        if(selectedValues.length > 1){
+                            selectedOption = translatedValues.join(",");
 			}
 			var html = '<input type="hidden" class="col-lg-12 select2" name="'+ this.getName() +'">';
 			var selectContainer = jQuery(html).val(selectedOption);
@@ -716,6 +749,12 @@ Vtiger_Picklist_Field_Js('AdvanceFilter_Picklist_Field_Js',{},{
 
 Vtiger_Multipicklist_Field_Js('AdvanceFilter_Multipicklist_Field_Js',{},{
     
+    /**
+    * Function to get the picklist values
+    */
+    getPickListValues : function() {
+       return this.get('picklistvalues');
+    },
     getSelectedOptions : function(selectedOption){
         var valueArray = selectedOption.split(',');
         var selectedOptionsArray = [];

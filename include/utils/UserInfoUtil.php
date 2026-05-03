@@ -1082,7 +1082,7 @@ function getRoleUsers($roleId)
 	$roleRelatedUsers=Array();
 	for($i=0; $i<$num_rows; $i++)
 	{
-		$roleRelatedUsers[$adb->query_result($result,$i,'userid')]=getFullNameFromQResult($result, $i, 'Users');
+		$roleRelatedUsers[$adb->query_result($result,$i,'userid')]=$adb->query_result($result,$i,'userlabel');
 	}
 	$log->debug("Exiting getRoleUsers method ...");
 	return $roleRelatedUsers;
@@ -1302,14 +1302,14 @@ function getAllUserName()
 	global $log;
 	$log->debug("Entering getAllUserName() method ...");
 	global $adb;
-	$query="select * from vtiger_users where deleted=0";
+	$query="select id, userlabel from vtiger_users where deleted=0";
 	$result = $adb->pquery($query, array());
 	$num_rows=$adb->num_rows($result);
 	$user_details=Array();
 	for($i=0;$i<$num_rows;$i++)
 	{
 		$userid=$adb->query_result($result,$i,'id');
-		$username=getFullNameFromQResult($result, $i, 'Users');
+		$username=$adb->query_result($result,$i,'userlabel');
 		$user_details[$userid]=$username;
 
 	}
@@ -2194,7 +2194,7 @@ function RecalculateSharingRules()
 	$log->debug("Entering RecalculateSharingRules() method ...");
 	global $adb;
 	require_once('modules/Users/CreateUserPrivilegeFile.php');
-	$query="select id from vtiger_users where deleted=0";
+	$query="select id from vtiger_users where deleted=0 AND status = 'Active'";
 	$result=$adb->pquery($query, array());
 	$num_rows=$adb->num_rows($result);
 	for($i=0;$i<$num_rows;$i++)
@@ -2225,9 +2225,9 @@ function getSharingModuleList($eliminateModules=false)
 	if(!in_array('Events', $eliminateModules)) $eliminateModules[] = 'Events';
 
 	$query = "SELECT name FROM vtiger_tab WHERE presence=0 AND ownedby = 0 AND isentitytype = 1";
-	$query .= " AND name NOT IN('" . implode("','", $eliminateModules) . "')";
+	$query .= " AND name NOT IN(" . generateQuestionMarks($eliminateModules) . ")";
 
-	$result = $adb->query($query);
+	$result = $adb->pquery($query, $eliminateModules);
 	while($resrow = $adb->fetch_array($result)) {
 		$sharingModuleArray[] = $resrow['name'];
 	}

@@ -10,22 +10,30 @@
 
 class PurchaseOrder_CompanyDetails_Action extends Vtiger_Action_Controller {
 
-	function checkPermission(Vtiger_Request $request) {
-		$moduleName = $request->getModule();
-		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
-
-		$currentUserPriviligesModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
-		if(!$currentUserPriviligesModel->hasModulePermission($moduleModel->getId())) {
-			throw new AppException(vtranslate($moduleName, $moduleName).' '.vtranslate('LBL_NOT_ACCESSIBLE'));
-		}
-	}
-
-     function __construct() {
+	function __construct() {
         parent::__construct();
         $this->exposeMethod('getCompanyDetails');
         $this->exposeMethod('getAddressDetails');
     }
 
+	public function requiresPermission(Vtiger_Request $request){
+		$permissions = parent::requiresPermission($request);
+		$mode = $request->getMode();
+		if(!empty($mode)) {
+			switch ($mode) {
+				case 'getCompanyDetails':
+					$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView');
+					break;
+				case 'getAddressDetails':
+					$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView', 'record_parameter' => 'recordId');
+					break;
+				default:
+					break;
+			}
+		}
+		return $permissions;
+	}
+     
 	function process(Vtiger_Request $request) {
 		$mode = $request->getMode();
 		if(!empty($mode)) {
@@ -38,11 +46,11 @@ class PurchaseOrder_CompanyDetails_Action extends Vtiger_Action_Controller {
     function getCompanyDetails($request){
         $companyModel = Vtiger_CompanyDetails_Model::getInstanceById();
         $companyDetails = array(
-            'street' => $companyModel->get('organizationname') .' '.$companyModel->get('address'),
-            'city' => $companyModel->get('city'),
-            'state' => $companyModel->get('state'),
-            'code' => $companyModel->get('code'),
-            'country' =>  $companyModel->get('country'),
+            'street' => decode_html($companyModel->get('organizationname') .' '.$companyModel->get('address')),
+            'city' => decode_html($companyModel->get('city')),
+            'state' => decode_html($companyModel->get('state')),
+            'code' => decode_html($companyModel->get('code')),
+            'country' =>  decode_html($companyModel->get('country')),
             );
 		$response = new Vtiger_Response();
 		$response->setResult($companyDetails);

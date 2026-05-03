@@ -9,6 +9,17 @@
  * ***********************************************************************************/
 
 class Users_ExportData_Action extends Vtiger_ExportData_Action {
+    
+    public function requiresPermission(\Vtiger_Request $request) {
+		return array();
+	}
+    
+    public function checkPermission(Vtiger_Request $request){
+		$currentUserModel = Users_Record_Model::getCurrentUserModel();
+		if(!$currentUserModel->isAdminUser()) {
+			throw new AppException(vtranslate('LBL_PERMISSION_DENIED', 'Vtiger'));
+		}
+	}
 
 	var $exportableFields = array(	'user_name'		=> 'User Name',
 									'title'			=> 'Title',
@@ -31,6 +42,7 @@ class Users_ExportData_Action extends Vtiger_ExportData_Action {
 	 * @param Vtiger_Request $request
 	 */
 	function ExportData(Vtiger_Request $request) {
+		$this->moduleCall = true;
 		$db = PearDatabase::getInstance();
 		$moduleName = $request->get('source_module');
 		if ($moduleName) {
@@ -72,5 +84,8 @@ class Users_ExportData_Action extends Vtiger_ExportData_Action {
 		$queryGenerator->setFields($acceptedFields);
 		return $queryGenerator->getQuery();
 	}
-
+	
+	public function validateRequest(Vtiger_Request $request) {
+        $request->validateReadAccess();
+    }
 }

@@ -14,18 +14,6 @@ class Reports_List_View extends Vtiger_Index_View {
 	protected $listViewEntries = false;
 	protected $listViewCount   = false;
 
-	public function checkPermission(Vtiger_Request $request) {
-		$moduleName = $request->getModule();
-		$moduleModel = Reports_Module_Model::getInstance($moduleName);
-
-		$currentUserPriviligesModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
-		if(!$currentUserPriviligesModel->hasModulePermission($moduleModel->getId())) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
-		}
-	}
-
-
-
 	function preProcess(Vtiger_Request $request, $display=true) {
 		parent::preProcess($request, false);
 
@@ -85,10 +73,23 @@ class Reports_List_View extends Vtiger_Index_View {
 			"modules.$moduleName.resources.List",
 			"modules.$moduleName.resources.ChartDetail",
 			"modules.Vtiger.resources.ListSidebar",
-			'~/libraries/jquery/vtchart.js',
 			"~layouts/v7/lib/jquery/sadropdown.js",
 			"~layouts/" .Vtiger_Viewer::getDefaultLayoutName(). "/lib/jquery/floatThead/jquery.floatThead.js",
 			"~layouts/" .Vtiger_Viewer::getDefaultLayoutName(). "/lib/jquery/perfect-scrollbar/js/perfect-scrollbar.jquery.js",
+            '~/libraries/jquery/gridster/jquery.gridster.min.js',
+			'~/libraries/jquery/jqplot/jquery.jqplot.min.js',
+			'~/libraries/jquery/jqplot/plugins/jqplot.canvasTextRenderer.min.js',
+			'~/libraries/jquery/jqplot/plugins/jqplot.canvasAxisTickRenderer.min.js',
+			'~/libraries/jquery/jqplot/plugins/jqplot.pieRenderer.min.js',
+			'~/libraries/jquery/jqplot/plugins/jqplot.barRenderer.min.js',
+			'~/libraries/jquery/jqplot/plugins/jqplot.categoryAxisRenderer.min.js',
+			'~/libraries/jquery/jqplot/plugins/jqplot.pointLabels.min.js',
+			'~/libraries/jquery/jqplot/plugins/jqplot.canvasAxisLabelRenderer.min.js',
+			'~/libraries/jquery/jqplot/plugins/jqplot.funnelRenderer.min.js',
+			'~/libraries/jquery/jqplot/plugins/jqplot.barRenderer.min.js',
+			'~/libraries/jquery/jqplot/plugins/jqplot.logAxisRenderer.min.js',
+			'~/libraries/jquery/VtJqplotInterface.js',
+			'~/libraries/jquery/vtchart.js',
 		);
 
 		$jsScriptInstances = $this->checkAndConvertJsScripts($jsFileNames);

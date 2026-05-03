@@ -14,12 +14,15 @@ class Reports_Detail_View extends Vtiger_Index_View {
 	protected $calculationFields;
 	protected $count;
 
+	public function requiresPermission(\Vtiger_Request $request) {
+		$permissions = parent::requiresPermission($request);
+		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView', 'record_parameter' => 'record');
+		return $permissions;
+	}
+	
 	public function checkPermission(Vtiger_Request $request) {
-		$moduleName = $request->getModule();
-		$moduleModel = Reports_Module_Model::getInstance($moduleName);
-
+		parent::checkPermission($request);
 		$record = $request->get('record');
-
 		$reportModel = Reports_Record_Model::getCleanInstance($record);
 		$currentUserPriviligesModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
 
@@ -30,14 +33,15 @@ class Reports_Detail_View extends Vtiger_Index_View {
 		if(($currentUserPriviligesModel->id != $owner) && $sharingType == "Private"){
 			$isRecordShared = $reportModel->isRecordHasViewAccess($sharingType);
 		}
-		if(!$isRecordShared || !$currentUserPriviligesModel->hasModulePermission($moduleModel->getId()) ) {
+		if(!$isRecordShared) {
 			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
 		}
+		return true;
 	}
 
 	const REPORT_LIMIT = 500;
 
-	function preProcess(Vtiger_Request $request) {
+	function preProcess(Vtiger_Request $request, $display=true) {
 		$viewer = $this->getViewer($request);
 		$moduleName = $request->getModule();
 		$recordId = $request->get('record');
@@ -61,17 +65,27 @@ class Reports_Detail_View extends Vtiger_Index_View {
 
 		$primaryModule = $reportModel->getPrimaryModule();
 		$secondaryModules = $reportModel->getSecondaryModules();
-		$primaryModuleModel = Vtiger_Module_Model::getInstance($primaryModule);
-
+        $modulesList = array($primaryModule);
+        if(!empty($secondaryModules)){
+            if(stripos($secondaryModules, ':') >= 0){
+                $secmodules = explode(':', $secondaryModules);
+                $modulesList = array_merge($modulesList, $secmodules);
+            }else{
+                array_push($modulesList, $secondaryModules);
+            }
+        }
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$userPrivilegesModel = Users_Privileges_Model::getInstanceById($currentUser->getId());
-		$permission = $userPrivilegesModel->hasModulePermission($primaryModuleModel->getId());
-		if(!$permission) {
-			$viewer->assign('MODULE', $primaryModule);
-			$viewer->assign('MESSAGE', vtranslate('LBL_PERMISSION_DENIED'));
-			$viewer->view('OperationNotPermitted.tpl', $primaryModule);
-			exit;
-		}
+        foreach ($modulesList as $checkModule) {
+            $moduleInstance = Vtiger_Module_Model::getInstance($checkModule);
+            $permission = $userPrivilegesModel->hasModulePermission($moduleInstance->getId());
+            if(!$permission) {
+                $viewer->assign('MODULE', $primaryModule);
+                $viewer->assign('MESSAGE', vtranslate('LBL_PERMISSION_DENIED'));
+                $viewer->view('OperationNotPermitted.tpl', $primaryModule);
+                exit;
+            }
+        }
 
 		$detailViewLinks = $detailViewModel->getDetailViewLinks();
 

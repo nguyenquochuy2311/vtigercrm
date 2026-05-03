@@ -131,7 +131,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 	 * @param <String> $module
 	 * @return <Reports_Record_Model>
 	 */
-	public static function getInstanceById($recordId) {
+	public static function getInstanceById($recordId, $module=null) {
 		$db = PearDatabase::getInstance();
 
 		$self = new self();
@@ -275,6 +275,9 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 	function isRecordHasViewAccess($reportType){
 		$db = PearDatabase::getInstance();
 		$current_user = vglobal('current_user');
+        if(strtolower($current_user->is_admin) == "on") {
+            return true;
+        }
 			$params = array();
 			$sql = ' SELECT vtiger_report.reportid,vtiger_report.reportname FROM vtiger_report ';
 			require('user_privileges/user_privileges_'.$current_user->id.'.php');
@@ -340,6 +343,8 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 				$selectedColumns[$module.'_'.$translatedFieldLabel] = $column;
 			} else if(CheckFieldPermission($fieldName, $module) == 'true') {
 				// we should affix key with module name to differentiate same labels from diff modules
+				$translatedFieldLabel = str_replace('"', "", $translatedFieldLabel);
+				$translatedFieldLabel = str_replace("'", "", $translatedFieldLabel);
 				$selectedColumns[$module.'_'.$translatedFieldLabel] = $column;
 			}
 		}
@@ -440,12 +445,15 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 
 		$reportId = $this->getId();
 
-		//When members variable is not empty, it means record shared with other users, so
-		//sharing type of a report should be private
-		$sharingType = 'Public';
+		//Newly created records are always as Private, only shared users can see report
+		$sharingType = 'Private';
+		
 		$members = $this->get('members',array());
-		if(!empty($members)){
-			$sharingType = 'Private';
+		
+		if($members && count($members) == 1){
+			if($members[0] == 'All::Users'){
+				$sharingType = 'Public';
+			}
 		}
 
 		if(empty($reportId)) {
@@ -576,16 +584,16 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 			$db->pquery('INSERT INTO vtiger_reportsharing(reportid, shareid, setype) VALUES (?,?,?)',
 					array($reportId, $sharingInfo[$i]['id'], $sharingInfo[$i]['type']));
 		}
+        
+        //On every report save delete information from below tables and insert new to avoid 
+        // confusion in updating
+        $db->pquery('DELETE FROM vtiger_report_shareusers WHERE reportid=?',array($reportId));
+        $db->pquery('DELETE FROM vtiger_report_sharegroups WHERE reportid=?',array($reportId));
+        $db->pquery('DELETE FROM vtiger_report_sharerole WHERE reportid=?',array($reportId));
+        $db->pquery('DELETE FROM vtiger_report_sharers WHERE reportid=?',array($reportId));
 		
 		$members = $this->get('members',array());
 		if(!empty($members)) {
-			//On every report save delete information from below tables and insert new to avoid 
-			// confusion in updating
-			$db->pquery('DELETE FROM vtiger_report_shareusers WHERE reportid=?',array($reportId));
-			$db->pquery('DELETE FROM vtiger_report_sharegroups WHERE reportid=?',array($reportId));
-			$db->pquery('DELETE FROM vtiger_report_sharerole WHERE reportid=?',array($reportId));
-			$db->pquery('DELETE FROM vtiger_report_sharers WHERE reportid=?',array($reportId));
-
 			$noOfMembers = count($members);
 			for ($i = 0; $i < $noOfMembers; ++$i) {
 				$id = $members[$i];
@@ -768,9 +776,9 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 	 * @return <String> $query (by removing all columns)
 	 */
 	function generateCountQuery($query){
-		$from = explode(' from ' , $query, 2);
+        $from = preg_split("/ from /i", $query, 2);
 		//If we select the same field in select and grouping/soring then it will include order by and query failure will happen
-		$fromAndWhereQuery = explode(' order by ', $from[1]);
+        $fromAndWhereQuery = preg_split('/ order by /i', $from[1]);
 		$sql = "SELECT count(*) AS count FROM ".$fromAndWhereQuery[0];
 		return $sql;
 	}
@@ -791,7 +799,7 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 			$query = $this->get('recordCountQuery');
 		global $adb;
 		$count = 0;
-		$result = $adb->query($query, array());
+		$result = $adb->pquery($query, array());
 		if($adb->num_rows($result) > 0 ){
 			$count = $adb->query_result($result, 0, 'count');
 		}
@@ -887,6 +895,18 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 		}
 		return false;
 	}
+    
+    /**
+     * Function to check whether report is custom report or not
+     * @return boolean
+     */
+    function isCustom(){
+        $handlerClass = $this->get('handler_class');
+		if(!empty($handlerClass)) {
+			return true;
+		}
+		return false;
+    }
 
 	/**
 	 * Function move report to another specified folder
@@ -1027,12 +1047,17 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 			$tranformedStandardFilter['comparator'] = 'bw';
 
 			$fields = explode(':',$standardFilter['columnname']);
-
+            $standardReports = array('Last Month Activities', 'This Month Activities');
 			if($fields[1] == 'createdtime' || $fields[1] == 'modifiedtime' ||($fields[0] == 'vtiger_activity' && $fields[1] == 'date_start')){
-				$tranformedStandardFilter['columnname'] = "$fields[0]:$fields[1]:$fields[3]:$fields[2]:DT";
-				$date[] = $standardFilter['startdate'].' 00:00:00';
-				$date[] = $standardFilter['enddate'].' 00:00:00';
-				$tranformedStandardFilter['value'] =  implode(',',$date);
+                if(in_array($this->get('reportname'), $standardReports)){
+                    $tranformedStandardFilter['columnname'] = "$fields[0]Calendar:$fields[1]:$fields[3]:$fields[2]:DT";
+                    $tranformedStandardFilter['comparator'] = $standardFilter['type'];
+                }else{
+                    $tranformedStandardFilter['columnname'] = "$fields[0]:$fields[1]:$fields[3]:$fields[2]:DT";
+                    $date[] = $standardFilter['startdate'].' 00:00:00';
+                    $date[] = $standardFilter['enddate'].' 00:00:00';
+                    $tranformedStandardFilter['value'] =  implode(',',$date);
+                }
 			} else{
 				$tranformedStandardFilter['columnname'] = "$fields[0]:$fields[1]:$fields[3]:$fields[2]:D";
 				$tranformedStandardFilter['value'] = $standardFilter['startdate'].','.$standardFilter['enddate'];
@@ -1345,5 +1370,15 @@ class Reports_Record_Model extends Vtiger_Record_Model {
 				return true;
 			}
 		}
+	}
+    
+    public static function isReportExists($recordId) {
+		$db = PearDatabase::getInstance();
+		$reportResult = $db->pquery('SELECT * FROM vtiger_report WHERE reportid = ?', array($recordId));
+		if($db->num_rows($reportResult) > 0) {
+			return true;
+		}
+
+		return false;
 	}
 }

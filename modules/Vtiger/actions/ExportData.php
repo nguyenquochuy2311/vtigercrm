@@ -10,14 +10,14 @@
 
 class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 
-	function checkPermission(Vtiger_Request $request) {
-		$moduleName = $request->getModule();
-		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
-
-		$currentUserPriviligesModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
-		if(!$currentUserPriviligesModel->hasModuleActionPermission($moduleModel->getId(), 'Export')) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
-		}
+	var $moduleCall = false;
+	public function requiresPermission(\Vtiger_Request $request) {
+		$permissions = parent::requiresPermission($request);
+		$permissions[] = array('module_parameter' => 'module', 'action' => 'Export');
+        if (!empty($request->get('source_module'))) {
+            $permissions[] = array('module_parameter' => 'source_module', 'action' => 'Export');
+        }
+		return $permissions;
 	}
 
 	/**
@@ -46,6 +46,13 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 		$query = $this->getExportQuery($request);
 		$result = $db->pquery($query, array());
 
+		$redirectedModules = array('Users', 'Calendar');
+		if($request->getModule() != $moduleName && in_array($moduleName, $redirectedModules) && !$this->moduleCall){
+			$handlerClass = Vtiger_Loader::getComponentClassName('Action', 'ExportData', $moduleName);
+			$handler = new $handlerClass();
+			$handler->ExportData($request);
+			return;
+		}
 		$translatedHeaders = $this->getHeaders();
 		$entries = array();
 		for ($j = 0; $j < $db->num_rows($result); $j++) {

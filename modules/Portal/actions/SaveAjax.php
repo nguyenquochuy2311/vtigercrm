@@ -10,28 +10,19 @@
 
 class Portal_SaveAjax_Action extends Vtiger_SaveAjax_Action {
     
-    public function checkPermission(Vtiger_Request $request) {
-		$moduleName = $request->getModule();
-		$record = $request->get('record');
-
-		$actionName = ($record) ? 'EditView' : 'CreateView';
-		if(!Users_Privileges_Model::isPermitted($moduleName, $actionName, $record)) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
-		}
-
-		if(!Users_Privileges_Model::isPermitted($moduleName, 'Save', $record)) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
-		}
+    public function requiresPermission(\Vtiger_Request $request) {
+		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView', 'record_parameter' => 'record');
+		return $permissions;
 	}
-    
-    public function process(Vtiger_Request $request) {
+	
+	public function process(Vtiger_Request $request) {
         $module = $request->getModule();
         $recordId = $request->get('record');
         $bookmarkName = $request->get('bookmarkName');
         $bookmarkUrl = $request->get('bookmarkUrl');
         
         Portal_Module_Model::saveRecord($recordId, $bookmarkName, $bookmarkUrl);
-        
+		
         $response = new Vtiger_Response();
         $result = array('message' => vtranslate('LBL_BOOKMARK_SAVED_SUCCESSFULLY', $module));
         $response->setResult($result);

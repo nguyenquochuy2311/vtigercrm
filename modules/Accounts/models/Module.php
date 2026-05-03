@@ -48,17 +48,22 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 		if (($sourceModule == 'Accounts' && $field == 'account_id' && $record)
 				|| in_array($sourceModule, array('Campaigns', 'Products', 'Services', 'Emails'))) {
 
+		    	$db = PearDatabase::getInstance();
+		    	$params = array($record);
 			if ($sourceModule === 'Campaigns') {
-				$condition = " vtiger_account.accountid NOT IN (SELECT accountid FROM vtiger_campaignaccountrel WHERE campaignid = '$record')";
+				$condition = " vtiger_account.accountid NOT IN (SELECT accountid FROM vtiger_campaignaccountrel WHERE campaignid = ?)";
 			} elseif ($sourceModule === 'Products') {
-				$condition = " vtiger_account.accountid NOT IN (SELECT crmid FROM vtiger_seproductsrel WHERE productid = '$record')";
+				$condition = " vtiger_account.accountid NOT IN (SELECT crmid FROM vtiger_seproductsrel WHERE productid = ?)";
 			} elseif ($sourceModule === 'Services') {
-				$condition = " vtiger_account.accountid NOT IN (SELECT relcrmid FROM vtiger_crmentityrel WHERE crmid = '$record' UNION SELECT crmid FROM vtiger_crmentityrel WHERE relcrmid = '$record') ";
-			} elseif ($sourceModule === 'Emails') {
+				$condition = " vtiger_account.accountid NOT IN (SELECT relcrmid FROM vtiger_crmentityrel WHERE crmid = ? UNION SELECT crmid FROM vtiger_crmentityrel WHERE relcrmid = ?) ";
+                		$params = array($record, $record);
+            		} elseif ($sourceModule === 'Emails') {
 				$condition = ' vtiger_account.emailoptout = 0';
+                		$params = array();
 			} else {
-				$condition = " vtiger_account.accountid != '$record'";
+				$condition = " vtiger_account.accountid != ?";
 			}
+            		$condition = $db->convert2Sql($condition, $params);
 
 			$position = stripos($listQuery, 'where');
 			if($position) {
@@ -152,7 +157,7 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 		$focus = CRMEntity::getInstance($this->getName());
 		$focus->id = $recordId;
 		$entityIds = $focus->getRelatedContactsIds();
-		$entityIds = implode(',', $entityIds);
+        $params = array();
 
 		$query = "SELECT DISTINCT vtiger_crmentity.crmid, (CASE WHEN (crmentity2.crmid not like '') THEN crmentity2.crmid ELSE crmentity3.crmid END) AS parent_id, 
 					(CASE WHEN (crmentity2.setype not like '') then crmentity2.setype ELSE crmentity3.setype END) AS crmentity2module, vtiger_crmentity.smownerid, vtiger_crmentity.setype, vtiger_activity.* FROM vtiger_activity
@@ -179,18 +184,21 @@ class Accounts_Module_Model extends Vtiger_Module_Model {
 		}
 
 		if ($mode === 'upcoming') {
-			$query .= " AND CASE WHEN vtiger_activity.activitytype='Task' THEN due_date >= '$currentDate' ELSE CONCAT(due_date,' ',time_end) >= '$nowInDBFormat' END";
+			$query .= " AND CASE WHEN vtiger_activity.activitytype='Task' THEN due_date >= ? ELSE CONCAT(due_date,' ',time_end) >= ? END";
+            $params[] = $currentDate;
+            $params[] = $nowInDBFormat;
 		} elseif ($mode === 'overdue') {
-			$query .= " AND CASE WHEN vtiger_activity.activitytype='Task' THEN due_date < '$currentDate' ELSE CONCAT(due_date,' ',time_end) < '$nowInDBFormat' END";
+			$query .= " AND CASE WHEN vtiger_activity.activitytype='Task' THEN due_date < ? ELSE CONCAT(due_date,' ',time_end) < ? END";
+            $params[] = $currentDate;
+            $params[] = $nowInDBFormat;
 		}
-
-		$params = array();
 
 		if ($recordId) {
 			$query .= " AND (vtiger_seactivityrel.crmid = ?";
 			array_push($params, $recordId);
 			if ($entityIds) {
-				$query .= " OR vtiger_cntactivityrel.contactid IN (" . $entityIds . "))";
+				$query .= " OR vtiger_cntactivityrel.contactid IN (" . generateQuestionMarks($entityIds) . "))";
+                $params = array_merge($params, $entityIds);
 			} else {
 				$query .= ")";
 			}

@@ -51,20 +51,16 @@ abstract class Vtiger_Basic_View extends Vtiger_Footer_View {
 		$supportGroup = $menuGroupedByParent['SUPPORT'];
 		unset($menuGroupedByParent['SUPPORT']);
 		$menuGroupedByParent['SUPPORT'] = $supportGroup;
+        $parentApp = $request->get('app');
 
 		foreach ($menuGroupedByParent as $parentCategory => $menuList) {
 			if($parentCategory == 'ANALYTICS' || $parentCategory == 'SETTINGS') continue;
-			if(count($menuList) > 0) {
-				if(array_key_exists($selectedModule, $menuList) && $parentCategory) {
+			if(!empty($menuList)) {
+				if(array_key_exists($selectedModule, $menuList) && ($parentCategory == $parentApp)) {
 					$moduleFound = true;
 					$selectedModuleMenuCategory = $parentCategory;
 				}
 			}
-		}
-
-		$requestAppName = $request->get('app');
-		if(!empty($requestAppName)) {
-			$selectedModuleMenuCategory = $requestAppName;
 		}
 
 		//If module is not found in any category we need to show the module itself 

@@ -18,10 +18,10 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 		return Vtiger_Util_Helper::getRecordName($this->getId());
 	}
 
-	function getDownloadFileURL() {
+	function getDownloadFileURL($attachmentId = false) {
 		if ($this->get('filelocationtype') == 'I') {
 			$fileDetails = $this->getFileDetails();
-			return 'index.php?module='. $this->getModuleName() .'&action=DownloadFile&record='. $this->getId() .'&fileid='. $fileDetails['attachmentsid'];
+			return 'index.php?module='. $this->getModuleName() .'&action=DownloadFile&record='. $this->getId() .'&fileid='. $fileDetails['attachmentsid'].'&name='. $fileDetails['name'];
 		} else {
 			return $this->get('filename');
 		}
@@ -40,8 +40,9 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 			$fileDetails = $this->getFileDetails();
 			if (!empty ($fileDetails)) {
 				$filePath = $fileDetails['path'];
+                $storedFileName = $fileDetails['storedname'];
 
-				$savedFile = $fileDetails['attachmentsid']."_".decode_html($this->get('filename'));
+				$savedFile = $fileDetails['attachmentsid']."_".$storedFileName;
 
 				if(fopen($filePath.$savedFile, "r")) {
 					$returnValue = true;
@@ -51,7 +52,7 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 		return $returnValue;
 	}
 
-	function getFileDetails() {
+	function getFileDetails($attachmentId = false) {
 		$db = PearDatabase::getInstance();
 		$fileDetails = array();
 
@@ -65,34 +66,40 @@ class Documents_Record_Model extends Vtiger_Record_Model {
 		return $fileDetails;
 	}
 
-	function downloadFile() {
+	function downloadFile($attachmentId = false) {
 		$fileDetails = $this->getFileDetails();
 		$fileContent = false;
 
 		if (!empty ($fileDetails)) {
 			$filePath = $fileDetails['path'];
 			$fileName = $fileDetails['name'];
+            $storedFileName = $fileDetails['storedname'];
 
 			if ($this->get('filelocationtype') == 'I') {
 				$fileName = html_entity_decode($fileName, ENT_QUOTES, vglobal('default_charset'));
-				$savedFile = $fileDetails['attachmentsid']."_".$fileName;
+                if (!empty($fileName)) {
+                    if(!empty($storedFileName)){
+                        $savedFile = $fileDetails['attachmentsid']."_".$storedFileName;
+                    }else if(is_null($storedFileName)){
+                        $savedFile = $fileDetails['attachmentsid']."_".$fileName;
+                    }
+                    while(ob_get_level()) {
+                        ob_end_clean();
+                    }
+                    $fileSize = filesize($filePath.$savedFile);
+                    $fileSize = $fileSize + ($fileSize % 1024);
 
-				while(ob_get_level()) {
-					ob_end_clean();
-				}
-				$fileSize = filesize($filePath.$savedFile);
-				$fileSize = $fileSize + ($fileSize % 1024);
+                    if (fopen($filePath.$savedFile, "r")) {
+                        $fileContent = fread(fopen($filePath.$savedFile, "r"), $fileSize);
 
-				if (fopen($filePath.$savedFile, "r")) {
-					$fileContent = fread(fopen($filePath.$savedFile, "r"), $fileSize);
-
-					header("Content-type: ".$fileDetails['type']);
-					header("Pragma: public");
-					header("Cache-Control: private");
-					header("Content-Disposition: attachment; filename=\"$fileName\"");
-					header("Content-Description: PHP Generated Data");
-                    header("Content-Encoding: none");
-				}
+                        header("Content-type: ".$fileDetails['type']);
+                        header("Pragma: public");
+                        header("Cache-Control: private");
+                        header("Content-Disposition: attachment; filename=\"$fileName\"");
+                        header("Content-Description: PHP Generated Data");
+                        header("Content-Encoding: none");
+                    }
+                }
 			}
 		}
 		echo $fileContent;

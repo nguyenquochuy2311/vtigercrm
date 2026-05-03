@@ -40,7 +40,7 @@ window.app = (function () {
 					if (!data['success'] && data['error']['message']) {
 						aDeferred.resolve(new VtError(data['error']));
 						return;
-					} else if (data['result']) {
+					} else if (data['result'] && data['result'] !== null) {
 						data = data['result'];
 					}
 				}
@@ -73,7 +73,7 @@ window.app = (function () {
 						if (!response['success'] && response['error']['message']) {
 									aDeferred.resolve(new VtError(response['error']));
 							return;
-						} else if (response['result']) {
+						} else if (response['result'] && response['result'] !== null) {
 							response = response['result'];
 						}
 					}
@@ -111,6 +111,23 @@ window.app = (function () {
 				params.data = app.convertUrlToDataParams(params.url);
 				delete params.url;
 			}
+                        
+                        /**
+                        * Safari 11.1 - ajax/XHR form submission will fail if input[type=file] is empty in formData.
+                        */
+                        var isIOSDevice = navigator.userAgent.match(/iPhone|iPod|iPad/i) != null;
+                        if ((!!window.safari === true || isIOSDevice) 
+                                && params.data instanceof FormData && typeof params.data.getAll == 'function') {
+                            var fileNameAttribute = (params.data.getAll("filename[]").length > 0) ? 'filename[]' : 'file[]';
+                            var fileNames = params.data.getAll(fileNameAttribute);
+                            params.data.delete(fileNameAttribute);
+                            jQuery.each(fileNames, function (key, fileNameObject) {
+                                if (fileNameObject.name) {
+                                    params.data.append(fileNameAttribute, fileNameObject);
+                                }
+                            });
+                        }
+                        
 			this._request(params).then(function (err, data) {
 				return aDeferred.resolve(err, data);
 			});
@@ -189,7 +206,8 @@ window.app = (function () {
 			for (var index = 0; index < queryParameters.length; index++) {
 				var queryParam = queryParameters[index];
 				var queryParamComponents = queryParam.split('=');
-				params[queryParamComponents[0]] = queryParamComponents[1];
+                if (queryParamComponents[0] in params) params[queryParamComponents[0]] += '&' + queryParamComponents[0] + '=' + queryParamComponents[1];
+				else params[queryParamComponents[0]] = queryParamComponents[1];
 			}
 			return params;
 		},

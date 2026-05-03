@@ -26,16 +26,44 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 		$this->exposeMethod('showRelatedRecords');
 	}
 
+	public function requiresPermission(Vtiger_Request $request){
+		$permissions = parent::requiresPermission($request);
+		$mode = $request->getMode();
+		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView', 'record_parameter' => 'record');
+		if(!empty($mode)) {
+			switch ($mode) {
+				case 'showModuleDetailView':
+				case 'showModuleSummaryView':
+				case 'showModuleBasicView':
+					$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView', 'record_parameter' => 'record');
+					break;
+				case 'showRecentComments':
+				case 'showChildComments':
+					$permissions[] = array('module_parameter' => 'custom_module', 'action' => 'DetailView');
+					$request->set('custom_module', 'ModComments');
+					break;
+				case 'showRelatedList':
+				case 'showRelatedRecords':
+					$permissions[] = array('module_parameter' => 'relatedModule', 'action' => 'DetailView');
+					break;
+				case 'getActivities':
+					$permissions[] = array('module_parameter' => 'custom_module', 'action' => 'DetailView');
+					$request->set('custom_module', 'Calendar');
+					break;
+				default:
+					break;
+			}
+		}
+		return $permissions;
+	}
+	
 	function checkPermission(Vtiger_Request $request) {
+        parent::checkPermission($request);
 		$moduleName = $request->getModule();
 		$recordId = $request->get('record');
 
-		$recordPermission = Users_Privileges_Model::isPermitted($moduleName, 'DetailView', $recordId);
-		if(!$recordPermission) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
-		}
-
-		if ($recordId) {
+		$nonEntityModules = array('Users', 'Events', 'Calendar', 'Portal', 'Reports', 'Rss', 'EmailTemplates');
+		if ($recordId && !in_array($moduleName, $nonEntityModules)) {
 			$recordEntityName = getSalesEntityType($recordId);
 			if ($recordEntityName !== $moduleName) {
 				throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
@@ -129,7 +157,6 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 		$allUserTags = Vtiger_Tag_Model::getAllUserTags($currentUserModel->getId());
 		$viewer->assign('TAGS_LIST', $tagsList);
 		$viewer->assign('ALL_USER_TAGS', $allUserTags);
-
 		$appName = $request->get('app');
 		if(!empty($appName)){
 			$viewer->assign('SELECTED_MENU_CATEGORY',$appName);
@@ -256,7 +283,7 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 		return $headerScriptInstances;
 	}
 
-	function showDetailViewByMode($request) {
+	function showDetailViewByMode(Vtiger_Request $request) {
 		$requestMode = $request->get('requestMode');
 		if($requestMode == 'full') {
 			return $this->showModuleDetailView($request);
@@ -351,7 +378,7 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 	 * Function shows basic detail for the record
 	 * @param <type> $request
 	 */
-	function showModuleBasicView($request) {
+	function showModuleBasicView(Vtiger_Request $request) {
 
 		$recordId = $request->get('record');
 		$moduleName = $request->getModule();
@@ -412,6 +439,16 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 		$recordModel = Vtiger_Record_Model::getInstanceById($parentRecordId);
 		$viewer = $this->getViewer($request);
 		$viewer->assign('SOURCE',$recordModel->get('source'));
+        $recentActivities = ModTracker_Record_Model::getUpdates($parentRecordId, $pagingModel,$moduleName);
+
+        $totalCount = ModTracker_Record_Model::getTotalRecordCount($parentRecordId);
+        $pageLimit = $pagingModel->getPageLimit();
+        $pageCount = ceil((int) $totalCount / (int) $pageLimit);
+        if($pageCount - $pagingModel->getCurrentPage() == 0) {
+            $pagingModel->set('nextPageExists', false);
+        } else {
+            $pagingModel->set('nextPageExists', true);
+        }
 		$viewer->assign('RECENT_ACTIVITIES', $recentActivities);
 		$viewer->assign('MODULE_NAME', $moduleName);
 		$viewer->assign('PAGING_MODEL', $pagingModel);
@@ -520,7 +557,9 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 		}
 		if($targetControllerClass) {
 			$targetController = new $targetControllerClass();
-			return $targetController->process($request);
+			if($targetController->checkPermission($request)){
+				return $targetController->process($request);
+			}
 		}
 	}
 
@@ -535,11 +574,13 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 		$childComments = $parentCommentModel->getChildComments();
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 		$modCommentsModel = Vtiger_Module_Model::getInstance('ModComments');
+		$moduleName = $parentCommentModel->getParentRecordModel()->getModuleName();
 
 		$viewer = $this->getViewer($request);
 		$viewer->assign('PARENT_COMMENTS', $childComments);
 		$viewer->assign('CURRENTUSER', $currentUserModel);
 		$viewer->assign('COMMENTS_MODULE_MODEL', $modCommentsModel);
+		$viewer->assign('MODULE_NAME', $moduleName);
 
 		return $viewer->view('CommentsList.tpl', $moduleName, 'true');
 	}

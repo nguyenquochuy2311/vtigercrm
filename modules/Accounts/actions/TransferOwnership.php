@@ -9,33 +9,39 @@
  *************************************************************************************/
 
 class Accounts_TransferOwnership_Action extends Vtiger_Action_Controller {
+	var $transferRecordIds = Array();
 	
-	function checkPermission(Vtiger_Request $request) {
-		$moduleName = $request->getModule();
-		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
-		$currentUserPriviligesModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
-
-		if(!$currentUserPriviligesModel->hasModuleActionPermission($moduleModel->getId(), 'Save')) {
-			throw new AppException(vtranslate($moduleName, $moduleName).' '.vtranslate('LBL_NOT_ACCESSIBLE'));
+	public function requiresPermission(\Vtiger_Request $request) {
+		$permissions = parent::requiresPermission($request);
+		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView');
+		$permissions[] = array('module_parameter' => 'module', 'action' => 'EditView', 'record_parameter' => 'record');
+		return $permissions;
+	}
+	
+	public function checkPermission(Vtiger_Request $request) {
+		parent::checkPermission($request);
+		$recordIds = $this->getRecordIds($request);
+		foreach ($recordIds as $key => $recordId) {
+			$moduleName = getSalesEntityType($recordId);
+			$permissionStatus  = Users_Privileges_Model::isPermitted($moduleName,  'EditView', $recordId);
+			if($permissionStatus){
+				$this->transferRecordIds[] = $recordId;
+			}
+			if(empty($this->transferRecordIds)){
+				throw new AppException(vtranslate('LBL_RECORD_PERMISSION_DENIED'));
+			}
 		}
+		return true;
 	}
 
 	public function process(Vtiger_Request $request) {
 		$module = $request->getModule();
 		$moduleModel = Vtiger_Module_Model::getInstance($module);
 		$transferOwnerId = $request->get('transferOwnerId');
-		$record = $request->get('record');
-		if(empty($record))
-			$recordIds = $this->getBaseModuleRecordIds($request);
-		else
-			$recordIds[] = $record;
-		$relatedModuleRecordIds = $moduleModel->getRelatedModuleRecordIds($request, $recordIds);
-		foreach ($recordIds as $key => $recordId) {
-			array_push($relatedModuleRecordIds, $recordId);
+		if(!empty($this->transferRecordIds)){
+			$recordIds = $this->transferRecordIds;
 		}
-		array_merge($relatedModuleRecordIds, $recordIds);
-
-		$result = $moduleModel->transferRecordsOwnership($transferOwnerId, $relatedModuleRecordIds);
+		$result = $moduleModel->transferRecordsOwnership($transferOwnerId, $recordIds);
 		$response = new Vtiger_Response();
 		if ($result === true) {
 			$response->setResult(true);
@@ -43,6 +49,23 @@ class Accounts_TransferOwnership_Action extends Vtiger_Action_Controller {
 			$response->setError($result);
 		}
 		$response->emit();
+	}
+	
+	public function getRecordIds(Vtiger_Request $request) {
+		$module = $request->getModule();
+		$moduleModel = Vtiger_Module_Model::getInstance($module);
+		$record = $request->get('record');
+		if(empty($record))
+			$recordIds = $this->getBaseModuleRecordIds($request);
+		else
+			$recordIds[] = $record;
+		
+		$relatedModuleRecordIds = $moduleModel->getRelatedModuleRecordIds($request, $recordIds);
+		foreach ($recordIds as $key => $recordId) {
+			array_push($relatedModuleRecordIds, $recordId);
+		}
+		array_merge($relatedModuleRecordIds, $recordIds);
+		return $relatedModuleRecordIds;
 	}
 	
 	protected function getBaseModuleRecordIds(Vtiger_Request $request) {
@@ -56,18 +79,40 @@ class Accounts_TransferOwnership_Action extends Vtiger_Action_Controller {
 			}
 		}
 
+        $tagParams = $request->get('tag_params');
+		$tag = $request->get('tag');
+		$listViewSessionKey = $module.'_'.$cvId;
+
+		if(!empty($tag)) {
+			$listViewSessionKey .='_'.$tag;
+		}
+
+		$orderParams = Vtiger_ListView_Model::getSortParamsSession($listViewSessionKey);
+		if(!empty($tag) && empty($tagParams)){
+			$tagParams = $orderParams['tag_params'];
+		}
+
+		if(empty($tagParams)){
+			$tagParams = array();
+		}
+        
+		$searchParams = $request->get('search_params');
+		if(empty($searchParams) && !is_array($searchParams)){
+			$searchParams = array();
+		}
+		$searchAndTagParams = array_merge($searchParams, $tagParams);
+
 		if($selectedIds == 'all'){
 			$customViewModel = CustomView_Record_Model::getInstanceById($cvId);
 			if($customViewModel) {
 				$operator = $request->get('operator');
-				$searchParams = $request->get('search_params');
 				if (!empty($operator)) {
 					$customViewModel->set('operator', $operator);
 					$customViewModel->set('search_key', $request->get('search_key'));
 					$customViewModel->set('search_value', $request->get('search_value'));
 				}
-				if (!empty($searchParams)) {
-					$customViewModel->set('search_params', $searchParams);
+				if (!empty($searchAndTagParams)) {
+					$customViewModel->set('search_params', $searchAndTagParams);
 				}
 				return $customViewModel->getRecordIds($excludedIds, $module);
 			}

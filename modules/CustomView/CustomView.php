@@ -52,16 +52,19 @@ class CustomView extends CRMEntity {
 	 * @param $module -- The module Name:: Type String(optional)
 	 * @returns  nothing
 	 */
+        function __construct($module = "") {
+            global $current_user;
+            $this->customviewmodule = $module;
+            $this->escapemodule[] = $module . "_";
+            $this->escapemodule[] = "_";
+            $this->smownerid = $current_user->id;
+            $this->moduleMetaInfo = array();
+            if ($module != "" && $module != 'Calendar') {
+                    $this->meta = $this->getMeta($module, $current_user);
+            }
+        }   
 	function CustomView($module = "") {
-		global $current_user, $adb;
-		$this->customviewmodule = $module;
-		$this->escapemodule[] = $module . "_";
-		$this->escapemodule[] = "_";
-		$this->smownerid = $current_user->id;
-		$this->moduleMetaInfo = array();
-		if ($module != "" && $module != 'Calendar') {
-			$this->meta = $this->getMeta($module, $current_user);
-		}
+            self::__construct($module);
 	}
 
 	/**
@@ -206,7 +209,7 @@ class CustomView extends CRMEntity {
 		if ($markselected == false)
 			$selected = '';
 
-		$ssql = "select vtiger_customview.*, vtiger_users.first_name,vtiger_users.last_name from vtiger_customview inner join vtiger_tab on vtiger_tab.name = vtiger_customview.entitytype
+		$ssql = "select vtiger_customview.*, vtiger_users.first_name,vtiger_users.last_name,vtiger_users.userlabel from vtiger_customview inner join vtiger_tab on vtiger_tab.name = vtiger_customview.entitytype
 					left join vtiger_users on vtiger_customview.userid = vtiger_users.id ";
 		$ssql .= " where vtiger_tab.tabid=?";
 		$sparams = array($tabid);
@@ -227,7 +230,7 @@ class CustomView extends CRMEntity {
 			if ($cvrow['status'] == CV_STATUS_DEFAULT || $cvrow['userid'] == $current_user->id) {
 				$disp_viewname = $viewname;
 			} else {
-				$userName = getFullNameFromArray('Users', $cvrow);
+				$userName = $cvrow['userlabel'];
 				$disp_viewname = $viewname . " [" . $userName . "] ";
 			}
 
@@ -1179,9 +1182,9 @@ class CustomView extends CRMEntity {
 						if ($this->customviewmodule == 'Calendar' && ($columns[1] == 'date_start' || $columns[1] == 'due_date')) {
 							$tableColumnSql = '';
 							if ($columns[1] == 'date_start') {
-								$tableColumnSql = "CAST((CONCAT(date_start,' ',time_start)) AS DATETIME)";
+								$tableColumnSql = "(CONCAT(date_start,' ',time_start))";
 							} else {
-								$tableColumnSql = "CAST((CONCAT(due_date,' ',time_end)) AS DATETIME)";
+								$tableColumnSql = "(CONCAT(due_date,' ',time_end))";
 							}
 						} else {
 							$tableColumnSql = $columns[0] . "." . $columns[1];

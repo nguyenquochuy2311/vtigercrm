@@ -16,6 +16,7 @@ include_once('include/utils/utils.php');
  */
 class Vtiger_Utils {
     protected static $logFileName = 'vtigermodule.log';
+    protected static $logFolder = 'logs';
     
 	/**
 	 * Check if given value is a number or not
@@ -71,10 +72,17 @@ class Vtiger_Utils {
 		$filePathParts = explode('/', $relativeFilePath);
 
 		if(stripos($realfilepath, $rootdirpath) !== 0 || in_array($filePathParts[0], $unsafeDirectories)) {
-			if($dieOnFail) {
-				die('Sorry! Attempt to access restricted file. - '.$filepath);
-			}
-			return false;
+                    if($dieOnFail) {
+                        $a = debug_backtrace();
+                        $backtrace = 'Traced on '.date('Y-m-d H:i:s')."\n";
+                        $backtrace .= "FileAccessForInclusion - \n";
+                        foreach ($a as $b) {
+                             $backtrace .=  $b['file'] . '::' . $b['function'] . '::' . $b['line'] . '<br>'.PHP_EOL;
+                        }
+                        Vtiger_Utils::writeLogFile('fileMissing.log', $backtrace);
+                        die('Sorry! Attempt to access restricted file.');
+                    }
+                    return false;
 		}
 		return true;
 	}
@@ -104,9 +112,16 @@ class Vtiger_Utils {
 		$rootdirpath  = str_replace('\\', '/', $rootdirpath);
 
 		if(stripos($realfilepath, $rootdirpath) !== 0) {
-			if($dieOnFail) {
-				die('Sorry! Attempt to access restricted file. - '.$filepath);
-			}
+                    if($dieOnFail) {
+                        $a = debug_backtrace();
+                        $backtrace = 'Traced on '.date('Y-m-d H:i:s')."\n";
+                        $backtrace .= "FileAccess - \n";
+                        foreach ($a as $b) {
+                              $backtrace .=  $b['file'] . '::' . $b['function'] . '::' . $b['line'] . '<br>'.PHP_EOL;
+                        }
+                        Vtiger_Utils::writeLogFile('fileMissing.log', $backtrace);
+                        die('Sorry! Attempt to access restricted file.');
+                    }
 			return false;
 		}
 		return true;
@@ -171,6 +186,7 @@ class Vtiger_Utils {
 	static function CreateTable($tablename, $criteria, $suffixTableMeta=false) {
 		global $adb;
 
+        $tablename = Vtiger_Util_Helper::validateStringForSql($tablename);
 		$org_dieOnError = $adb->dieOnError;
 		$adb->dieOnError = false;
 		$sql = "CREATE TABLE " . $tablename . $criteria;
@@ -196,6 +212,7 @@ class Vtiger_Utils {
 	 */
 	static function AlterTable($tablename, $criteria) {
 		global $adb;
+        $tablename = Vtiger_Util_Helper::validateStringForSql($tablename);
 		$adb->query("ALTER TABLE " . $tablename . $criteria);
 	}
 
@@ -220,6 +237,7 @@ class Vtiger_Utils {
 	 */
 	static function TableHasForeignKey($tablename, $key) {
 		$db = PearDatabase::getInstance();
+        $tablename = Vtiger_Util_Helper::validateStringForSql($tablename);
 		$rs = $db->pquery("SELECT 1 FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_TYPE = 'FOREIGN KEY' AND TABLE_SCHEMA = ? AND TABLE_NAME = ? AND CONSTRAINT_NAME = ?", array($db->dbName, $tablename, $key));
 		return $db->num_rows($rs) > 0 ? true : false;
 	}
@@ -246,6 +264,7 @@ class Vtiger_Utils {
 	static function CreateTableSql($tablename) {
 		global $adb;
 
+        $tablename = Vtiger_Util_Helper::validateStringForSql($tablename);
 		$create_table = $adb->pquery("SHOW CREATE TABLE $tablename", array());
 		$sql = decode_html($adb->query_result($create_table, 0, 1));
 		return $sql;
@@ -312,6 +331,18 @@ class Vtiger_Utils {
             $fp = fopen("logs/$fileName", 'a+');
             fputcsv($fp, $log);
             fclose($fp);
+        }
+    }
+    
+    /**
+     * We should always create and log file inside logs folder as its protected from web-access.
+     * @param type $logFileName
+     * @param type $log
+     */
+    public static function writeLogFile($logFileName, $log) {
+        if ($logFileName && $log) {
+            $logFilePath = self::$logFolder . '/' . $logFileName;
+            file_put_contents($logFilePath, print_r($log, true), FILE_APPEND);
         }
     }
 }

@@ -64,13 +64,14 @@ class Emails_Module_Model extends Vtiger_Module_Model{
 	public function searchEmails($searchValue, $moduleName = false) {
 		global $current_user;
 		$emailsResult = array();
+        $params = array();
 		$db = PearDatabase::getInstance();
 
 		$EmailsModuleModel = Vtiger_Module_Model::getInstance('Emails');
 		$emailSupportedModulesList = $EmailsModuleModel->getEmailRelatedModules();
 		foreach ($emailSupportedModulesList as $module) {
 			if ($module != 'Users' && $module != 'ModComments') {
-                    $activeModules[] = "'".$module."'";
+                    $activeModules[] = $module;
                     $activeModuleModel = Vtiger_Module_Model::getInstance($module);
                     $moduleEmailFields = $activeModuleModel->getFieldsByType('email');
 					foreach ($moduleEmailFields as $fieldName => $fieldModel) {
@@ -82,22 +83,26 @@ class Emails_Module_Model extends Vtiger_Module_Model{
 				}
 
 			if ($moduleName) {
-                $activeModules = array("'".$moduleName."'");
+                $activeModules = array($moduleName);
             }
             
             $query = "SELECT vtiger_emailslookup.crmid, vtiger_emailslookup.setype, vtiger_emailslookup.value, 
                           vtiger_crmentity.label FROM vtiger_emailslookup INNER JOIN vtiger_crmentity on 
                           vtiger_crmentity.crmid = vtiger_emailslookup.crmid AND vtiger_crmentity.deleted=0 WHERE 
-						  vtiger_emailslookup.fieldid in (".implode(',', $fieldIds).") and 
-						  vtiger_emailslookup.setype in (".implode(',', $activeModules).") 
+						  vtiger_emailslookup.fieldid in (".generateQuestionMarks($fieldIds).") and 
+						  vtiger_emailslookup.setype in (".generateQuestionMarks($activeModules).") 
                           and (vtiger_emailslookup.value LIKE ? OR vtiger_crmentity.label LIKE ?)";
-
+            $params = array_merge($params, $fieldIds);
+            $params = array_merge($params, $activeModules);
+            array_push($params, "%$searchValue%");
+            array_push($params, "%$searchValue%");
 			$emailOptOutIds = $this->getEmailOptOutRecordIds();
 			if (!empty($emailOptOutIds)) {
-				$query .= " AND vtiger_emailslookup.crmid NOT IN (".implode(',', $emailOptOutIds).")";
+				$query .= " AND vtiger_emailslookup.crmid NOT IN (". generateQuestionMarks($emailOptOutIds).")";
+                $params = array_merge($params, $emailOptOutIds);
 			}
 
-			$result = $db->pquery($query, array('%'.$searchValue.'%', '%'.$searchValue.'%'));
+			$result = $db->pquery($query, $params);
             $isAdmin = is_admin($current_user);
 			while ($row = $db->fetchByAssoc($result)) {
 				if (!$isAdmin) {
@@ -107,7 +112,7 @@ class Emails_Module_Model extends Vtiger_Module_Model{
 					}
 				}
 			$emailsResult[vtranslate($row['setype'], $row['setype'])][$row['crmid']][] = array('value' => $row['value'],
-																								'label' => decode_html($row['label']).' <b>('.$row['value'].')</b>',
+																								'label' => decode_html($row['label']).' ('.$row['value'].')',
 																								'name' => decode_html($row['label']),);
             }
             
@@ -149,7 +154,7 @@ class Emails_Module_Model extends Vtiger_Module_Model{
                                                     $emailsResult[vtranslate($moduleName, $moduleName)][$row[$moduleInstance->table_index]][]
                                                                             = array('value'	=> $emailFieldValue,
 																					'name'	=> $recordLabel,
-																					'label'	=> $recordLabel . ' <b>('.$emailFieldValue.')</b>');
+																					'label'	=> $recordLabel . ' ('.$emailFieldValue.')');
 
                                             }
                                     }

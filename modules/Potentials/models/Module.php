@@ -61,11 +61,10 @@ class Potentials_Module_Model extends Vtiger_Module_Model {
 			$params[] = $dateFilter['start'];
 			$params[] = $dateFilter['end'];
 		}
-        if(vtws_isRoleBasedPicklist('sales_stage')) {
-            $currentUserModel = Users_Record_Model::getCurrentUserModel();
-            $picklistvaluesmap = getAssignedPicklistValues("sales_stage",$currentUserModel->getRole(), $db);
-            unset($picklistvaluesmap['Closed Won']);unset($picklistvaluesmap['Closed Lost']);
-            foreach($picklistvaluesmap as $picklistValue) $params[] = $picklistValue;
+        $picklistvaluesmap = getAllPickListValues("sales_stage");
+        unset($picklistvaluesmap['Closed Won']);unset($picklistvaluesmap['Closed Lost']);
+        foreach($picklistvaluesmap as $picklistValue) {
+            $params[] = $picklistValue;
         }
         
 		$result = $db->pquery('SELECT COUNT(*) count, vtiger_potential.sales_stage FROM vtiger_potential
@@ -95,12 +94,12 @@ class Potentials_Module_Model extends Vtiger_Module_Model {
 		$db = PearDatabase::getInstance();
 		//TODO need to handle security
 		$params = array();
-        if(vtws_isRoleBasedPicklist('sales_stage')) {
-            $currentUserModel = Users_Record_Model::getCurrentUserModel();
-            $picklistvaluesmap = getAssignedPicklistValues("sales_stage",$currentUserModel->getRole(), $db);
-            foreach($picklistvaluesmap as $picklistValue) $params[] = $picklistValue;
+        $picklistvaluesmap = getAllPickListValues("sales_stage");
+        foreach($picklistvaluesmap as $picklistValue) {
+            $params[] = $picklistValue;
         }
-		$result = $db->pquery('SELECT COUNT(*) AS count, concat(first_name," ",last_name) as last_name, vtiger_potential.sales_stage, vtiger_groups.groupname FROM vtiger_potential
+        
+		$result = $db->pquery('SELECT COUNT(*) AS count, vtiger_users.userlabel as last_name, vtiger_potential.sales_stage, vtiger_groups.groupname FROM vtiger_potential
 						INNER JOIN vtiger_crmentity ON vtiger_potential.potentialid = vtiger_crmentity.crmid AND vtiger_crmentity.deleted = 0
 						LEFT JOIN vtiger_users ON vtiger_users.id=vtiger_crmentity.smownerid AND vtiger_users.status="ACTIVE"
 						LEFT JOIN vtiger_groups ON vtiger_groups.groupid=vtiger_crmentity.smownerid'.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()).'
@@ -131,13 +130,11 @@ class Potentials_Module_Model extends Vtiger_Module_Model {
 		$db = PearDatabase::getInstance();
 		//TODO need to handle security
 		$params = array();
-        if(vtws_isRoleBasedPicklist('sales_stage')) {
-            $currentUserModel = Users_Record_Model::getCurrentUserModel();
-            $picklistvaluesmap = getAssignedPicklistValues("sales_stage",$currentUserModel->getRole(), $db);
-            unset($picklistvaluesmap['Closed Won']);unset($picklistvaluesmap['Closed Lost']);
-            foreach($picklistvaluesmap as $picklistValue) $params[] = $picklistValue;
-        }
-		$result = $db->pquery('SELECT sum(amount) AS amount, concat(first_name," ",last_name) as last_name, vtiger_potential.sales_stage FROM vtiger_potential
+        $picklistvaluesmap = getAllPickListValues("sales_stage");
+        unset($picklistvaluesmap['Closed Won']);unset($picklistvaluesmap['Closed Lost']);
+        foreach($picklistvaluesmap as $picklistValue) $params[] = $picklistValue;
+        
+		$result = $db->pquery('SELECT sum(amount) AS amount, vtiger_users.userlabel as last_name, vtiger_potential.sales_stage FROM vtiger_potential
 						INNER JOIN vtiger_crmentity ON vtiger_potential.potentialid = vtiger_crmentity.crmid
 						INNER JOIN vtiger_users ON vtiger_users.id=vtiger_crmentity.smownerid AND vtiger_users.status="ACTIVE"
 						AND vtiger_crmentity.deleted = 0 '.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()).
@@ -171,7 +168,7 @@ class Potentials_Module_Model extends Vtiger_Module_Model {
 			$params[] = $dateFilter['end'];
 		}
 		
-		$result = $db->pquery('SELECT sum(amount) amount, concat(first_name," ",last_name) as last_name,vtiger_users.id as id,DATE_FORMAT(closingdate, "%d-%m-%Y") AS closingdate  FROM vtiger_potential
+		$result = $db->pquery('SELECT sum(amount) amount, vtiger_users.userlabel as last_name,vtiger_users.id as id,DATE_FORMAT(closingdate, "%d-%m-%Y") AS closingdate  FROM vtiger_potential
 						INNER JOIN vtiger_crmentity ON vtiger_potential.potentialid = vtiger_crmentity.crmid
 						INNER JOIN vtiger_users ON vtiger_users.id=vtiger_crmentity.smownerid AND vtiger_users.status="ACTIVE"
 						AND vtiger_crmentity.deleted = 0 '.Users_Privileges_Model::getNonAdminAccessControlQuery($this->getName()).'WHERE sales_stage = ? '.' '.$dateFilterSql.' GROUP BY smownerid', $params);
@@ -302,10 +299,7 @@ class Potentials_Module_Model extends Vtiger_Module_Model {
 		//$currentUser = Users_Record_Model::getCurrentUserModel();
 		$db = PearDatabase::getInstance();
 
-        if(vtws_isRoleBasedPicklist('sales_stage')) {
-            $currentUserModel = Users_Record_Model::getCurrentUserModel();
-            $picklistValues = getAssignedPicklistValues("sales_stage",$currentUserModel->getRole(), $db);
-        }
+        $picklistValues = getAllPickListValues("sales_stage");
 		$data = array();
 		foreach ($picklistValues as $key => $picklistValue) {
 			$result = $db->pquery('SELECT SUM(amount) AS amount FROM vtiger_potential
@@ -337,11 +331,15 @@ class Potentials_Module_Model extends Vtiger_Module_Model {
 	 */
 	public function getQueryByModuleField($sourceModule, $field, $record, $listQuery) {
 		if (in_array($sourceModule, array('Products', 'Services'))) {
+            		$db = PearDatabase::getInstance();
+		    	$params = array($record);
 			if ($sourceModule === 'Products') {
-				$condition = " vtiger_potential.potentialid NOT IN (SELECT crmid FROM vtiger_seproductsrel WHERE productid = '$record')";
+				$condition = " vtiger_potential.potentialid NOT IN (SELECT crmid FROM vtiger_seproductsrel WHERE productid = ?)";
 			} elseif ($sourceModule === 'Services') {
-				$condition = " vtiger_potential.potentialid NOT IN (SELECT relcrmid FROM vtiger_crmentityrel WHERE crmid = '$record' UNION SELECT crmid FROM vtiger_crmentityrel WHERE relcrmid = '$record') ";
+				$condition = " vtiger_potential.potentialid NOT IN (SELECT relcrmid FROM vtiger_crmentityrel WHERE crmid = ? UNION SELECT crmid FROM vtiger_crmentityrel WHERE relcrmid = ?) ";
+                		$params = array($record, $record);
 			}
+			$condition = $db->convert2Sql($condition, $params);
 
 			$pos = stripos($listQuery, 'where');
 			if ($pos) {
@@ -362,11 +360,14 @@ class Potentials_Module_Model extends Vtiger_Module_Model {
 	 * @return <String> - query
 	 */
 	public function getSearchRecordsQuery($searchValue,$searchFields, $parentId=false, $parentModule=false) {
+        $db = PearDatabase::getInstance();
 		if($parentId && in_array($parentModule, array('Accounts', 'Contacts'))) {
 			$query = "SELECT ".implode(',',$searchFields)." FROM vtiger_crmentity
 						INNER JOIN vtiger_potential ON vtiger_potential.potentialid = vtiger_crmentity.crmid
-						WHERE deleted = 0 AND vtiger_potential.related_to = $parentId AND label like '%$searchValue%'";
-			return $query;
+						WHERE deleted = 0 AND vtiger_potential.related_to = ? AND label like ?";
+			$params = array($parentId, "%$searchValue%");
+            $returnQuery = $db->convert2Sql($query, $params);
+            return $returnQuery;
 		}
 		return parent::getSearchRecordsQuery($parentId, $parentModule);
 	}

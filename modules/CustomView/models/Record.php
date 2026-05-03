@@ -232,9 +232,10 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 		}
 
 		if($skipRecords && !empty($skipRecords) && is_array($skipRecords) && count($skipRecords) > 0) {
-			$listQuery .= ' AND '.$baseTableName.'.'.$baseTableId.' NOT IN ('. implode(',', $skipRecords) .')';
+			$listQuery .= ' AND '.$baseTableName.'.'.$baseTableId.' NOT IN ('. generateQuestionMarks($skipRecords) .')';
+            $params = array($skipRecords);
 		}
-		$result = $db->query($listQuery);
+		$result = $db->pquery($listQuery, $params);
 		$noOfRecords = $db->num_rows($result);
 		$recordIds = array();
 		for($i=0; $i<$noOfRecords; ++$i) {
@@ -409,7 +410,18 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 									$val[$x] = DateTimeField::convertToDBFormat(
 											trim($temp_val[$x]));
 								} elseif($fieldType == 'datetime') {
-									$val[$x] = $date->getDBInsertDateTimeValue();
+                                                                    if ($advFilterComparator == 'bw'  || $advFilterComparator == 'custom' ) {
+                                                                        $dates = explode(' ', $temp_val[$x]);
+                                                                        if(empty($dates[1])) {			
+                                                                            if ($x == '0') {
+                                                                                $filterValue = trim($temp_val[$x]). ' 00:00:00';
+                                                                            } elseif ($x == '1') {
+                                                                                $filterValue = trim($temp_val[$x]). ' 23:59:59';
+                                                                            }
+                                                                        }
+                                                                        $date = new DateTimeField($filterValue);
+                                                                     }
+                                                                    $val[$x] = $date->getDBInsertDateTimeValue();
 								} else {
 									$val[$x] = $date->getDBInsertTimeValue();
 								}
@@ -747,7 +759,7 @@ class CustomView_Record_Model extends Vtiger_Base_Model {
 	}
 
 	public function getToggleDefaultUrl() {
-		return 'index.php?module=CustomView&action=SaveAjax&record='.$this->getId();
+		return 'index.php?module=CustomView&source_module='.$this->getModule()->get('name').'&action=SaveAjax&record='.$this->getId();
 	}
 
 	/**

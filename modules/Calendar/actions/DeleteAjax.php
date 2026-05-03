@@ -10,26 +10,32 @@
 
 class Calendar_DeleteAjax_Action extends Vtiger_DeleteAjax_Action {
 	
+	public function requiresPermission(Vtiger_Request $request){
+		$permissions = parent::requiresPermission($request);
+		$moduleParameter = $request->get('sourceModule');
+		if (!$moduleParameter) {
+			$moduleParameter = 'module';
+		}else{
+			$moduleParameter = 'sourceModule';
+		}
+		$permissions[] = array('module_parameter' => $moduleParameter, 'action' => 'Delete', 'record_parameter'=>'record');
+		return $permissions;
+	}
+	
 	function checkPermission(Vtiger_Request $request) {
 		$sourceModule = $request->get('sourceModule');
-		if (!$sourceModule) {
-			$sourceModule = $request->getModule();
-		}
 		$record = $request->get('record');
-
-		$currentUserPrivilegesModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
-		if (!$currentUserPrivilegesModel->isPermitted($sourceModule, 'Delete', $record)) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
-		}
-
+		parent::checkPermission($request);
+		
 		if ($record) {
 			$activityModulesList = array('Calendar', 'Events');
 			$recordEntityName = getSalesEntityType($record);
 
-			if (!in_array($recordEntityName, $activityModulesList) || !in_array($sourceModule, $activityModulesList)) {
+		if (!in_array($recordEntityName, $activityModulesList)  || (!empty($sourceModule) && !in_array($sourceModule, $activityModulesList))) {
 				throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
-			}
 		}
+		}
+		return true;
 	}
 	
 	public function process(Vtiger_Request $request) {

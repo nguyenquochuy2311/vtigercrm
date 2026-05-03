@@ -9,6 +9,19 @@
  *************************************************************************************/
 
 class Vtiger_RelatedList_View extends Vtiger_Index_View {
+	
+	public function requiresPermission(Vtiger_Request $request){
+		$permissions = parent::requiresPermission($request);
+		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView', 'record_parameter' => 'record');
+		$permissions[] = array('module_parameter' => 'relatedModule', 'action' => 'DetailView');
+		
+		return $permissions;
+	}
+	
+	public function checkPermission(Vtiger_Request $request) {
+		return parent::checkPermission($request);
+	}
+	
 	function process(Vtiger_Request $request) {
 		$moduleName = $request->getModule();
 		$relatedModuleName = $request->get('relatedModule');
@@ -17,7 +30,6 @@ class Vtiger_RelatedList_View extends Vtiger_Index_View {
 
 		$relatedModuleModel = Vtiger_Module_Model::getInstance($relatedModuleName);
 		$moduleFields = $relatedModuleModel->getFields();
-
         $searchParams = $request->get('search_params');
         
         if(empty($searchParams)) {
@@ -96,9 +108,9 @@ class Vtiger_RelatedList_View extends Vtiger_Index_View {
 		$viewer->assign('RELATED_MODULE', $relatedModuleModel);
 		$viewer->assign('RELATED_ENTIRES_COUNT', $noOfEntries);
 		$viewer->assign('RELATION_FIELD', $relationField);
-		$selectedMenuCategory = $request->get('app');
-		if(!empty($selectedMenuCategory)) {
-			$viewer->assign('SELECTED_MENU_CATEGORY', $selectedMenuCategory);
+		$appName = $request->get('app');
+		if(!empty($appName)){
+			$viewer->assign('SELECTED_MENU_CATEGORY',$appName);
 		}
 
 		if (PerformancePrefs::getBoolean('LISTVIEW_COMPUTE_PAGE_COUNT', false)) {

@@ -275,7 +275,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		if($subordinateRoleUsers) {
 			foreach($subordinateRoleUsers as $role=>$users) {
 				foreach($users as $user) {
-					$subordinateUsers[$user] = $privilegesModel->get('first_name').' '.$privilegesModel->get('last_name');
+					$subordinateUsers[$user] = $privilegesModel->get('userlabel');
 				}
 			}
 		}
@@ -378,6 +378,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 	 * @return <Array> list of Image names and paths
 	 */
 	public function getImageDetails() {
+        global $site_URL;
 		$db = PearDatabase::getInstance();
 
 		$imageDetails = array();
@@ -394,15 +395,20 @@ class Users_Record_Model extends Vtiger_Record_Model {
 			$imageId = $db->query_result($result, 0, 'attachmentsid');
 			$imagePath = $db->query_result($result, 0, 'path');
 			$imageName = $db->query_result($result, 0, 'name');
+            $url = \Vtiger_Functions::getFilePublicURL($imageId, $imageName);
 
 			//decode_html - added to handle UTF-8 characters in file names
 			$imageOriginalName = urlencode(decode_html($imageName));
+            if($url) {
+                $url = $site_URL.$url;
+            }
 
 			$imageDetails[] = array(
 					'id' => $imageId,
 					'orgname' => $imageOriginalName,
 					'path' => $imagePath.$imageId,
-					'name' => $imageName
+					'name' => $imageName,
+                    'url'  => $url
 			);
 		}
 		return $imageDetails;
@@ -452,7 +458,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$currentUserRoleModel = Settings_Roles_Record_Model::getInstanceById($this->getRole());
 		$childernRoles = $currentUserRoleModel->getAllChildren();
 		$users = $this->getAllUsersOnRoles($childernRoles);
-        $currentUserDetail = array($this->getId() => $this->get('first_name').' '.$this->get('last_name'));
+        $currentUserDetail = array($this->getId() => $this->get('userlabel'));
         $users = $currentUserDetail + $users;
         return $users;
 	}
@@ -482,14 +488,12 @@ class Users_Record_Model extends Vtiger_Record_Model {
 			for($i=0; $i<$noOfUsers; ++$i) {
 				$userIds[] = $db->query_result($result, $i, 'userid');
 			}
-			$query = 'SELECT id, first_name, last_name FROM vtiger_users WHERE status = ? AND id IN ('.  generateQuestionMarks($userIds).')';
+			$query = 'SELECT id, userlabel FROM vtiger_users WHERE status = ? AND id IN ('.  generateQuestionMarks($userIds).')';
 			$result = $db->pquery($query, array('ACTIVE', $userIds));
 			$noOfUsers = $db->num_rows($result);
 			for($j=0; $j<$noOfUsers; ++$j) {
 				$userId = $db->query_result($result, $j,'id');
-				$firstName = $db->query_result($result, $j, 'first_name');
-				$lastName = $db->query_result($result, $j, 'last_name');
-				$subUsers[$userId] = $firstName .' '.$lastName;
+				$subUsers[$userId] = $db->query_result($result, $j, 'userlabel');
 			}
 		}
 		return $subUsers;
@@ -500,13 +504,20 @@ class Users_Record_Model extends Vtiger_Record_Model {
 	 * @return <Array>
 	 */
 	public function getAccessibleGroups($private="",$module = false) {
+        global $default_charset;
 		//TODO:Remove dependence on $_REQUEST for the module name in the below API
         $accessibleGroups = Vtiger_Cache::get('vtiger-'.$private, 'accessiblegroups');
         if(!$accessibleGroups){
             $accessibleGroups = get_group_array(false, "ACTIVE", "", $private,$module);
             Vtiger_Cache::set('vtiger-'.$private, 'accessiblegroups',$accessibleGroups);
         }
-		return $accessibleGroups;
+        if (!empty($accessibleGroups)) {
+            foreach ($accessibleGroups as $groupId => $groupName) {
+                $accessibleGroups[$groupId] = html_entity_decode($groupName, ENT_QUOTES, $default_charset);
+            }
+        }
+
+        return $accessibleGroups;
 	}
 
 	/**
@@ -735,8 +746,8 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		$noOfUsers = $db->num_rows($result);
 		$users = array();
 		if($noOfUsers > 0) {
-			$focus = new Users();
 			for($i=0; $i<$noOfUsers; ++$i) {
+                $focus = new Users();
 				$userId = $db->query_result($result, $i, 'id');
 				$focus->id = $userId;
 				$focus->retrieve_entity_info($userId, 'Users');
@@ -759,21 +770,6 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		return false;
     }
 	
-	/**
-	 * Function to get the user hash
-	 * @param type $userId
-	 * @return boolean
-	 */
-	public function getUserHash() {
-		$db = PearDatabase::getInstance();
-		$query = 'SELECT user_hash FROM vtiger_users WHERE id = ?';
-		$result = $db->pquery($query, array($this->getId()));
-		if($db->num_rows($result) > 0){
-			return $db->query_result($result, 0, 'user_hash');
-			
-		}
-	}
-        
 	/*
 	 * Function to delete user permanemtly from CRM and
 	 * assign all record which are assigned to that user
@@ -809,7 +805,12 @@ class Users_Record_Model extends Vtiger_Record_Model {
 	 * @return <String> - Entity Display Name for the record
 	 */
 	public function getDisplayName() {
-		return getFullNameFromArray($this->getModuleName(),$this->getData());
+		$userLabel = $this->get('userlabel');
+
+		if (!$userLabel) {
+			$userLabel = getFullNameFromArray($this->getModuleName(),$this->getData());
+		}
+		return $userLabel;
 	}
 
 	/**

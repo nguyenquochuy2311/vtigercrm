@@ -170,7 +170,7 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 	public function getAddRelationLinks() {
 		$relationModel = $this->getRelationModel();
 		$addLinkModel = array();
-
+		$addLinkList = array();
 		if(!$relationModel->isAddActionSupported()) {
 			return $addLinkModel;
 		}
@@ -250,6 +250,7 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 	public function getEntries($pagingModel) {
 		$db = PearDatabase::getInstance();
 		$parentModule = $this->getParentRecordModel()->getModule();
+                $parentModuleName = $parentModule->get('name');
 		$relationModule = $this->getRelationModel()->getRelationModuleModel();
 		$relationModuleName = $relationModule->get('name');
 		$relatedColumnFields = $relationModule->getConfigureRelatedListFields();
@@ -288,7 +289,12 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 				}
 			}
 			$whereQuerySplit = split("WHERE", $queryGenerator->getWhereClause());
-			$query.=" AND " . $whereQuerySplit[1];
+			if($parentModuleName == 'Accounts' && $relationModuleName == 'Calendar' && (stripos($query, "GROUP BY") !== false)) {
+                            $splitQuery = split('GROUP BY', $query);
+                            $query = $splitQuery[0]." AND ".$whereQuerySplit[1].' GROUP BY '.$splitQuery[1];
+                        } else {
+                            $query.=" AND " . $whereQuerySplit[1];
+                        }
 		}
 
 		$startIndex = $pagingModel->getStartIndex();
@@ -312,7 +318,7 @@ class Vtiger_RelationListView_Model extends Vtiger_Base_Model {
 				$query = $selectAndFromClause.' WHERE '.$whereCondition;
 				$query .= ' ORDER BY '.$qualifiedOrderBy.'.label '.$sortOrder;
 			} elseif($orderByFieldModuleModel && $orderByFieldModuleModel->isOwnerField()) {
-				 $query .= ' ORDER BY COALESCE(CONCAT(vtiger_users.first_name,vtiger_users.last_name),vtiger_groups.groupname) '.$sortOrder;
+				 $query .= ' ORDER BY COALESCE(vtiger_users.userlabel,vtiger_groups.groupname) '.$sortOrder;
 			} else{
 				// Qualify the the column name with table to remove ambugity
 				$qualifiedOrderBy = $orderBy;

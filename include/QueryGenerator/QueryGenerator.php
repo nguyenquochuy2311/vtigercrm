@@ -799,7 +799,7 @@ class QueryGenerator {
 						$startDateValue = explode(' ', $values[0]);
 						$endDateValue = explode(' ', $values[1]);
 						if(count($startDateValue) == 2 && count($endDateValue) == 2) {
-							$fieldSql .= " CAST(CONCAT($dateFieldColumnName,' ',$timeFieldColumnName) AS DATETIME) $valueSql";
+							$fieldSql .= " CONCAT($dateFieldColumnName,' ',$timeFieldColumnName) $valueSql";
 						} else {
 							$fieldSql .= "$dateFieldColumnName $valueSql";
 						}
@@ -809,7 +809,7 @@ class QueryGenerator {
 						}
 						$values = explode(' ', $value);
 						if(count($values) == 2) {
-								$fieldSql .= "$fieldGlue CAST(CONCAT($dateFieldColumnName,' ',$timeFieldColumnName) AS DATETIME) $valueSql ";
+								$fieldSql .= "$fieldGlue CONCAT($dateFieldColumnName,' ',$timeFieldColumnName) $valueSql ";
 						} else {
 								$fieldSql .= "$fieldGlue $dateFieldColumnName $valueSql";
 						}
@@ -1154,7 +1154,7 @@ class QueryGenerator {
 				$value = "'$value'";
 			}
 
-			if($this->isNumericType($field->getFieldDataType()) && empty($value)) {
+			if(($this->isNumericType($field->getFieldDataType())) && empty($value)) {				
 				$value = '0';
 			}
 			$sql[] = "$sqlOperator $value";
@@ -1258,7 +1258,7 @@ class QueryGenerator {
 		if(is_string($value)) {
 			$value = trim($value);
 		} elseif(is_array($value)) {
-			$value = array_map(trim, $value);
+			$value = array_map('trim', $value);
 		}
 		return array('name'=>$fieldname,'value'=>$value,'operator'=>$operator);
 	}
@@ -1418,19 +1418,19 @@ class QueryGenerator {
 
 	public function getDashBoardConditionList() {
 		if(isset($_REQUEST['leadsource'])) {
-			$leadSource = $_REQUEST['leadsource'];
+			$leadSource = vtlib_purify($_REQUEST['leadsource']);
 		}
 		if(isset($_REQUEST['date_closed'])) {
-			$dateClosed = $_REQUEST['date_closed'];
+			$dateClosed = vtlib_purify($_REQUEST['date_closed']);
 		}
 		if(isset($_REQUEST['sales_stage'])) {
-			$salesStage = $_REQUEST['sales_stage'];
+			$salesStage = vtlib_purify($_REQUEST['sales_stage']);
 		}
 		if(isset($_REQUEST['closingdate_start'])) {
-			$dateClosedStart = $_REQUEST['closingdate_start'];
+			$dateClosedStart = vtlib_purify($_REQUEST['closingdate_start']);
 		}
 		if(isset($_REQUEST['closingdate_end'])) {
-			$dateClosedEnd = $_REQUEST['closingdate_end'];
+			$dateClosedEnd = vtlib_purify($_REQUEST['closingdate_end']);
 		}
 		if(isset($_REQUEST['owner'])) {
 			$owner = vtlib_purify($_REQUEST['owner']);

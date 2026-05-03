@@ -180,14 +180,16 @@ class Settings_Leads_Mapping_Model extends Settings_Vtiger_Module_Model {
 			$insertQuery = 'INSERT INTO vtiger_convertleadmapping(leadfid, accountfid, contactfid, potentialfid) VALUES ';
 
 			$count = count($createMappingsList);
+            $params = array();
 			for ($i=0; $i<$count; $i++) {
 				$mappingDetails = $createMappingsList[$i];
-				$insertQuery .= '('. $mappingDetails['lead'] .', '. $mappingDetails['account'] .', '. $mappingDetails['contact'] .', '. $mappingDetails['potential'] .')';
+				$insertQuery .= '(?, ?, ?, ?)';
+                array_push($params, $mappingDetails['lead'], $mappingDetails['account'], $mappingDetails['contact'], $mappingDetails['potential']);
 				if ($i !== $count-1) {
 					$insertQuery .= ', ';
 				}
 			}
-			$db->pquery($insertQuery, array());
+			$db->pquery($insertQuery, $params);
 		}
 
 		if ($updateMappingsList) {
@@ -195,20 +197,32 @@ class Settings_Leads_Mapping_Model extends Settings_Vtiger_Module_Model {
 			$accountQuery	= ' accountfid = CASE ';
 			$contactQuery	= ' contactfid = CASE ';
 			$potentialQuery	= ' potentialfid = CASE ';
-
+			$paramArray = $leadParamArray = $accountParamArray = $contactParamArray = $potentialParamArray = array();
 			foreach ($updateMappingsList as $mappingDetails) {
-				$mappingId		 = $mappingDetails['mappingId'];
-				$leadQuery		.= " WHEN cfmid = $mappingId THEN ". $mappingDetails['lead'];
-				$accountQuery	.= " WHEN cfmid = $mappingId THEN ". $mappingDetails['account'];
-				$contactQuery	.= " WHEN cfmid = $mappingId THEN ". $mappingDetails['contact'];
-				$potentialQuery	.= " WHEN cfmid = $mappingId THEN ". $mappingDetails['potential'];
+				$mappingId = $mappingDetails['mappingId'];
+				$leadQuery		.= ' WHEN cfmid = ? THEN ? ';
+				array_push($leadParamArray, $mappingId);
+				array_push($leadParamArray, $mappingDetails['lead']);
+				$accountQuery	.= ' WHEN cfmid = ? THEN ? ';
+				array_push($accountParamArray, $mappingId);
+				array_push($accountParamArray, $mappingDetails['account']);
+				$contactQuery	.= ' WHEN cfmid = ? THEN ? ';
+				array_push($contactParamArray, $mappingId);
+				array_push($contactParamArray, $mappingDetails['contact']);
+				$potentialQuery	.= ' WHEN cfmid = ? THEN ? ';
+				array_push($potentialParamArray, $mappingId);
+				array_push($potentialParamArray, $mappingDetails['potential']);
 			}
 			$leadQuery		.= ' ELSE leadfid END ';
 			$accountQuery	.= ' ELSE accountfid END ';
 			$contactQuery	.= ' ELSE contactfid END ';
 			$potentialQuery .= ' ELSE potentialfid END ';
-
-			$db->pquery("UPDATE vtiger_convertleadmapping $leadQuery, $accountQuery, $contactQuery, $potentialQuery WHERE editable = ?", array(1));
+			$paramArray = array_merge($paramArray, $leadParamArray);
+			$paramArray = array_merge($paramArray, $accountParamArray);
+			$paramArray = array_merge($paramArray, $contactParamArray);
+			$paramArray = array_merge($paramArray, $potentialParamArray);
+			array_push($paramArray, 1);
+			$db->pquery("UPDATE vtiger_convertleadmapping $leadQuery, $accountQuery, $contactQuery, $potentialQuery WHERE editable = ?", $paramArray);
 		}
 	}
 

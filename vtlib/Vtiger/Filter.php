@@ -47,8 +47,8 @@ class Vtiger_Filter {
 	 * @access private
 	 */
 	function initialize($valuemap, $moduleInstance=false) {
-		$this->id = $valuemap[cvid];
-		$this->name= $valuemap[viewname];
+		$this->id = $valuemap['cvid'];
+		$this->name= $valuemap['viewname'];
 		$this->module=$moduleInstance? $moduleInstance: Vtiger_Module::getInstance($valuemap[tabid]);
 	}
 
@@ -126,7 +126,7 @@ class Vtiger_Filter {
 	 * @access private
 	 */
 	function __getColumnValue($fieldInstance) {
-		$tod = split('~', $fieldInstance->typeofdata);
+		$tod = preg_split('/~/', $fieldInstance->typeofdata);
 		$displayinfo = $fieldInstance->getModuleName().'_'.str_replace(' ','_',$fieldInstance->label).':'.$tod[0];
 		$cvcolvalue = "$fieldInstance->table:$fieldInstance->column:$fieldInstance->name:$displayinfo";
 		return $cvcolvalue;
@@ -281,9 +281,9 @@ class Vtiger_Filter {
 				$cvids[] = $adb->query_result($cvidres, $index, 'cvid');
 			}
 			if(!empty($cvids)) {
-				$adb->pquery("DELETE FROM vtiger_cvadvfilter WHERE cvid  IN (" . implode(',', $cvids) . ")", array());
-				$adb->pquery("DELETE FROM vtiger_cvcolumnlist WHERE cvid IN (" . implode(',', $cvids) . ")", array());
-				$adb->pquery("DELETE FROM vtiger_customview WHERE cvid   IN (" . implode(',', $cvids) . ")", array());
+				$adb->pquery("DELETE FROM vtiger_cvadvfilter WHERE cvid  IN (" . generateQuestionMarks($cvids) . ")", array($cvids));
+				$adb->pquery("DELETE FROM vtiger_cvcolumnlist WHERE cvid IN (" . generateQuestionMarks($cvids) . ")", array($cvids));
+				$adb->pquery("DELETE FROM vtiger_customview WHERE cvid   IN (" . generateQuestionMarks($cvids) . ")", array($cvids));
 			}
 		}
 	}

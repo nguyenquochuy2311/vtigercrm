@@ -864,7 +864,7 @@ function saveInventoryProductDetails(&$focus, $module, $update_prod_stock='false
 	$adb->pquery('INSERT INTO vtiger_inventorychargesrel VALUES (?, ?)', array($focus->id, Zend_Json::encode($chargesInfo)));
 
 	$updatequery .= " s_h_percent=?";
-	array_push($updateparams, $shipping_handling_charge);
+	array_push($updateparams, vtlib_purify($_REQUEST['s_h_percent']));
 
 	//$id_array = Array('PurchaseOrder'=>'purchaseorderid','SalesOrder'=>'salesorderid','Quotes'=>'quoteid','Invoice'=>'invoiceid');
 	//Added where condition to which entity we want to update these values
@@ -942,6 +942,7 @@ function getInventoryProductTaxValue($id, $productId, $taxName, $lineItemId = 0)
 	global $log, $adb;
 	$log->debug("Entering into function getInventoryProductTaxValue($id, $productId, $taxName, $lineItemId).");
 
+    $taxName = Vtiger_Util_Helper::validateStringForSql($taxName);
 	$query = "SELECT $taxName FROM vtiger_inventoryproductrel WHERE id = ? AND productid = ?";
 	$params = array($id, $productId);
 
@@ -971,6 +972,7 @@ function getInventorySHTaxPercent($id, $taxname)
 	global $log, $adb;
 	$log->debug("Entering into function getInventorySHTaxPercent($id, $taxname)");
 
+    $taxname = $taxname;
 	$res = $adb->pquery("select $taxname from vtiger_inventoryshippingrel where id= ?", array($id));
 	$taxpercentage = $adb->query_result($res,0,$taxname);
 
@@ -1310,9 +1312,10 @@ function createRecords($obj) {
 	$moduleFields = $moduleMeta->getModuleFields();
 	$focus = CRMEntity::getInstance($moduleName);
 
+    $params = array();
 	$tableName = Import_Utils_Helper::getDbTableName($obj->user);
-	$sql = 'SELECT * FROM ' . $tableName . ' WHERE status = '. Import_Data_Action::$IMPORT_RECORD_NONE .' GROUP BY subject';
-
+	$sql = 'SELECT * FROM ' . $tableName . ' WHERE status = ? GROUP BY subject';
+    $params[] = Import_Data_Action::$IMPORT_RECORD_NONE;
 	if($obj->batchImport) {
 		$importBatchLimit = getImportBatchLimit();
 		$sql .= ' LIMIT '. $importBatchLimit;
@@ -1321,7 +1324,7 @@ function createRecords($obj) {
 		$pagingLimit = $configReader->get('importPagingLimit');
 		$sql .= ' LIMIT '.$pagingLimit;
 	}
-	$result = $adb->query($sql);
+	$result = $adb->pquery($sql, $params);
 	$numberOfRecords = $adb->num_rows($result);
 
 	if ($numberOfRecords <= 0) {
@@ -1341,8 +1344,10 @@ function createRecords($obj) {
 		$subject = $row['subject'];
 		$subject = str_replace("\\", "\\\\", $subject);
 		$subject = str_replace('"', '""', $subject);
-		$sql = "SELECT * FROM $tableName WHERE status = ".Import_Data_Action::$IMPORT_RECORD_NONE." AND subject = '$subject'";
-		$subjectResult = $adb->query($sql);
+		$sql = "SELECT * FROM $tableName WHERE status = ? AND subject = ?";
+        $params = array();
+        array_push($params, Import_Data_Action::$IMPORT_RECORD_NONE, $subject);
+		$subjectResult = $adb->pquery($sql, $params);
 		$count = $adb->num_rows($subjectResult);
 		$subjectRowIDs = array();
 		for ($j = 0; $j < $count; ++$j) {
@@ -1518,7 +1523,7 @@ function importRecord($obj, $inventoryFieldData, $lineItemDetails) {
 function getImportStatusCount($obj) {
 	global $adb;
 	$tableName = Import_Utils_Helper::getDbTableName($obj->user);
-	$result = $adb->query('SELECT status FROM '.$tableName. ' GROUP BY subject');
+	$result = $adb->pquery('SELECT status FROM '.$tableName. ' GROUP BY subject', array());
 
 	$statusCount = array('TOTAL' => 0, 'IMPORTED' => 0, 'FAILED' => 0, 'PENDING' => 0,
 			'CREATED' => 0, 'SKIPPED' => 0, 'UPDATED' => 0, 'MERGED' => 0);
@@ -1567,8 +1572,7 @@ function undoLastImport($obj, $user) {
 		$viewer->view('OperationNotPermitted.tpl', 'Vtiger');
 		exit;
 	}
-	$result = $adb->query("SELECT recordid FROM $dbTableName WHERE status = ". Import_Data_Controller::$IMPORT_RECORD_CREATED
-			." AND recordid IS NOT NULL GROUP BY subject");
+	$result = $adb->pquery("SELECT recordid FROM $dbTableName WHERE status = ? AND recordid IS NOT NULL GROUP BY subject", array(Import_Data_Controller::$IMPORT_RECORD_CREATED));
 	$noOfRecords = $adb->num_rows($result);
 	$noOfRecordsDeleted = 0;
 	for($i=0; $i<$noOfRecords; ++$i) {

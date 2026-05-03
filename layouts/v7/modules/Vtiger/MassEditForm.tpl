@@ -10,6 +10,7 @@
  ********************************************************************************/
 -->*}
 {strip}
+{assign var="MASS_EDITION_MODE" value=true}
 <div id="massEditContainer" class='fc-overlay-modal modal-content'>
     <form class="form-horizontal" id="massEdit" name="MassEdit" method="post" action="index.php">
         <input type="hidden" name="module" value="{$MODULE}" />
@@ -17,7 +18,8 @@
             <input type="hidden" name="viewname" value="{$CVID}" />
             <input type="hidden" name="selected_ids" value={ZEND_JSON::encode($SELECTED_IDS)}>
             <input type="hidden" name="excluded_ids" value={ZEND_JSON::encode($EXCLUDED_IDS)}>
-            <input type="hidden" name="search_params" value='{ZEND_JSON::encode($SEARCH_PARAMS)}' />
+            <input type="hidden" name="tag_params" value={ZEND_JSON::encode($TAG_PARAMS)}>
+            <input type="hidden" name="search_params" value='{Vtiger_Util_Helper::toSafeHTML(ZEND_JSON::encode($SEARCH_PARAMS))}' />
             <div>
                 <header class="overlayHeader" style='flex:0 0 auto;'>
                     {assign var=TITLE value="{vtranslate('LBL_MASS_EDITING',$MODULE)}"}

@@ -253,19 +253,19 @@ class ReportRunQueryPlanner {
 					}
 				}
 			}
-			if (count($newAdvFilterList[$i])) {
+			if (!empty($newAdvFilterList) && (count($newAdvFilterList[$i]))) {
 				$newAdvFilterList[$i]['condition'] = $advfilterlist[$i]['condition'];
 			}
 			if (isset($newAdvFilterList[$i]['columns'][$k - 1])) {
 				$newAdvFilterList[$i]['columns'][$k - 1]['column_condition'] = '';
 			}
-			if (count($newAdvFilterList[$i]) != 2) {
+			if (!empty($newAdvFilterList) && (count($newAdvFilterList[$i]) != 2)) {
 				unset($newAdvFilterList[$i]);
 			}
 		}
 		end($newAdvFilterList);
 		$lastConditionsGrpKey = key($newAdvFilterList);
-		if (count($newAdvFilterList[$lastConditionsGrpKey])) {
+		if (!empty($newAdvFilterList) && (count($newAdvFilterList[$lastConditionsGrpKey]))) {
 			$newAdvFilterList[$lastConditionsGrpKey]['condition'] = '';
 		}
 
@@ -325,15 +325,18 @@ class ReportRun extends CRMEntity {
 	 *  To ensure single-instance is present for $reportid
 	 *  as we optimize using ReportRunPlanner and setup temporary tables.
 	 */
+        function __construct($reportid) {
+            $oReport = new Reports($reportid);
+            $this->reportid = $reportid;
+            $this->primarymodule = $oReport->primodule;
+            $this->secondarymodule = $oReport->secmodule;
+            $this->reporttype = $oReport->reporttype;
+            $this->reportname = $oReport->reportname;
+            $this->queryPlanner = new ReportRunQueryPlanner();
+            $this->queryPlanner->reportRun = $this;
+        }
 	function ReportRun($reportid) {
-		$oReport = new Reports($reportid);
-		$this->reportid = $reportid;
-		$this->primarymodule = $oReport->primodule;
-		$this->secondarymodule = $oReport->secmodule;
-		$this->reporttype = $oReport->reporttype;
-		$this->reportname = $oReport->reportname;
-		$this->queryPlanner = new ReportRunQueryPlanner();
-		$this->queryPlanner->reportRun = $this;
+            self::__construct($reportid);
 	}
 
 	public static function getInstance($reportid) {
@@ -378,7 +381,7 @@ class ReportRun extends CRMEntity {
             $selectedModuleFields[$module][] = $fieldname;
 			$inventory_fields = array('serviceid');
 			$inventory_modules = getInventoryModules();
-			if (sizeof($permitted_fields[$module]) == 0 && $is_admin == false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1) {
+			if (empty($permitted_fields[$module]) && $is_admin == false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1) {
 				$permitted_fields[$module] = $this->getaccesfield($module);
 			}
 			if (in_array($module, $inventory_modules)) {
@@ -538,7 +541,7 @@ class ReportRun extends CRMEntity {
 					if ($module == 'Emails') {
 						$columnSQL = "YEAR(cast(concat($emailTableName.date_start,'  ',$emailTableName.time_start) as DATE)) AS Emails_Date_Sent_Year";
 					} else {
-						$columnSQL = "YEAR(cast(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start) as DATETIME)) AS Calendar_Start_Date_and_Time_Year";
+						$columnSQL = "YEAR(concat(vtiger_activity.date_start,' ',vtiger_activity.time_start)) AS Calendar_Start_Date_and_Time_Year";
 					}
 				} else if ($selectedfields[0] == "vtiger_crmentity" . $this->primarymodule) {
 					$columnSQL = "YEAR(vtiger_crmentity." . $selectedfields[1] . ") AS '" . decode_html($header_label) . "_Year'";
@@ -551,7 +554,7 @@ class ReportRun extends CRMEntity {
 					if ($module == 'Emails') {
 						$columnSQL = "MONTHNAME(cast(concat($emailTableName.date_start,'  ',$emailTableName.time_start) as DATE)) AS Emails_Date_Sent_Month";
 					} else {
-						$columnSQL = "MONTHNAME(cast(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start) as DATETIME)) AS Calendar_Start_Date_and_Time_Month";
+						$columnSQL = "MONTHNAME(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start)) AS Calendar_Start_Date_and_Time_Month";
 					}
 				} else if ($selectedfields[0] == "vtiger_crmentity" . $this->primarymodule) {
 					$columnSQL = "MONTHNAME(vtiger_crmentity." . $selectedfields[1] . ") AS '" . decode_html($header_label) . "_Month'";
@@ -564,7 +567,7 @@ class ReportRun extends CRMEntity {
 					if ($module == 'Emails') {
 						$columnSQL = "CONCAT('Week ',WEEK(cast(concat($emailTableName.date_start,'  ',$emailTableName.time_start) as DATE), 1)) AS Emails_Date_Sent_Week";
 					} else {
-						$columnSQL = "CONCAT('Week ',WEEK(cast(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start) as DATETIME), 1)) AS Calendar_Start_Date_and_Time_Week";
+						$columnSQL = "CONCAT('Week ',WEEK(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start), 1)) AS Calendar_Start_Date_and_Time_Week";
 					}
 				} else if ($selectedfields[0] == "vtiger_crmentity" . $this->primarymodule) {
 					$columnSQL = "CONCAT('Week ',WEEK(vtiger_crmentity." . $selectedfields[1] . ", 1)) AS '" . decode_html($header_label) . "_Week'";
@@ -577,7 +580,7 @@ class ReportRun extends CRMEntity {
 					if ($module == 'Emails') {
 						$columnSQL = "date_format(cast(concat($emailTableName.date_start,'  ',$emailTableName.time_start) as DATE), '%M %Y') AS Emails_Date_Sent_Month";
 					} else {
-						$columnSQL = "date_format(cast(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start) as DATETIME), '%M %Y') AS Calendar_Start_Date_and_Time_Month";
+						$columnSQL = "date_format(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start), '%M %Y') AS Calendar_Start_Date_and_Time_Month";
 					}
 				} else if ($selectedfields[0] == "vtiger_crmentity" . $this->primarymodule) {
 					$columnSQL = "date_format(vtiger_crmentity." . $selectedfields[1] . ", '%M %Y') AS '" . decode_html($header_label) . "_Month'";
@@ -590,7 +593,7 @@ class ReportRun extends CRMEntity {
 					if ($module == 'Emails') {
 						$columnSQL = "cast(concat($emailTableName.date_start,'  ',$emailTableName.time_start) as DATE) AS Emails_Date_Sent";
 					} else {
-						$columnSQL = "cast(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start) as DATETIME) AS Calendar_Start_Date_and_Time";
+						$columnSQL = "concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start) AS Calendar_Start_Date_and_Time";
 					}
 				} else if ($selectedfields[0] == "vtiger_crmentity" . $this->primarymodule) {
 					$columnSQL = "vtiger_crmentity." . $selectedfields[1] . " AS '" . decode_html($header_label) . "'";
@@ -605,7 +608,7 @@ class ReportRun extends CRMEntity {
 			if ($module == 'Emails') {
 				$columnSQL = "cast(concat($emailTableName.date_start,'  ',$emailTableName.time_start) as DATE) AS Emails_Date_Sent";
 			} else {
-				$columnSQL = "cast(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start) as DATETIME) AS Calendar_Start_Date_and_Time";
+				$columnSQL = "concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start) AS Calendar_Start_Date_and_Time";
 			}
 		} elseif (stristr($selectedfields[0], "vtiger_users") && ($selectedfields[1] == 'user_name')) {
 			$temp_module_from_tablename = str_replace("vtiger_users", "", $selectedfields[0]);
@@ -685,6 +688,10 @@ class ReportRun extends CRMEntity {
 		global $adb;
 		$access_fields = Array();
 
+                //Reports should not be allowed to access user module fields.
+                if($module == "Users"){
+                    return $access_fields;
+                }
 		$profileList = getCurrentUserProfileList();
 		$query = "select vtiger_field.fieldname from vtiger_field inner join vtiger_profile2field on vtiger_profile2field.fieldid=vtiger_field.fieldid inner join vtiger_def_org_field on vtiger_def_org_field.fieldid=vtiger_field.fieldid where";
 		$params = array();
@@ -1072,7 +1079,7 @@ class ReportRun extends CRMEntity {
 										$endDateTime = "DATE_FORMAT('$endDateTime', '%m%d')";
 									} else {
 										if ($selectedFields[0] == 'vtiger_activity' && ($selectedFields[1] == 'date_start')) {
-											$tableColumnSql = 'CAST((CONCAT(date_start, " ", time_start)) AS DATETIME)';
+											$tableColumnSql = '(CONCAT(date_start, " ", time_start))';
 										} else {
 											if (empty($emailTableName)) {
 												$tableColumnSql = $selectedFields[0] . '.' . $selectedFields[1];
@@ -1103,7 +1110,7 @@ class ReportRun extends CRMEntity {
 							}
 
 							if ($selectedFields[0] == 'vtiger_activity' && ($selectedFields[1] == 'date_start')) {
-								$tableColumnSql = 'CAST((CONCAT(date_start, " ", time_start)) AS DATETIME)';
+								$tableColumnSql = '(CONCAT(date_start, " ", time_start))';
 							} else {
 								if (empty($emailTableName)) {
 									$tableColumnSql = $selectedFields[0] . '.' . $selectedFields[1];
@@ -1525,7 +1532,7 @@ class ReportRun extends CRMEntity {
 					} else {
 						if ($selectedfields[0] == 'vtiger_activity' && ($selectedfields[1] == 'date_start')) {
 							$tableColumnSql = '';
-							$tableColumnSql = "CAST((CONCAT(date_start,' ',time_start)) AS DATETIME)";
+							$tableColumnSql = "(CONCAT(date_start,' ',time_start))";
 						} else {
 							$tableColumnSql = $selectedfields[0] . "." . $selectedfields[1];
 						}
@@ -3159,7 +3166,7 @@ class ReportRun extends CRMEntity {
 			$sSQL = $this->sGetSQLforReport($this->reportid, $filtersql, "COLUMNSTOTOTAL");
 			if (isset($this->totallist)) {
 				if ($sSQL != "") {
-					$result = $adb->query($sSQL);
+					$result = $adb->pquery($sSQL, array());
 					$y = $adb->num_fields($result);
 					$custom_field_values = $adb->fetch_array($result);
 
@@ -3210,8 +3217,11 @@ class ReportRun extends CRMEntity {
 						} else {
 							$convert_price = false;
 						}
+						$originalValue = trim(str_replace(' ', '_', $value));
 						$value = trim($key);
-						$arraykey = $value . '_SUM';
+                        $originalkey = $value . '_SUM';
+						$originalValueKey = $originalValue.'_SUM';
+						$arraykey = $this->replaceSpecialChar($value) . '_SUM';
 						if (isset($keyhdr[$arraykey])) {
 							if ($convert_price) {
 								if ($operation == 'ExcelExport') {
@@ -3232,12 +3242,14 @@ class ReportRun extends CRMEntity {
 									}
 								}
 							}
-							$totalpdf[$rowcount][$arraykey] = $conv_value;
+							$totalpdf[$rowcount][$originalValueKey] = $conv_value;
 						} else {
-							$totalpdf[$rowcount][$arraykey] = '';
+							$totalpdf[$rowcount][$originalValueKey] = '';
 						}
 
-						$arraykey = $value . '_AVG';
+						$originalkey = $value . '_AVG';
+						$originalValueKey = $originalValue.'_AVG';
+						$arraykey = $this->replaceSpecialChar($value) . '_AVG';
 						if (isset($keyhdr[$arraykey])) {
 							if ($convert_price) {
 								if ($operation == 'ExcelExport') {
@@ -3258,12 +3270,14 @@ class ReportRun extends CRMEntity {
 									}
 								}
 							}
-							$totalpdf[$rowcount][$arraykey] = $conv_value;
+							$totalpdf[$rowcount][$originalValueKey] = $conv_value;
 						} else {
-							$totalpdf[$rowcount][$arraykey] = '';
+							$totalpdf[$rowcount][$originalValueKey] = '';
 						}
 
-						$arraykey = $value . '_MIN';
+						$originalkey = $value . '_MIN';
+						$originalValueKey = $originalValue.'_MIN';
+                        $arraykey = $this->replaceSpecialChar($value) . '_MIN';
 						if (isset($keyhdr[$arraykey])) {
 							if ($convert_price) {
 								if ($operation == 'ExcelExport') {
@@ -3284,12 +3298,14 @@ class ReportRun extends CRMEntity {
 									}
 								}
 							}
-							$totalpdf[$rowcount][$arraykey] = $conv_value;
+							$totalpdf[$rowcount][$originalValueKey] = $conv_value;
 						} else {
-							$totalpdf[$rowcount][$arraykey] = '';
+							$totalpdf[$rowcount][$originalValueKey] = '';
 						}
 
-						$arraykey = $value . '_MAX';
+						$originalkey = $value . '_MAX';
+						$originalValueKey = $originalValue.'_MAX';
+						$arraykey = $this->replaceSpecialChar($value) . '_MAX';
 						if (isset($keyhdr[$arraykey])) {
 							if ($convert_price) {
 								if ($operation == 'ExcelExport') {
@@ -3310,9 +3326,9 @@ class ReportRun extends CRMEntity {
 									}
 								}
 							}
-							$totalpdf[$rowcount][$arraykey] = $conv_value;
+							$totalpdf[$rowcount][$originalValueKey] = $conv_value;
 						} else {
-							$totalpdf[$rowcount][$arraykey] = '';
+							$totalpdf[$rowcount][$originalValueKey] = '';
 						}
 						$rowcount++;
 					}
@@ -3325,7 +3341,7 @@ class ReportRun extends CRMEntity {
 			$sSQL = $this->sGetSQLforReport($this->reportid, $filtersql, "COLUMNSTOTOTAL");
 			if (isset($this->totallist)) {
 				if ($sSQL != '') {
-					$result = $adb->query($sSQL);
+					$result = $adb->pquery($sSQL, array());
 					$y = $adb->num_fields($result);
 					$custom_field_values = $adb->fetch_array($result);
 
@@ -3540,7 +3556,7 @@ class ReportRun extends CRMEntity {
 
 			if (isset($this->totallist)) {
 				if ($sSQL != "") {
-					$result = $adb->query($sSQL);
+					$result = $adb->pquery($sSQL, array());
 					$y = $adb->num_fields($result);
 					$custom_field_values = $adb->fetch_array($result);
 					$reportModule = 'Reports';
@@ -3764,7 +3780,7 @@ class ReportRun extends CRMEntity {
 			$sSQL = $this->sGetSQLforReport($this->reportid, $filtersql, "COLUMNSTOTOTAL");
 			if (isset($this->totallist)) {
 				if ($sSQL != "") {
-					$result = $adb->query($sSQL);
+					$result = $adb->pquery($sSQL, array());
 					$y = $adb->num_fields($result);
 					$custom_field_values = $adb->fetch_array($result);
 					$reportModule = 'Reports';
@@ -4173,7 +4189,7 @@ class ReportRun extends CRMEntity {
 				$mulsel = "select distinct $fieldname from vtiger_$fieldname inner join vtiger_role2picklist on vtiger_role2picklist.picklistvalueid = vtiger_$fieldname.picklist_valueid where roleid ='" . $roleid . "' and picklistid in (select picklistid from vtiger_$fieldname)"; // order by sortid asc - not requried
 			}
 			if ($fieldname != 'firstname')
-				$mulselresult = $adb->query($mulsel);
+				$mulselresult = $adb->pquery($mulsel, array());
 			for ($j = 0; $j < $adb->num_rows($mulselresult); $j++) {
 				$fldvalue = $adb->query_result($mulselresult, $j, $fieldname);
 				if (in_array($fldvalue, $fieldvalues))

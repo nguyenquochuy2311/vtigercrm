@@ -107,7 +107,7 @@ function export($type){
 		// Refer to the logic in setting $currentModule in index.php
 		$focus = CRMEntity::getInstance($type);
     }
-    $log = LoggerManager::getLogger('export_'.$type);
+    $log = Logger::getLogger('export_'.$type);
     $db = PearDatabase::getInstance();
 
 	$oCustomView = new CustomView("$type");
@@ -276,8 +276,15 @@ class ExportUtils{
 	var $fieldsArr = array();
 	var $picklistValues = array();
 	
-	function ExportUtils($module, $fields_array){
+	function __construct($module, $fields_array)
+	{
 		self::__init($module, $fields_array);
+	}
+	function ExportUtils($module, $fields_array){
+		// PHP4-style constructor.
+		// This will NOT be invoked, unless a sub-class that extends calls it.
+		// In that case, call the new-style constructor to keep compatibility.
+		self::__construct($module, $fields_array);
 	}
 	
 	

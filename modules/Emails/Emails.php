@@ -42,9 +42,9 @@ class Emails extends CRMEntity {
 		'Related to' => Array('seactivityrel' => 'parent_id'),
 		'Date Sent' => Array('activity' => 'date_start'),
 		'Time Sent' => Array('activity' => 'time_start'),
-		'Assigned To' => Array('crmentity', 'smownerid'),
-		'Access Count' => Array('email_track', 'access_count'),
-		'Click Count' => Array('email_track','click_count'),
+		'Assigned To' => Array('crmentity' => 'smownerid'),
+		'Access Count' => Array('email_track' => 'access_count'),
+		'Click Count' => Array('email_track' => 'click_count'),
 	);
 	var $list_fields_name = Array(
 		'Subject' => 'subject',
@@ -67,13 +67,16 @@ class Emails extends CRMEntity {
 
 	/** This function will set the columnfields for Email module
 	 */
+        function __construct() {
+            $this->log = Logger::getLogger('email');
+            $this->log->debug("Entering Emails() method ...");
+            $this->log = Logger::getLogger('email');
+            $this->db = PearDatabase::getInstance();
+            $this->column_fields = getColumnFields('Emails');
+            $this->log->debug("Exiting Email method ...");
+        }   
 	function Emails() {
-		$this->log = LoggerManager::getLogger('email');
-		$this->log->debug("Entering Emails() method ...");
-		$this->log = LoggerManager::getLogger('email');
-		$this->db = PearDatabase::getInstance();
-		$this->column_fields = getColumnFields('Emails');
-		$this->log->debug("Exiting Email method ...");
+            self::__construct();
 	}
 
 	function save_module($module) {
@@ -377,7 +380,7 @@ class Emails extends CRMEntity {
 				onclick=\"return window.open("index.php?module=Users&return_module=Emails&action=Popup&popuptype=detailview&select=enable&form=EditView&form_submit=true&return_id=' . $id . '&recordid=' . $id . '","test","width=640,height=520,resizable=0,scrollbars=0");\"
 				type="button">';
 
-		$query = 'SELECT vtiger_users.id, vtiger_users.first_name,vtiger_users.last_name, vtiger_users.user_name, vtiger_users.email1, vtiger_users.email2, vtiger_users.secondaryemail , vtiger_users.phone_home, vtiger_users.phone_work, vtiger_users.phone_mobile, vtiger_users.phone_other, vtiger_users.phone_fax from vtiger_users inner join vtiger_salesmanactivityrel on vtiger_salesmanactivityrel.smid=vtiger_users.id and vtiger_salesmanactivityrel.activityid=?';
+		$query = 'SELECT vtiger_users.id, vtiger_users.first_name,vtiger_users.last_name, vtiger_users.user_name, vtiger_users.email1, vtiger_users.email2, vtiger_users.secondaryemail , vtiger_users.phone_home, vtiger_users.phone_work, vtiger_users.phone_mobile, vtiger_users.phone_other, vtiger_users.phone_fax,vtiger_users.userlabel from vtiger_users inner join vtiger_salesmanactivityrel on vtiger_salesmanactivityrel.smid=vtiger_users.id and vtiger_salesmanactivityrel.activityid=?';
 		$result = $adb->pquery($query, array($id));
 
 		$noofrows = $adb->num_rows($result);
@@ -394,12 +397,7 @@ class Emails extends CRMEntity {
 
 			$entries = Array();
 
-			if (is_admin($current_user)) {
-				$entries[] = getFullNameFromArray('Users', $row);
-			} else {
-				$entries[] = getFullNameFromArray('Users', $row);
-			}
-
+			$entries[] = $row['userlabel'];
 			$entries[] = $row['user_name'];
 			$entries[] = $row['email1'];
 			if ($email == '')

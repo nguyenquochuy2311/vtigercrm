@@ -15,13 +15,15 @@ class Documents_Folder_Action extends Vtiger_Action_Controller {
 		$this->exposeMethod('save');
 		$this->exposeMethod('delete');
 	}
+	
+	public function requiresPermission(Vtiger_Request $request){
+		$permissions = parent::requiresPermission($request);
+		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView');
+		return $permissions;
+	}
 
 	public function checkPermission(Vtiger_Request $request) {
-		$moduleName = $request->getModule();
-
-		if(!Users_Privileges_Model::isPermitted($moduleName, 'DetailView')) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED', $moduleName));
-		}
+		return parent::checkPermission($request);
 	}
 
 	public function process(Vtiger_Request $request) {
@@ -37,7 +39,7 @@ class Documents_Folder_Action extends Vtiger_Action_Controller {
 		$folderDesc = $request->get('folderdesc');
 		$result = array();
 
-		if (!empty ($folderName)) {
+		if (!empty ($folderName)) {  
             $saveMode = $request->get('savemode');
             $folderModel = Documents_Folder_Model::getInstance();
             if($saveMode == 'edit') {

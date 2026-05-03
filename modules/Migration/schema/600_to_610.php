@@ -678,7 +678,7 @@ $result = $adb->pquery($query, array($contactTabId));
 $sequence = $adb->query_result($result, 0 ,'maxsequence');
 
 $query = 'INSERT INTO vtiger_relatedlists VALUES(?,?,?,?,?,?,?,?,?,?,?)';
-$result = Migration_Index_View::ExecuteQuery($query, array($relationId, $contactTabId,$vendorTabId,'get_vendors',($sequence+1),'Vendors',0,$actions,'','',''));
+$result = Migration_Index_View::ExecuteQuery($query, array($relationId, $contactTabId,$vendorTabId,'get_vendors',($sequence+1),'Vendors',0,$actions,null,'',''));
 
 //Schema changes for vtiger_troubletickets hours & days column
 Migration_Index_View::ExecuteQuery('UPDATE vtiger_field set typeofdata=? WHERE fieldname IN(?,?) AND tablename = ?', array('N~O', 'hours', 'days', 'vtiger_troubletickets'));
@@ -705,7 +705,7 @@ echo "<br>Changed timezone column name for mail scanner";
 $result = $adb->pquery('SELECT task_id FROM com_vtiger_workflowtasks WHERE workflow_id IN
                         (SELECT workflow_id FROM com_vtiger_workflows WHERE module_name IN (?, ?))
                         AND task LIKE ?', array('Calendar', 'Events', '%VTSendNotificationTask%'));
-$numOfRowas = $adb->num_rows($result);
+$numOfRows = $adb->num_rows($result);
 for ($i = 0; $i < $numOfRows; $i++) {
         $tm = new VTTaskManager($adb);
         $task = $tm->retrieveTask($adb->query_result($result, $i, 'task_id'));

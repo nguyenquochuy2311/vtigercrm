@@ -22,27 +22,29 @@ class Vtiger_SaveAjax_Action extends Vtiger_Save_Action {
 			$result = array();
 			$picklistColorMap = array();
 			foreach ($fieldModelList as $fieldName => $fieldModel) {
-				$recordFieldValue = $recordModel->get($fieldName);
-				if(is_array($recordFieldValue) && $fieldModel->getFieldDataType() == 'multipicklist') {
-					foreach ($recordFieldValue as $picklistValue) {
-						$picklistColorMap[$picklistValue] = Settings_Picklist_Module_Model::getPicklistColorByValue($fieldName, $picklistValue);
+				if($fieldModel->isViewable()){
+					$recordFieldValue = $recordModel->get($fieldName);
+					if(is_array($recordFieldValue) && $fieldModel->getFieldDataType() == 'multipicklist') {
+						foreach ($recordFieldValue as $picklistValue) {
+							$picklistColorMap[$picklistValue] = Settings_Picklist_Module_Model::getPicklistColorByValue($fieldName, $picklistValue);
+						}
+						$recordFieldValue = implode(' |##| ', $recordFieldValue);     
 					}
-					$recordFieldValue = implode(' |##| ', $recordFieldValue);     
-				}
-				if($fieldModel->getFieldDataType() == 'picklist') {
-					$picklistColorMap[$recordFieldValue] = Settings_Picklist_Module_Model::getPicklistColorByValue($fieldName, $recordFieldValue);
-				}
-				$fieldValue = $displayValue = Vtiger_Util_Helper::toSafeHTML($recordFieldValue);
-				if ($fieldModel->getFieldDataType() !== 'currency' && $fieldModel->getFieldDataType() !== 'datetime' && $fieldModel->getFieldDataType() !== 'date' && $fieldModel->getFieldDataType() !== 'double') { 
-					$displayValue = $fieldModel->getDisplayValue($fieldValue, $recordModel->getId()); 
-				}
-				if ($fieldModel->getFieldDataType() == 'currency') {
-					$displayValue = Vtiger_Currency_UIType::transformDisplayValue($fieldValue);
-				}
-				if(!empty($picklistColorMap)) {
-					$result[$fieldName] = array('value' => $fieldValue, 'display_value' => $displayValue, 'colormap' => $picklistColorMap);
-				} else {
-					$result[$fieldName] = array('value' => $fieldValue, 'display_value' => $displayValue);
+					if($fieldModel->getFieldDataType() == 'picklist') {
+						$picklistColorMap[$recordFieldValue] = Settings_Picklist_Module_Model::getPicklistColorByValue($fieldName, $recordFieldValue);
+					}
+					$fieldValue = $displayValue = Vtiger_Util_Helper::toSafeHTML($recordFieldValue);
+					if ($fieldModel->getFieldDataType() !== 'currency' && $fieldModel->getFieldDataType() !== 'datetime' && $fieldModel->getFieldDataType() !== 'date' && $fieldModel->getFieldDataType() !== 'double') { 
+						$displayValue = $fieldModel->getDisplayValue($fieldValue, $recordModel->getId()); 
+					}
+					if ($fieldModel->getFieldDataType() == 'currency') {
+						$displayValue = Vtiger_Currency_UIType::transformDisplayValue($fieldValue);
+					}
+					if(!empty($picklistColorMap)) {
+						$result[$fieldName] = array('value' => $fieldValue, 'display_value' => $displayValue, 'colormap' => $picklistColorMap);
+					} else {
+						$result[$fieldName] = array('value' => $fieldValue, 'display_value' => $displayValue);
+					}
 				}
 			}
 
@@ -100,11 +102,11 @@ class Vtiger_SaveAjax_Action extends Vtiger_Save_Action {
 				}else if($fieldName === $request->get('field')){
 					$fieldValue = $request->get('value');
 				}
-
 				$fieldDataType = $fieldModel->getFieldDataType();
-				if ($fieldDataType == 'time') {
+				if ($fieldDataType == 'time' && $fieldValue !== null) {
 					$fieldValue = Vtiger_Time_UIType::getTimeValueWithSeconds($fieldValue);
 				}
+                $fieldValue = $this->purifyCkeditorField($fieldName, $fieldValue);
 				if ($fieldValue !== null) {
 					if (!is_array($fieldValue)) {
 						$fieldValue = trim($fieldValue);
@@ -130,10 +132,14 @@ class Vtiger_SaveAjax_Action extends Vtiger_Save_Action {
 				} else {
 					$fieldValue = $fieldModel->getDefaultFieldValue();
 				}
+                if($fieldValue){
+                    $fieldValue = Vtiger_Util_Helper::validateFieldValue($fieldValue,$fieldModel);
+                }
 				$fieldDataType = $fieldModel->getFieldDataType();
-				if ($fieldDataType == 'time') {
+				if ($fieldDataType == 'time' && $fieldValue !== null) {
 					$fieldValue = Vtiger_Time_UIType::getTimeValueWithSeconds($fieldValue);
 				}
+                $fieldValue = $this->purifyCkeditorField($fieldName, $fieldValue);
 				if ($fieldValue !== null) {
 					if (!is_array($fieldValue)) {
 						$fieldValue = trim($fieldValue);
@@ -145,4 +151,14 @@ class Vtiger_SaveAjax_Action extends Vtiger_Save_Action {
 
 		return $recordModel;
 	}
+    
+    public function purifyCkeditorField($fieldName, $fieldValue) {
+        $ckeditorFields = array('commentcontent', 'notecontent', 'signature');
+        if((in_array($fieldName, $ckeditorFields)) && $fieldValue !== null){
+            $purifiedContent = vtlib_purify(decode_html($fieldValue));
+            // Purify malicious html event attributes
+            $fieldValue = purifyHtmlEventAttributes(decode_html($purifiedContent),true);
+        }
+        return $fieldValue;
+    }
 }

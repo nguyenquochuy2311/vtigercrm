@@ -114,7 +114,7 @@ class Vtiger_ModuleBasic {
 	 */
 	function __getUniqueId() {
 		global $adb;
-		$result = $adb->query("SELECT MAX(tabid) AS max_seq FROM vtiger_tab");
+		$result = $adb->pquery("SELECT MAX(tabid) AS max_seq FROM vtiger_tab", array());
 		$maxseq = $adb->query_result($result, 0, 'max_seq');
 		return ++$maxseq;
 	}
@@ -295,11 +295,9 @@ class Vtiger_ModuleBasic {
 
 		if(!$this->customtable)$this->customtable = $this->basetable . "cf";
 		if(!$this->grouptable)$this->grouptable = $this->basetable."grouprel";
-		if(!$this->fieldtable)$this->fieldtable = $this->basetable."_user_field";
 
 		Vtiger_Utils::CreateTable($this->basetable,"($this->basetableid INT(19) PRIMARY KEY)",true);
 		Vtiger_Utils::CreateTable($this->customtable,"($this->basetableid INT(19) PRIMARY KEY)", true);
-		Vtiger_Utils::CreateTable($this->fieldtable,"(recordid INT(25) NOT NULL,userid INT(25) NOT NULL,starred VARCHAR(100) NULL DEFAULT NULL)",true);
 		
 		if(Vtiger_Version::check('5.0.4', '<=')) {
 			Vtiger_Utils::CreateTable($this->grouptable, "($this->basetableid INT PRIMARY KEY, groupname varchar(100))",true);

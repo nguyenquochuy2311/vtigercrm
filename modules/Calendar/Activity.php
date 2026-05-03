@@ -103,11 +103,14 @@ class Activity extends CRMEntity {
 	var $default_sort_order = 'ASC';
 
 	//var $groupTable = Array('vtiger_activitygrouprelation','activityid');
-
+        function __construct()
+        {
+            $this->log = Logger::getLogger('Calendar');
+            $this->db = PearDatabase::getInstance();
+            $this->column_fields = getColumnFields('Calendar');
+        }
 	function Activity() {
-		$this->log = LoggerManager::getLogger('Calendar');
-		$this->db = PearDatabase::getInstance();
-		$this->column_fields = getColumnFields('Calendar');
+            self::__construct();
 	}
 
 	function save_module($module)
@@ -131,16 +134,17 @@ class Activity extends CRMEntity {
 
 			$contactIdsList = explode (';', $_REQUEST['contactidlist']);
 			$count = count($contactIdsList);
-
+            $params=array();
 			$sql = 'INSERT INTO vtiger_cntactivityrel VALUES ';
 			for($i=0; $i<$count; $i++) {
 				$contactIdsList[$i] = intval($contactIdsList[$i]);
-				$sql .= " ($contactIdsList[$i], $recordId)";
+				$sql .= " (?, ?)";
+				array_push($params,$contactIdsList[$i],$recordId);
 				if ($i != $count - 1) {
 					$sql .= ',';
 				}
 			}
-			$adb->pquery($sql, array());
+			$adb->pquery($sql, $params);
 		} else if ($_REQUEST['contactidlist'] == '' && $insertion_mode == "edit") {
 			$adb->pquery('DELETE FROM vtiger_cntactivityrel WHERE activityid = ?', array($recordId));
 		}
@@ -568,7 +572,7 @@ function insertIntoRecurringTable(& $recurObj)
 	 * @param string $criteria - query string
 	 * returns  activity records in array format($list) or null value
 		 */
-	function get_full_list($criteria) {
+	function get_full_list($criteria='', $where='') { 
 		global $log;
 		$log->debug("Entering get_full_list(".$criteria.") method ...");
 		$query = "select vtiger_crmentity.crmid,vtiger_crmentity.smownerid,vtiger_crmentity.setype, vtiger_activity.*,
@@ -579,7 +583,7 @@ function insertIntoRecurringTable(& $recurObj)
 				left join vtiger_contactdetails on vtiger_contactdetails.contactid= vtiger_cntactivityrel.contactid
 				left join vtiger_seactivityrel on vtiger_seactivityrel.activityid = vtiger_activity.activityid
 				WHERE vtiger_crmentity.deleted=0 ".$criteria;
-		$result =& $this->db->query($query);
+		$result =& $this->db->pquery($query, array());
 
 	if($this->db->getRowCount($result) > 0){
 	  // We have some data.
@@ -675,7 +679,7 @@ function insertIntoRecurringTable(& $recurObj)
 	{
 		global $log;
 			$log->debug("Entering process_list_query1(".$query.") method ...");
-		$result =& $this->db->query($query,true,"Error retrieving $this->object_name list: ");
+		$result =& $this->db->pquery($query,array(),true,"Error retrieving $this->object_name list: ");
 		$list = Array();
 		$rows_found =  $this->db->getRowCount($result);
 		if($rows_found != 0)
@@ -745,6 +749,7 @@ function insertIntoRecurringTable(& $recurObj)
 				$params = array($activity_id);
 			}
 		} else {
+			if ( $recurid === '' || !$recurid ) { $recurid = 0; }
 			$query = "INSERT INTO ".$this->reminder_table." VALUES (?,?,?,?)";
 			$params = array($activity_id, $reminder_time, 0, $recurid);
 		}
@@ -1045,7 +1050,7 @@ function insertIntoRecurringTable(& $recurObj)
 		}
 		//if secondary modules custom reference field is selected
         $query .= parent::getReportsUiType10Query($secmodule, $queryPlanner);
-        
+
 		return $query;
 	}
 

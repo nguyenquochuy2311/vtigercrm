@@ -264,22 +264,59 @@ class Vtiger_Field_Model extends Vtiger_Field {
 
 		if($fieldName == 'hdnTaxType' || ($fieldName == 'region_id' && $this->get('displaytype') == 5)) return null;
 
-		if($fieldDataType == 'picklist' || $fieldDataType == 'multipicklist') {
-			$fieldPickListValues = array();
-			$currentUser = Users_Record_Model::getCurrentUserModel();
-			if($this->isRoleBased()) {
-				$userModel = Users_Record_Model::getCurrentUserModel();
-				$picklistValues = Vtiger_Util_Helper::getRoleBasedPicklistValues($fieldName, $userModel->get('roleid'));
-			}else{
-				$picklistValues = Vtiger_Util_Helper::getPickListValues($fieldName);
-			}
-			foreach($picklistValues as $value) {
-				$fieldPickListValues[$value] = vtranslate($value,$this->getModuleName());
-			}
-			return $fieldPickListValues;
+        if($fieldDataType == 'picklist' || $fieldDataType == 'multipicklist' || $fieldDataType == 'metricpicklist' || $fieldDataType == 'timestring') {
+            $fieldPickListValues = array();
+            $picklistValues = Vtiger_Util_Helper::getPickListValues($fieldName);
+            
+            foreach ($picklistValues as $value) {
+                if (!is_numeric($value)) {
+                    $addValue = vtranslate($value, $this->getModuleName());
+                } else {
+                    $addValue = $value;
+                }
+                $fieldPickListValues[$value] = $addValue;
+            }
+            
+            return $fieldPickListValues;
 		}
 		return null;
-	}
+    }
+    
+    
+    /**
+	 * Function to get all editable  picklist values for the current user
+	 * @return <Array> List of picklist values if the field is of type picklist or multipicklist, null otherwise.
+	 */
+	public function getEditablePicklistValues() {
+        $fieldDataType = $this->getFieldDataType();
+		$fieldName = $this->getName();
+        $permission = true;
+
+		// for reference fields the field name will be in the format of (referencefieldname;(module)fieldname)
+		preg_match('/(\w+) ; \((\w+)\) (\w+)/', $fieldName, $matches);
+		if(count($matches) > 0) {
+			list($full, $referenceParentField, $referenceModule, $referenceFieldName) = $matches;
+			$fieldName = $referenceFieldName;
+		}
+
+		if($fieldName == 'hdnTaxType' || ($fieldName == 'region_id' && $this->get('displaytype') == 5)) return null;
+
+        if($fieldDataType == 'picklist' || $fieldDataType == 'multipicklist') {
+            $fieldPickListValues = array();
+            if($this->isRoleBased()) {
+                $userModel = Users_Record_Model::getCurrentUserModel();
+                $picklistValues = Vtiger_Util_Helper::getRoleBasedPicklistValues($fieldName, $userModel->get('roleid'));
+            }else{
+                $picklistValues = Vtiger_Util_Helper::getPickListValues($fieldName);
+            }
+            
+            foreach($picklistValues as $value) {
+                    $fieldPickListValues[$value] = vtranslate($value,$this->getModuleName());
+			}
+            return $fieldPickListValues;
+		}
+		return null;
+    }
 
 	/**
 	 * Function to check if the current field is mandatory or not
@@ -400,7 +437,7 @@ class Vtiger_Field_Model extends Vtiger_Field {
 	 * @return <Boolean>
 	 */
 	public function isAjaxEditable() {
-		$ajaxRestrictedFields = array('4', '72', '61');
+		$ajaxRestrictedFields = array('4', '72', '61', '27', '28');
 		if(!$this->isEditable() || in_array($this->get('uitype'), $ajaxRestrictedFields)) {
 			return false;
 		}
@@ -533,10 +570,17 @@ class Vtiger_Field_Model extends Vtiger_Field {
 
 		if($fieldDataType == 'picklist' || $fieldDataType == 'multipicklist' || $fieldDataType == 'multiowner') {
 			$pickListValues = $this->getPicklistValues();
+            $editablePicklistValues = $this->getEditablePicklistValues();
 			if(!empty($pickListValues)) {
 				$this->fieldInfo['picklistvalues'] = $pickListValues;
 			} else {
 				$this->fieldInfo['picklistvalues'] = array();
+			}
+            
+            if(!empty($editablePicklistValues)) {
+                $this->fieldInfo['editablepicklistvalues'] = $editablePicklistValues;
+            } else {
+				$this->fieldInfo['editablepicklistvalues'] = array();
 			}
 
 			$this->fieldInfo['picklistColors'] = array();
@@ -545,6 +589,13 @@ class Vtiger_Field_Model extends Vtiger_Field {
 				$this->fieldInfo['picklistColors'] = $picklistColors;
 			}
 		}
+        
+        if($fieldDataType == "documentsFolder"){
+            $documentFolders = $this->getDocumentFolders();
+            if(!empty($documentFolders)) {
+                $this->fieldInfo['documentFolders'] = $documentFolders;
+            }
+        }
 
 		if($fieldDataType === 'currencyList'){
 		   $currencyList = $this->getCurrencyList();

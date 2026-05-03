@@ -10,25 +10,39 @@
 
 class Vtiger_Save_Action extends Vtiger_Action_Controller {
 
+	public function requiresPermission(\Vtiger_Request $request) {
+		$permissions = parent::requiresPermission($request);
+		$moduleParameter = $request->get('source_module');
+		if (!$moduleParameter) {
+			$moduleParameter = 'module';
+		}else{
+			$moduleParameter = 'source_module';
+		}
+		$record = $request->get('record');
+		$recordId = $request->get('id');
+		if (!$record) {
+			$recordParameter = '';
+		}else{
+			$recordParameter = 'record';
+		}
+		$actionName = ($record || $recordId) ? 'EditView' : 'CreateView';
+        $permissions[] = array('module_parameter' => $moduleParameter, 'action' => 'DetailView', 'record_parameter' => $recordParameter);
+		$permissions[] = array('module_parameter' => $moduleParameter, 'action' => $actionName, 'record_parameter' => $recordParameter);
+		return $permissions;
+	}
+	
 	public function checkPermission(Vtiger_Request $request) {
 		$moduleName = $request->getModule();
 		$record = $request->get('record');
 
-		$actionName = ($record) ? 'EditView' : 'CreateView';
-		if(!Users_Privileges_Model::isPermitted($moduleName, $actionName, $record)) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
-		}
-
-		if(!Users_Privileges_Model::isPermitted($moduleName, 'Save', $record)) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
-		}
-
-		if ($record) {
+		$nonEntityModules = array('Users', 'Events', 'Calendar', 'Portal', 'Reports', 'Rss', 'EmailTemplates');
+		if ($record && !in_array($moduleName, $nonEntityModules)) {
 			$recordEntityName = getSalesEntityType($record);
 			if ($recordEntityName !== $moduleName) {
 				throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
 			}
 		}
+		return parent::checkPermission($request);
 	}
 	
 	public function validateRequest(Vtiger_Request $request) {
@@ -143,8 +157,14 @@ class Vtiger_Save_Action extends Vtiger_Action_Controller {
 		foreach ($fieldModelList as $fieldName => $fieldModel) {
 			$fieldValue = $request->get($fieldName, null);
 			$fieldDataType = $fieldModel->getFieldDataType();
-			if($fieldDataType == 'time'){
+			if($fieldDataType == 'time' && $fieldValue !== null){
 				$fieldValue = Vtiger_Time_UIType::getTimeValueWithSeconds($fieldValue);
+			}
+            $ckeditorFields = array('commentcontent', 'notecontent');
+            if((in_array($fieldName, $ckeditorFields)) && $fieldValue !== null){
+                $purifiedContent = vtlib_purify(decode_html($fieldValue));
+                // Purify malicious html event attributes
+                $fieldValue = purifyHtmlEventAttributes(decode_html($purifiedContent),true);
 			}
 			if($fieldValue !== null) {
 				if(!is_array($fieldValue) && $fieldDataType != 'currency') {

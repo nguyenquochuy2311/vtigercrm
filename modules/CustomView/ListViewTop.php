@@ -60,7 +60,7 @@ function getKeyMetrics($maxval,$calCnt)
 	$metricviewnames = "'Hot Leads'";
 
 	$current_module_strings = return_module_language($current_language, "CustomView");
-	$log = LoggerManager::getLogger('metrics');
+	$log = Logger::getLogger('metrics');
 
 	$metriclists = getMetricList();
 	
@@ -79,7 +79,7 @@ function getKeyMetrics($maxval,$calCnt)
 				$oCustomView = new CustomView($metriclist['module']);
 				$metricsql = $oCustomView->getModifiedCvListQuery($metriclist['id'],$listquery,$metriclist['module']);
 				$metricsql = Vtiger_Functions::mkCountQuery($metricsql);
-				$metricresult = $adb->query($metricsql);
+				$metricresult = $adb->pquery($metricsql, array());
 				if($metricresult)
 				{
 					$rowcount = $adb->fetch_array($metricresult);
@@ -91,7 +91,7 @@ function getKeyMetrics($maxval,$calCnt)
 				$queryGenerator->initForCustomViewById($metriclist['id']);
 				$metricsql = $queryGenerator->getQuery();
 				$metricsql = Vtiger_Functions::mkCountQuery($metricsql);
-				$metricresult = $adb->query($metricsql);
+				$metricresult = $adb->pquery($metricsql, array());
 				if($metricresult)
 				{
 					$rowcount = $adb->fetch_array($metricresult);

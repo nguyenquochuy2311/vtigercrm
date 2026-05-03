@@ -13,16 +13,8 @@ class Calendar_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 	public function checkPermission(Vtiger_Request $request) {
 		$moduleName = $request->getModule();
 		$record = $request->get('record');
-
-		$actionName = ($record) ? 'EditView' : 'CreateView';
-		if(!Users_Privileges_Model::isPermitted($moduleName, $actionName, $record)) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
-		}
-
-		if(!Users_Privileges_Model::isPermitted($moduleName, 'Save', $record)) {
-			throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
-		}
-
+		
+		parent::checkPermission($request);
 		if ($record) {
 			$activityModulesList = array('Calendar', 'Events');
 			$recordEntityName = getSalesEntityType($record);
@@ -45,44 +37,46 @@ class Calendar_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 			$fieldModelList = $recordModel->getModule()->getFields();
 			$result = array();
 			foreach ($fieldModelList as $fieldName => $fieldModel) {
-				$recordFieldValue = $recordModel->get($fieldName);
-				if(is_array($recordFieldValue) && $fieldModel->getFieldDataType() == 'multipicklist') {
-					$recordFieldValue = implode(' |##| ', $recordFieldValue);
+				if($fieldModel->isViewable()){
+					$recordFieldValue = $recordModel->get($fieldName);
+					if(is_array($recordFieldValue) && $fieldModel->getFieldDataType() == 'multipicklist') {
+						$recordFieldValue = implode(' |##| ', $recordFieldValue);
+					}
+					$fieldValue = $displayValue = Vtiger_Util_Helper::toSafeHTML($recordFieldValue);
+					if ($fieldModel->getFieldDataType() !== 'currency' && $fieldModel->getFieldDataType() !== 'datetime' && $fieldModel->getFieldDataType() !== 'date') { 
+						$displayValue = $fieldModel->getDisplayValue($fieldValue, $recordModel->getId()); 
+					}
+					$result[$fieldName] = array();
+					if($fieldName == 'date_start') {
+						$timeStart = $recordModel->get('time_start');
+						$dateTimeFieldInstance = new DateTimeField($fieldValue . ' ' . $timeStart);
+
+						$fieldValue = $fieldValue.' '.$timeStart;
+
+						$userDateTimeString = $dateTimeFieldInstance->getDisplayDateTimeValue();
+						$dateTimeComponents = explode(' ',$userDateTimeString);
+						$dateComponent = $dateTimeComponents[0];
+						//Conveting the date format in to Y-m-d . since full calendar expects in the same format
+						$dataBaseDateFormatedString = DateTimeField::__convertToDBFormat($dateComponent, $user->get('date_format'));
+						$result[$fieldName]['calendar_display_value'] = $dataBaseDateFormatedString.' '. $dateTimeComponents[1];
+						$displayValue = $fieldModel->getDisplayValue($fieldValue);
+					} else if($fieldName == 'due_date') {
+						$timeEnd = $recordModel->get('time_end');
+						$dateTimeFieldInstance = new DateTimeField($fieldValue . ' ' . $timeEnd);
+
+						$fieldValue = $fieldValue.' '.$timeEnd;
+
+						$userDateTimeString = $dateTimeFieldInstance->getDisplayDateTimeValue();
+						$dateTimeComponents = explode(' ',$userDateTimeString);
+						$dateComponent = $dateTimeComponents[0];
+						//Conveting the date format in to Y-m-d . since full calendar expects in the same format
+						$dataBaseDateFormatedString = DateTimeField::__convertToDBFormat($dateComponent, $user->get('date_format'));
+						$result[$fieldName]['calendar_display_value']   =  $dataBaseDateFormatedString.' '. $dateTimeComponents[1];
+						$displayValue = $fieldModel->getDisplayValue($fieldValue);
+					}
+					$result[$fieldName]['value'] = $fieldValue;
+					$result[$fieldName]['display_value'] = decode_html($displayValue);
 				}
-				$fieldValue = $displayValue = Vtiger_Util_Helper::toSafeHTML($recordFieldValue);
-				if ($fieldModel->getFieldDataType() !== 'currency' && $fieldModel->getFieldDataType() !== 'datetime' && $fieldModel->getFieldDataType() !== 'date') { 
-					$displayValue = $fieldModel->getDisplayValue($fieldValue, $recordModel->getId()); 
-				}
-				$result[$fieldName] = array();
-				if($fieldName == 'date_start') {
-					$timeStart = $recordModel->get('time_start');
-					$dateTimeFieldInstance = new DateTimeField($fieldValue . ' ' . $timeStart);
-
-					$fieldValue = $fieldValue.' '.$timeStart;
-
-					$userDateTimeString = $dateTimeFieldInstance->getDisplayDateTimeValue();
-					$dateTimeComponents = explode(' ',$userDateTimeString);
-					$dateComponent = $dateTimeComponents[0];
-					//Conveting the date format in to Y-m-d . since full calendar expects in the same format
-					$dataBaseDateFormatedString = DateTimeField::__convertToDBFormat($dateComponent, $user->get('date_format'));
-					$result[$fieldName]['calendar_display_value'] = $dataBaseDateFormatedString.' '. $dateTimeComponents[1];
-					$displayValue = $fieldModel->getDisplayValue($fieldValue);
-				} else if($fieldName == 'due_date') {
-					$timeEnd = $recordModel->get('time_end');
-					$dateTimeFieldInstance = new DateTimeField($fieldValue . ' ' . $timeEnd);
-
-					$fieldValue = $fieldValue.' '.$timeEnd;
-
-					$userDateTimeString = $dateTimeFieldInstance->getDisplayDateTimeValue();
-					$dateTimeComponents = explode(' ',$userDateTimeString);
-					$dateComponent = $dateTimeComponents[0];
-					//Conveting the date format in to Y-m-d . since full calendar expects in the same format
-					$dataBaseDateFormatedString = DateTimeField::__convertToDBFormat($dateComponent, $user->get('date_format'));
-					$result[$fieldName]['calendar_display_value']   =  $dataBaseDateFormatedString.' '. $dateTimeComponents[1];
-					$displayValue = $fieldModel->getDisplayValue($fieldValue);
-				}
-				$result[$fieldName]['value'] = $fieldValue;
-				$result[$fieldName]['display_value'] = decode_html($displayValue);
 			}
 
 			$result['_recordLabel'] = $recordModel->getName();
@@ -213,4 +207,13 @@ class Calendar_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 
 		return $recordModel;
 	}
+	
+	/**
+	 * Helper API. See #1301 on code.vtiger.com
+	**/
+	public function getFormattedDateTime($date, $time) {
+        return trim($date . ' ' . $time);
+    }
+
 }
+

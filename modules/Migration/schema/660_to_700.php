@@ -108,8 +108,10 @@ if(defined('VTIGER_UPGRADE')) {
 	$result = $db->pquery('SELECT relation_id FROM vtiger_relatedlists ORDER BY relation_id DESC LIMIT 1', array());
 	$db->pquery('UPDATE vtiger_relatedlists_seq SET id=?', array($db->query_result($result, 0, 'relation_id')));
 
-	$accountsTabId = getTabId('Accounts');
-	$db->pquery('UPDATE vtiger_relatedlists SET name=? WHERE name=? and tabid=?', array('get_merged_list', 'get_dependents_list', $accountsTabId));
+        $accountsTabId = getTabId('Accounts');
+        $query = "UPDATE vtiger_relatedlists INNER JOIN vtiger_tab ON vtiger_tab.tabid = vtiger_relatedlists.related_tabid  SET vtiger_relatedlists.name = ? 
+          WHERE vtiger_relatedlists.name = ? AND vtiger_relatedlists.tabid = ? AND customized = 0";
+        $db->pquery($query, array('get_merged_list', 'get_dependents_list', $accountsTabId));
 
 	$invoiceModuleInstance = Vtiger_Module::getInstance('Invoice');
 	$blockInstance = Vtiger_Block::getInstance('LBL_INVOICE_INFORMATION', $invoiceModuleInstance);
@@ -432,8 +434,6 @@ if(defined('VTIGER_UPGRADE')) {
 	if (!in_array('module', $columns)) {
 		$db->pquery('ALTER TABLE vtiger_emailtemplates ADD COLUMN module VARCHAR(100)', array());
 	}
-	$db->pquery('UPDATE vtiger_emailtemplates SET module=? WHERE templatename IN (?,?,?) AND module IS NULL', array('Events', 'ToDo Reminder', 'Activity Reminder', 'Invite Users'));
-	$db->pquery('UPDATE vtiger_emailtemplates SET module=? WHERE module IS NULL', array('Contacts'));
 
 	$moduleName = 'Calendar';
 	$reminderTemplateResult = $db->pquery('SELECT 1 FROM vtiger_emailtemplates WHERE subject=? AND systemtemplate=?', array('Reminder', '1'));
@@ -1226,7 +1226,7 @@ if(defined('VTIGER_UPGRADE')) {
 	}
 
 	$modules = array();
-	$ignoreModules = array('SMSNotifier', 'ModComments');
+	$ignoreModules = array('SMSNotifier', 'ModComments', 'PBXManager');
 	$result = $db->pquery('SELECT name FROM vtiger_tab WHERE isentitytype=? AND name NOT IN ('.generateQuestionMarks($ignoreModules).')', array(1, $ignoreModules));
 	while ($row = $db->fetchByAssoc($result)) {
 		$modules[] = $row['name'];
@@ -1559,7 +1559,7 @@ if(defined('VTIGER_UPGRADE')) {
 			$taxIdsList[] = $rowData['taxid'];
 		}
 
-		$db->pquery('INSERT INTO vtiger_inventorycharges VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)', array(1, 'Shipping & Handling', 'Flat', 'Fixed', '', '[]', 1, ZEND_JSON::encode($taxIdsList), 0));
+		$db->pquery('INSERT INTO vtiger_inventorycharges VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)', array(1, 'Shipping & Handling', 'Flat', 'Fixed', null, '[]', 1, ZEND_JSON::encode($taxIdsList), 0));
 	}
 
 	if (!Vtiger_Utils::checkTable('vtiger_inventorychargesrel')) {
@@ -2215,16 +2215,17 @@ if(defined('VTIGER_UPGRADE')) {
 					}
 				}
 			}
-			$db->pquery("DELETE FROM $baseTableName WHERE $baseTableIndex NOT IN (SELECT crmid FROM vtiger_crmentity WHERE setype=?)", array($moduleName));
+            $deleteQueryParams = array($moduleName);
+            if($baseTableName == 'vtiger_activity'){
+                array_push($deleteQueryParams, "Emails");
+            }
+			$db->pquery("DELETE FROM $baseTableName WHERE $baseTableIndex NOT IN (SELECT crmid FROM vtiger_crmentity WHERE setype in (". generateQuestionMarks($deleteQueryParams)."))", $deleteQueryParams);
 		}
 	}
 
 	if (is_dir('modules/Vtiger/resources')) {
 		rename('modules/Vtiger/resources', 'modules/Vtiger/resources_650');
 	}
-
-	//Update existing package modules
-	Install_Utils_Model::installModules();
 
 	//recalculate user files to finish
 	RecalculateSharingRules();

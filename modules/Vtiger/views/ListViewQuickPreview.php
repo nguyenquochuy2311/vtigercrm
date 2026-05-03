@@ -15,6 +15,28 @@ class Vtiger_ListViewQuickPreview_View extends Vtiger_Index_View {
 	function __construct() {
 		parent::__construct();
 	}
+	
+	public function requiresPermission(\Vtiger_Request $request) {
+		$permissions = parent::requiresPermission($request);
+		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView', 'record_parameter' => 'record');
+		return $permissions;
+	}
+	
+	function checkPermission(Vtiger_Request $request) {
+		$moduleName = $request->getModule();
+		$recordId = $request->get('record');
+
+		parent::checkPermission($request);
+
+		$nonEntityModules = array('Users', 'Events', 'Calendar', 'Portal', 'Reports', 'Rss', 'EmailTemplates');
+		if ($recordId && !in_array($moduleName, $nonEntityModules)) {
+			$recordEntityName = getSalesEntityType($recordId);
+			if ($recordEntityName !== $moduleName) {
+				throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
+			}
+		}
+		return true;
+	}
 
 	function process(Vtiger_Request $request) {
 
@@ -41,8 +63,9 @@ class Vtiger_ListViewQuickPreview_View extends Vtiger_Index_View {
 		$viewer->assign('SUMMARY_RECORD_STRUCTURE', $recordStrucure->getStructure());
 		$viewer->assign('$SOCIAL_ENABLED', false);
 		$appName = $request->get('app');
-		$viewer->assign('SELECTED_MENU_CATEGORY', $appName);
-
+		if(!empty($appName)){
+			$viewer->assign('SELECTED_MENU_CATEGORY',$appName);
+		}
 		$viewer->assign('LIST_PREVIEW', true);
 
 		$pageNumber = 1;

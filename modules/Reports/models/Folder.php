@@ -283,7 +283,6 @@ class Reports_Folder_Model extends Vtiger_Base_Model {
 	public function getReportsCount() {
 		$db = PearDatabase::getInstance();
 		$params = array();
-
 		// To get the report ids which are permitted for the user
 			$query = "SELECT reportmodulesid, primarymodule from vtiger_reportmodules";
 			$result = $db->pquery($query, array());
@@ -299,7 +298,8 @@ class Reports_Folder_Model extends Vtiger_Base_Model {
 		//End
 		$sql = "SELECT count(*) AS count FROM vtiger_report
 				INNER JOIN vtiger_reportfolder ON vtiger_reportfolder.folderid = vtiger_report.folderid AND 
-				vtiger_report.reportid in (".implode(',',$allowedReportIds).")";
+				vtiger_report.reportid in (". generateQuestionMarks($allowedReportIds).")";
+        $params = array_merge($params, $allowedReportIds);
 		$fldrId = $this->getId();
 		if($fldrId == 'All') {
 			$fldrId = false;
@@ -323,7 +323,8 @@ class Reports_Folder_Model extends Vtiger_Base_Model {
 
 			$groupId = implode(',',$currentUserModel->get('groups'));
 			if ($groupId) {
-				$groupQuery = "(SELECT reportid from vtiger_reportsharing WHERE shareid IN ($groupId) AND setype = 'groups') OR ";
+				$groupQuery = "(SELECT reportid from vtiger_reportsharing WHERE shareid IN (". generateQuestionMarks($currentUserModel->get('groups')).") AND setype = 'groups') OR ";
+                $params = array_merge($params, $currentUserModel->get('groups'));
 			}
 
 			$sql .= " AND (vtiger_report.reportid IN (SELECT reportid from vtiger_reportsharing WHERE $groupQuery shareid = ? AND setype = 'users')
@@ -373,9 +374,9 @@ class Reports_Folder_Model extends Vtiger_Base_Model {
 		$listQuery = $this->getListViewQuery($folderId, $searchParams);
 
 		if($skipRecords && !empty($skipRecords) && is_array($skipRecords) && count($skipRecords) > 0) {
-			$listQuery .= ' AND '.$baseTableName.'.'.$baseTableId.' NOT IN ('. implode(',', $skipRecords) .')';
+			$listQuery .= ' AND '.$baseTableName.'.'.$baseTableId.' NOT IN ('. generateQuestionMarks($skipRecords) .')';
 		}
-		$result = $db->query($listQuery);
+		$result = $db->pquery($listQuery, $skipRecords);
 		$noOfRecords = $db->num_rows($result);
 		$recordIds = array();
 		for($i=0; $i<$noOfRecords; ++$i) {

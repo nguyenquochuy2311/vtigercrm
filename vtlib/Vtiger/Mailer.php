@@ -7,6 +7,7 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  ************************************************************************************/
+require_once('modules/Emails/class.smtp.php');
 require_once('modules/Emails/class.phpmailer.php');
 include_once('include/utils/CommonUtils.php');
 include_once('config.inc.php');
@@ -26,8 +27,10 @@ class Vtiger_Mailer extends PHPMailer {
 	 * Constructor
 	 */
 	function __construct() {
+		global $default_charset;
 		parent::__construct();
 		$this->initialize();
+		$this->CharSet = $default_charset;
 	}
 
 	/**
@@ -52,7 +55,7 @@ class Vtiger_Mailer extends PHPMailer {
 		if($adb->num_rows($result)) {
 			$this->Host = $adb->query_result($result, 0, 'server');
 			$this->Username = decode_html($adb->query_result($result, 0, 'server_username'));
-			$this->Password = decode_html($adb->query_result($result, 0, 'server_password'));
+			$this->Password = Vtiger_Functions::fromProtectedText(decode_html($adb->query_result($result, 0, 'server_password')));
 			$this->SMTPAuth = $adb->query_result($result, 0, 'smtp_auth');
 
 			// To support TLS
@@ -247,7 +250,7 @@ class Vtiger_Mailer extends PHPMailer {
 				$queue_record = $adb->fetch_array($queue, $index);
 				$queueid = $queue_record['id'];
 				$relcrmid= $queue_record['relcrmid'];
-				
+
 				$mailer->From = $queue_record['fromemail'];
 				$mailer->From = $queue_record['fromname'];
 				$mailer->Subject=$queue_record['subject'];

@@ -9,7 +9,7 @@
  *
  ********************************************************************************/
 
-
+require_once('modules/Emails/class.smtp.php');
 require_once("modules/Emails/class.phpmailer.php");
 require_once 'include/utils/CommonUtils.php';
 require_once 'include/utils/VTCacheUtils.php';
@@ -153,11 +153,11 @@ function addSignature($contents, $fromname, $fromEmail = '') {
 	$sign = VTCacheUtils::getUserSignature($fromname);
 	if ($sign == null) {
 		$sign = VTCacheUtils::getUserSignature($fromEmail);
-		$result = $adb->pquery("select signature, first_name, last_name from vtiger_users where user_name=? or user_name=? or email1=? or email2=? or secondaryemail=?", array($fromname, $fromEmail, $fromEmail, $fromEmail, $fromEmail));
+		$result = $adb->pquery("select signature, userlabel from vtiger_users where user_name=? or user_name=? or email1=? or email2=? or secondaryemail=?", array($fromname, $fromEmail, $fromEmail, $fromEmail, $fromEmail));
 		$sign = $adb->query_result($result,0,"signature");
 		VTCacheUtils::setUserSignature($fromname, $sign);
 		VTCacheUtils::setUserSignature($fromEmail, $sign);
-		VTCacheUtils::setUserFullName($fromname, $adb->query_result($result,0,"first_name").' '.$adb->query_result($result,0,"last_name"));
+		VTCacheUtils::setUserFullName($fromname, $adb->query_result($result,0,"userlabel"));
 	}
 
 	$sign = nl2br($sign);
@@ -215,10 +215,10 @@ function setMailerProperties($mail,$subject,$contents,$from_email,$from_name,$to
 		$userFullName = $HELPDESK_SUPPORT_NAME;
 	}
 	if(empty($userFullName)) {
-		$rs = $adb->pquery("select first_name,last_name from vtiger_users where user_name=?", array($from_name));
+		$rs = $adb->pquery("select first_name,last_name,userlabel from vtiger_users where user_name=?", array($from_name));
 		$num_rows = $adb->num_rows($rs);
 		if($num_rows > 0) {
-			$fullName = getFullNameFromQResult($rs, 0, 'Users');
+			$fullName = $adb->query_result($rs, 0, 'userlabel');
 			VTCacheUtils::setUserFullName($from_name, $fullName);
 		}
 	} else {
@@ -278,7 +278,7 @@ function setMailServerProperties($mail)
 {
 	global $adb;
 	$adb->println("Inside the function setMailServerProperties");
-        
+
 	$res = $adb->pquery("select * from vtiger_systems where server_type=?", array('email'));
 	if(isset($_REQUEST['server'])) {
 		$server = $_REQUEST['server'];
@@ -326,8 +326,8 @@ function setMailServerProperties($mail)
 	}
     $mail->Host = $server;		// specify main and backup server
 	$mail->Username = $username ;	// SMTP username
-    $mail->Password = $password ;	// SMTP password
-    
+    $mail->Password = Vtiger_Functions::fromProtectedText($password);	// SMTP password
+
     // To Support TLS
     $serverinfo = explode("://", $server);
     $smtpsecure = $serverinfo[0];
@@ -336,7 +336,7 @@ function setMailServerProperties($mail)
         $mail->Host = $serverinfo[1];
     }
     // End
-    
+
 	return;
 }
 
@@ -494,7 +494,7 @@ function getMailError($mail,$mail_status,$to)
 	global $adb;
 	$adb->println("Inside the function getMailError");
 
-	$msg = array_search($mail_status,$mail->language);
+	$msg = array_search($mail_status,$mail->getTranslations());
 	$adb->println("Error message ==> ".$msg);
 
 	if($msg == 'connect_host')

@@ -187,7 +187,7 @@ Vtiger_Field_Js('Vtiger_Reference_Field_Js',{},{
 	getUi : function(){
 		var referenceModules = this.getReferenceModules();
 		var value = this.getValue();
-		var html = '<div class="referencefield-wrapper';
+		var html = '<div class="';
 		if(value){
 			html += ' selected';
 		} else {
@@ -229,7 +229,7 @@ Vtiger_Field_Js('Vtiger_Picklist_Field_Js',{},{
 	 * @return <object> key value pair of options
 	 */
 	getPickListValues : function() {
-		return this.get('picklistvalues');
+		return this.get('editablepicklistvalues');
 	},
 
 	/**
@@ -282,6 +282,48 @@ Vtiger_Field_Js('Vtiger_Picklist_Field_Js',{},{
 			}
 			html +='<\style>';
 		}
+
+		var selectContainer = jQuery(html);
+		this.addValidationToElement(selectContainer);
+		return selectContainer;
+	}
+});
+
+Vtiger_Field_Js('Vtiger_Documentsfolder_Field_Js',{},{
+
+	/**
+	 * Function to get the pick list values
+	 * @return <object> key value pair of options
+	 */
+	getPickListValues : function() {
+		return this.get('documentFolders');
+	},
+
+	/**
+	 * Function to get the ui
+	 * @return - select element and chosen element
+	 */
+	getUi : function() {
+		//added class inlinewidth
+		var html = '<select class="select2 inputElement inlinewidth" name="'+ this.getName() +'" id="field_'+this.getModuleName()+'_'+this.getName()+'">';
+		var pickListValues = this.getPickListValues();
+		var selectedOption = app.htmlDecode(this.getValue());
+
+		if(typeof pickListValues[' '] == 'undefined' || pickListValues[' '].length <= 0 || pickListValues[' '] != 'Select an Option') {
+			html += '<option value="">'+app.vtranslate('JS_SELECT_OPTION')+'</option>';
+		}
+
+		var data = this.getData();
+
+		var fieldName = this.getName();
+		for(var option in pickListValues) {
+			html += '<option value="'+option+'" ';
+			if(option == selectedOption) {
+				html += ' selected ';
+			}
+			html += '>'+pickListValues[option]+'</option>';
+		}
+		html +='</select>';
 
 		var selectContainer = jQuery(html);
 		this.addValidationToElement(selectContainer);
@@ -433,7 +475,7 @@ Vtiger_Field_Js('Vtiger_Date_Field_Js',{},{
 	 */
 	getUi : function() {
 		//wrappig with another div for consistency
-		var html = '<div class="referencefield-wrapper"><div class="input-group date">'+
+		var html = '<div class=""><div class="input-group date">'+
 						'<input class="inputElement dateField form-control" type="text" data-rule-date="true" data-format="'+ this.getDateFormat() +'" name="'+ this.getName() +'" value="'+ this.getValue() + '" />'+
 						'<span class="input-group-addon"><i class="fa fa-calendar"></i></span>'+
 					'</div></div>';
@@ -453,7 +495,7 @@ Vtiger_Field_Js('Vtiger_Currency_Field_Js',{},{
 
 	getUi : function() {
 		//wrappig with another div for consistency
-		var html = '<div class="referencefield-wrapper"><div class="input-group">'+
+		var html = '<div class=""><div class="input-group">'+
 						'<span class="input-group-addon" id="basic-addon1">'+this.getCurrencySymbol()+'</span>'+
 						'<input class="inputElement" type="text" name="'+ this.getName() +'" data-rule-currency="true" value="'+ this.getValue() + '" />'+
 					'</div></div>';
@@ -469,7 +511,11 @@ Vtiger_Field_Js('Vtiger_Owner_Field_Js',{},{
 	 * Function to get the picklist values
 	 */
 	getPickListValues : function() {
-		return this.get('picklistvalues');
+            var pickListValues = this.get('editablepicklistvalues');
+            if (pickListValues == ''){
+                pickListValues = this.get('picklistvalues');
+            }
+            return pickListValues;
 	},
 
 	getUi : function() {
@@ -514,7 +560,7 @@ Vtiger_Field_Js('Vtiger_Time_Field_Js',{},{
 	 * @return - input text field
 	 */
 	getUi : function() {
-		var html = '<div class="referencefield-wrapper">'+'<div class="input-group time">'+
+		var html = '<div class="">'+'<div class="input-group time">'+
 						'<input class="timepicker-default form-control inputElement" type="text" data-format="'+ this.getTimeFormat() +'" name="'+ this.getName() +'" value="'+ this.getValue() + '" />'+
 						'<span class="input-group-addon"><i class="fa fa-clock-o"></i></span>'+
 					'</div>'+'</div>';
@@ -590,7 +636,7 @@ Vtiger_Field_Js('Vtiger_Email_Field_Js',{},{
 	 * return <String or Jquery> it can return either plain html or jquery object
 	 */
 	getUi : function() {
-		var html = '<input class="inputElement" type="text" name="'+ this.getName() +'" data-label="'+this.get('label')+'" data-rule-email="true" data-rule-illegal="true"/>';
+		var html = '<input class="getPopupUi inputElement" type="text" name="'+ this.getName() +'" data-label="'+this.get('label')+'" data-rule-email="true" data-rule-illegal="true"/>';
 		html = jQuery(html).val(app.htmlDecode(this.getValue()));
 		this.addValidationToElement(html);
 		return jQuery(html);

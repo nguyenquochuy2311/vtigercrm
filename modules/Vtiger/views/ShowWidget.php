@@ -10,8 +10,16 @@
 
 class Vtiger_ShowWidget_View extends Vtiger_IndexAjax_View {
 
-	function checkPermission(Vtiger_Request $request) {
-		return true;
+	public function requiresPermission(Vtiger_Request $request){
+		$permissions = parent::requiresPermission($request);
+		if($request->get('module') != 'Dashboard'){
+			$request->set('custom_module', 'Dashboard');
+			$permissions[] = array('module_parameter' => 'custom_module', 'action' => 'DetailView');
+		}else{
+			$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView');
+		}
+		
+		return $permissions;
 	}
 
 	function process(Vtiger_Request $request) {
@@ -53,8 +61,16 @@ class Vtiger_ShowWidget_View extends Vtiger_IndexAjax_View {
 				}
 				$request->set('createdtime', $dates);
 				
-				$classInstance = new $className();
-				$classInstance->process($request, $widget);
+				if($componentName == 'CalendarActivities' || $componentName == 'OverdueActivities') {
+					$moduleName = 'Calendar';
+				}
+				$currentUserPrivilegeModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
+				if($currentUserPrivilegeModel->hasModulePermission(getTabid($moduleName)) && !Vtiger_Runtime::isRestricted('modules', $moduleName)){
+					$classInstance = new $className();
+					$classInstance->process($request, $widget);
+				}else{
+					throw new AppException(vtranslate('LBL_PERMISSION_DENIED'));
+				}
 				return;
 			}
 	}

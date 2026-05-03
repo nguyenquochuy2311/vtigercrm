@@ -122,7 +122,7 @@ function vtlib_isModuleActive($module) {
  */
 function vtlib_RecreateUserPrivilegeFiles() {
 	global $adb;
-	$userres = $adb->query('SELECT id FROM vtiger_users WHERE deleted = 0');
+	$userres = $adb->pquery('SELECT id FROM vtiger_users WHERE deleted = 0', array());
 	if($userres && $adb->num_rows($userres)) {
 		while($userrow = $adb->fetch_array($userres)) {
 			createUserPrivilegesfile($userrow['id']);
@@ -158,6 +158,8 @@ function vtlib_toggleModuleAccess($modules, $enable_disable) {
 	} else if($enable_disable === false) {
 		$enable_disable = 1;
 		$event_type = Vtiger_Module::EVENT_MODULE_DISABLED;
+        //Update default landing page to dashboard if module is disabled.
+        $adb->pquery('UPDATE vtiger_users SET defaultlandingpage = ? WHERE defaultlandingpage IN(' . generateQuestionMarks($modules) . ')', array_merge(array('Home'), $modules));
 	}
 
 	$checkResult = $adb->pquery('SELECT name FROM vtiger_tab WHERE name IN ('. generateQuestionMarks($modules) .')', array($modules));
@@ -194,7 +196,7 @@ function vtlib_getToggleModuleInfo() {
 
 	$modinfo = Array();
 
-	$sqlresult = $adb->query("SELECT name, presence, customized, isentitytype FROM vtiger_tab WHERE name NOT IN ('Users','Home') AND presence IN (0,1) ORDER BY name");
+	$sqlresult = $adb->pquery("SELECT name, presence, customized, isentitytype FROM vtiger_tab WHERE name NOT IN ('Users','Home') AND presence IN (0,1) ORDER BY name", array());
 	$num_rows  = $adb->num_rows($sqlresult);
 	for($idx = 0; $idx < $num_rows; ++$idx) {
 		$module = $adb->query_result($sqlresult, $idx, 'name');
@@ -219,7 +221,7 @@ function vtlib_getToggleLanguageInfo() {
 	$adb->dieOnError = false;
 
 	$langinfo = Array();
-	$sqlresult = $adb->query("SELECT * FROM vtiger_language");
+	$sqlresult = $adb->pquery("SELECT * FROM vtiger_language", array());
 	if($sqlresult) {
 		for($idx = 0; $idx < $adb->num_rows($sqlresult); ++$idx) {
 			$row = $adb->fetch_array($sqlresult);
@@ -532,7 +534,7 @@ function vtlib_getPicklistValues_AccessibleToAll($field_columnname) {
 	$tablename = "vtiger_$columnname";
 
 	// Gather all the roles (except H1 which is organization role)
-	$roleres = $adb->query("SELECT roleid FROM vtiger_role WHERE roleid != 'H1'");
+	$roleres = $adb->pquery("SELECT roleid FROM vtiger_role WHERE roleid != 'H1'", array());
 	$roleresCount= $adb->num_rows($roleres);
 	$allroles = Array();
 	if($roleresCount) {
@@ -542,10 +544,10 @@ function vtlib_getPicklistValues_AccessibleToAll($field_columnname) {
 	sort($allroles);
 
 	// Get all the picklist values associated to roles (except H1 - organization role).
-	$picklistres = $adb->query(
+	$picklistres = $adb->pquery(
 		"SELECT $columnname as pickvalue, roleid FROM $tablename
 		INNER JOIN vtiger_role2picklist ON $tablename.picklist_valueid=vtiger_role2picklist.picklistvalueid
-		WHERE roleid != 'H1'");
+		WHERE roleid != 'H1'", array());
 
 	$picklistresCount = $adb->num_rows($picklistres);
 
@@ -578,7 +580,7 @@ function vtlib_getPicklistValues($field_columnname) {
 		$columnname =  $adb->sql_escape_string($field_columnname);
 		$tablename = "vtiger_$columnname";
 
-		$picklistres = $adb->query("SELECT $columnname as pickvalue FROM $tablename");
+		$picklistres = $adb->pquery("SELECT $columnname as pickvalue FROM $tablename", array());
 
 		$picklistresCount = $adb->num_rows($picklistres);
 
@@ -657,54 +659,69 @@ $__htmlpurifier_instance = false;
  * @param Boolean $ignore Skip cleaning of the input
  * @return String
  */
-function vtlib_purify($input, $ignore=false) {
-	global $__htmlpurifier_instance, $root_directory, $default_charset;
+function vtlib_purify($input, $ignore = false) {
+    global $__htmlpurifier_instance, $root_directory, $default_charset;
 
-	static $purified_cache = array();
-	$value = $input;
+    static $purified_cache = array();
+    $value = $input;
 
-	if(!is_array($input)) {
-		$md5OfInput = md5($input); 
-		if (array_key_exists($md5OfInput, $purified_cache)) { 
-			$value =  $purified_cache[$md5OfInput]; 
-			//to escape cleaning up again
-			$ignore = true;
-		} 
-	}
-	$use_charset = $default_charset;
-	$use_root_directory = $root_directory;
+    if (!is_array($input)) {
+        $md5OfInput = md5($input);
+        if (array_key_exists($md5OfInput, $purified_cache)) {
+            $value = $purified_cache[$md5OfInput];
+            //to escape cleaning up again
+            $ignore = true;
+        }
+    }
+    $use_charset = $default_charset;
+    $use_root_directory = $root_directory;
 
 
-	if(!$ignore) {
-		// Initialize the instance if it has not yet done
-		if($__htmlpurifier_instance == false) {
-			if(empty($use_charset)) $use_charset = 'UTF-8';
-			if(empty($use_root_directory)) $use_root_directory = dirname(__FILE__) . '/../..';
+    if (!$ignore) {
+        // Initialize the instance if it has not yet done
+        if ($__htmlpurifier_instance == false) {
+            if (empty($use_charset))
+                $use_charset = 'UTF-8';
+            if (empty($use_root_directory))
+                $use_root_directory = dirname(__FILE__) . '/../..';
 
-			include_once ('libraries/htmlpurifier/library/HTMLPurifier.auto.php');
+            $allowedSchemes = array(
+                'http' => true,
+                'https' => true,
+                'mailto' => true,
+                'ftp' => true,
+                'nntp' => true,
+                'news' => true,
+                'data' => true
+            );
 
-			$config = HTMLPurifier_Config::createDefault();
-			$config->set('Core', 'Encoding', $use_charset);
-			$config->set('Cache', 'SerializerPath', "$use_root_directory/test/vtlib");
+            include_once __DIR__ . '/../../libraries/htmlpurifier410/library/HTMLPurifier.auto.php';
 
-			$__htmlpurifier_instance = new HTMLPurifier($config);
-		}
-		if($__htmlpurifier_instance) {
-			// Composite type
-			if (is_array($input)) {
-				$value = array();
-				foreach ($input as $k => $v) {
-					$value[$k] = vtlib_purify($v, $ignore);
-				}
-			} else { // Simple type
-				$value = $__htmlpurifier_instance->purify($input);
-				$value = purifyHtmlEventAttributes($value);
-			}
-		}
-		$purified_cache[$md5OfInput] = $value;
-	}
-	$value = str_replace('&amp;','&',$value);
-	return $value;
+            $config = HTMLPurifier_Config::createDefault();
+            $config->set('Core.Encoding', $use_charset);
+            $config->set('Cache.SerializerPath', "$use_root_directory/test/vtlib");
+            $config->set('CSS.AllowTricky', true);
+            $config->set('URI.AllowedSchemes', $allowedSchemes);
+            $config->set('Attr.EnableID', true);
+
+            $__htmlpurifier_instance = new HTMLPurifier($config);
+        }
+        if ($__htmlpurifier_instance) {
+            // Composite type
+            if (is_array($input)) {
+                $value = array();
+                foreach ($input as $k => $v) {
+                    $value[$k] = vtlib_purify($v, $ignore);
+                }
+            } else { // Simple type
+                $value = $__htmlpurifier_instance->purify($input);
+                $value = purifyHtmlEventAttributes($value, true);
+            }
+        }
+        $purified_cache[$md5OfInput] = $value;
+    }
+    $value = str_replace('&amp;', '&', $value);
+    return $value;
 }
 
 /**
@@ -712,16 +729,36 @@ function vtlib_purify($input, $ignore=false) {
  * @param <String> $value
  * @return <String>
  */
-function purifyHtmlEventAttributes($value){
-	$htmlEventAttributes = "onerror|onblur|onchange|oncontextmenu|onfocus|oninput|oninvalid|".
-						"onreset|onsearch|onselect|onsubmit|onkeydown|onkeypress|onkeyup|".
-						"onclick|ondblclick|ondrag|ondragend|ondragenter|ondragleave|ondragover|".
-						"ondragstart|ondrop|onmousedown|onmousemove|onmouseout|onmouseover|".
-						"onmouseup|onmousewheel|onscroll|onwheel|oncopy|oncut|onpaste";
-	if(preg_match("/\s(".$htmlEventAttributes.")\s*=/i", $value)) {
-		$value = str_replace("=", "&equals;", $value);
-	}
-	return $value;
+function purifyHtmlEventAttributes($value, $replaceAll = false) {
+    $htmlEventAttributes = "onerror|onblur|onchange|oncontextmenu|onfocus|oninput|oninvalid|onresize|onauxclick|oncancel|oncanplay|oncanplaythrough|" .
+            "onreset|onsearch|onselect|onsubmit|onkeydown|onkeypress|onkeyup|onclose|oncuechange|ondurationchange|onemptied|onended|" .
+            "onclick|ondblclick|ondrag|ondragend|ondragenter|ondragleave|ondragover|ondragexit|onformdata|onloadeddata|onloadedmetadata|" .
+            "ondragstart|ondrop|onmousedown|onmousemove|onmouseout|onmouseover|onmouseenter|onmouseleave|onpause|onplay|onplaying|" .
+            "onmouseup|onmousewheel|onscroll|onwheel|oncopy|oncut|onpaste|onload|onprogress|onratechange|onsecuritypolicyviolation|" .
+            "onselectionchange|onabort|onselectstart|onstart|onfinish|onloadstart|onshow|onreadystatechange|onseeked|onslotchange|" .
+            "onseeking|onstalled|onsubmit|onsuspend|ontimeupdate|ontoggle|onvolumechange|onwaiting|onwebkitanimationend|onstorage|" .
+            "onwebkitanimationiteration|onwebkitanimationstart|onwebkittransitionend|onafterprint|onbeforeprint|onbeforeunload|" .
+            "onhashchange|onlanguagechange|onmessage|onmessageerror|onoffline|ononline|onpagehide|onpageshow|onpopstate|onunload" .
+            "onrejectionhandled|onunhandledrejection|onloadend";
+
+    // remove malicious html attributes with its value.
+    if ($replaceAll) {
+        $regex = '\s*[=&%#]\s*(?:"[^"]*"[\'"]*|\'[^\']*\'[\'"]*|[^]*[\s\/>])*/i';
+        $value = preg_replace("/\s*(" . $htmlEventAttributes . ")" . $regex, '', $value);
+
+        /**
+         * If anchor tag having 'javascript:' string then remove the tag contents.
+         * Right now, we fixed this for anchor tag as we don't see any other such things right now.  
+         * All other event attributes are already handled above. Need to update this if any thing new found
+         */
+        $javaScriptRegex = '/<a [^>]*(j[\s]?a[\s]?v[\s]?a[\s]?s[\s]?c[\s]?r[\s]?i[\s]?p[\s]?t[\s]*[=&%#:])[^>]*?>/i';
+        $value = preg_replace($javaScriptRegex, '<a>', $value);
+    } else {
+        if (preg_match("/\s*(" . $htmlEventAttributes . ")\s*=/i", $value)) {
+            $value = str_replace("=", "&equals;", $value);
+        }
+    }
+    return $value;
 }
 
 /**
@@ -731,7 +768,7 @@ function purifyHtmlEventAttributes($value){
  * @return <String> $string/false
  */
 function vtlib_purifyForSql($string, $skipEmpty=true) {
-	$pattern = "/^[_a-zA-Z0-9.]+$/";
+	$pattern = "/^[_a-zA-Z0-9.:\-]+$/";
 	if ((empty($string) && $skipEmpty) || preg_match($pattern, $string)) {
 		return $string;
 	}
@@ -827,4 +864,23 @@ function vtlib_addSettingsLink($linkName, $linkURL, $blockName = false) {
 	return $success;
 }
 
+/**
+ * PHP7 support for split function
+ * split : Case sensitive.
+ */
+if (!function_exists('split')) {
+    function split($pattern, $string, $limit = null) {
+        $regex = '/' . preg_replace('/\//', '\\/', $pattern) . '/';
+        return preg_split($regex, $string, $limit);
+    }
+
+}
+
+function php7_compat_ereg($pattern, $str, $ignore_case=false) {
+	$regex = '/'. preg_replace('/\//', '\\/', $pattern) .'/' . ($ignore_case ? 'i': '');
+	return preg_match($regex, $str);
+}
+
+if (!function_exists('ereg')) { function ereg($pattern, $str) { return php7_compat_ereg($pattern, $str); } }
+if (!function_exists('eregi')) { function eregi($pattern, $str) { return php7_compat_ereg($pattern, $str, true); } }
 ?>

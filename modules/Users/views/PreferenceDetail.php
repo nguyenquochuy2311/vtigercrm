@@ -10,7 +10,11 @@
 
 class Users_PreferenceDetail_View extends Vtiger_Detail_View {
 
-	public function checkPermission(Vtiger_Request $request) {
+	public function requiresPermission(\Vtiger_Request $request) {
+		return array();
+	}
+    
+    public function checkPermission(Vtiger_Request $request) {
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 		$record = $request->get('record');
 
@@ -168,6 +172,9 @@ class Users_PreferenceDetail_View extends Vtiger_Detail_View {
 		$viewer->assign("DAY_STARTS", Zend_Json::encode($dayStartPicklistValues));
 		$viewer->assign('IMAGE_DETAILS', $recordModel->getImageDetails());
 
+                $runtime_configs = Vtiger_Runtime_Configs::getInstance();
+                $password_regex = $runtime_configs->getValidationRegex('password_regex');
+                $viewer->assign('PWD_REGEX', $password_regex);
 		return parent::process($request);
 	}
 

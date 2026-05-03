@@ -182,6 +182,8 @@ $languageStrings = array(
 	'LBL_NO_COMMENTS' => 'No comments',
 	'LBL_REPLIES' => 'replies',
 	'LBL_REPLY_ALL' => 'Reply all',
+	'LBL_INTERNAL_COMMENT_TOOTLTIP' => 'Customers cannot see this comment',
+	'LBL_EXTERNAL_COMMENT_TOOTLTIP' => 'Customers might see this comment via notifications or customer portal',
 
 	//Translation for all modules
 	'Accounts' => 'Organizations',
@@ -1312,6 +1314,7 @@ $languageStrings = array(
 	'LBL_VTIGER6_RETIREMENT_NOTICE' => 'This version will be retired on Feb 15th 2016',
 	'ModTracker' => 'Updates',
 	'LBL_MAIL_SENT_SUCCESSFULLY' => 'Mail Sent Successfully',
+        'LBL_MAIL_SAVED_SUCCESSFULLY' => 'Mail Saved Successfully',
 	'LBL_FAILED_TO_SEND' => 'Failed to Send',
 
 	'LBL_ESSENTIALS' => 'Essentials',
@@ -1387,6 +1390,9 @@ $languageStrings = array(
 	'LBL_RECENT_UPDATES' => 'Recent Updates',
 	'LBL_VIEW_UPDATES_IN_DETAIL' => 'Read More ...',
 	'LBL_DEFAULT_DASHBOARD_TOOLTIP'=>'Make this dashboard as default by reordering it as the first tab!',
+	'LBL_RELATED_MODULES_PERMISSION_DENIED' => 'Related modules permission is denied',
+	'LBL_RECORD_PERMISSION_DENIED' => 'Record permissions denied',
+	'LBL_MASS_SELECT' => 'Mass Select',
 );
 
 $jsLanguageStrings = array(
@@ -1934,4 +1940,10 @@ $jsLanguageStrings = array(
 	'JS_PASSWORD_MISMATCH_ERROR' => 'Please re-enter passwords. The "new password" and "confirm password" values do not match.',
 	'LBL_LIST_DELETE_CONFIRMATION' => 'Are you sure you want to delete?',
 	'JS_WIDGET_RESIZING_WAIT_MSG' => 'Widget contents will load after resizing.',
+        'JS_COPIED_SUCCESSFULLY' => 'Copied successfully',
+        'JS_ATLEAST_SELECT_ONE_FIELD' => 'At least one field should be selected',
+        'JS_RELATED_ACCOUNT_IS_NOT_AVAILABLE' => 'Related Organization record is not available',
+        'JS_RELATED_CONTACT_IS_NOT_AVAILABLE' => 'Related Contact record is not available',
+        'JS_REPEAT_DATE_SHOULD_BE_GREATER_THAN_START_DATE' => 'Repeat date should be greater than or equal to Start Date',
+        'JS_PASSWORD_NOT_STRONG' => 'To keep your data safe, we suggest that you use a strong password &lt;br&gt; &lt;ul&gt; &lt;li&gt;Password should be at least 8 characters long &lt;/li&gt; &lt;li&gt;Include at least one number &lt;/li&gt; &lt;li&gt;Include at least one lowercase alphabet &lt;/li&gt; &lt;li&gt;Include at least one uppercase alphabet &lt;/li&gt; &lt;li&gt;Include at least one special character in the password &lt;/li&gt; &lt;/ul&gt;',
 );

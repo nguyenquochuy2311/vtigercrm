@@ -10,6 +10,15 @@
 
 class Vtiger_ListAjax_View extends Vtiger_List_View {
 
+	public function requiresPermission(\Vtiger_Request $request) {
+		$permissions = parent::requiresPermission($request);
+		$moduleName = $request->get('module');
+		if($moduleName == 'Vtiger'){
+			$permissions = array();
+		}
+		return $permissions;
+	}
+	
 	function __construct() {
 		parent::__construct();
 		$this->exposeMethod('getListViewCount');
@@ -21,7 +30,7 @@ class Vtiger_ListAjax_View extends Vtiger_List_View {
 		$this->exposeMethod('searchAll');
 	}
 
-	function preProcess(Vtiger_Request $request) {
+	function preProcess(Vtiger_Request $request, $display=true) {
 		return true;
 	}
 

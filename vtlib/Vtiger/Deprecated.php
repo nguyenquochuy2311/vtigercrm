@@ -438,8 +438,15 @@ class Vtiger_Deprecated {
 		$filePathParts = explode('/', $relativeFilePath);
 
 		if (stripos($realfilepath, $rootdirpath) !== 0 || in_array($filePathParts[0], $unsafeDirectories)) {
-			die('Sorry! Attempt to access restricted file. - '.$filepath);
-		}
+			$a = debug_backtrace();
+                        $backtrace = 'Traced on '.date('Y-m-d H:i:s')."\n";
+                        $backtrace .= "FileAccessForInclusion - \n";
+                        foreach ($a as $b) {
+                            $backtrace .=  $b['file'] . '::' . $b['function'] . '::' . $b['line'] . '<br>'.PHP_EOL;
+                        }
+                        Vtiger_Utils::writeLogFile('fileMissing.log', $backtrace);
+                        die('Sorry! Attempt to access restricted file.');
+                }
 	}
 
 	/** Function to check the file deletion within the deletable (safe) directories*/
@@ -467,7 +474,14 @@ class Vtiger_Deprecated {
 		$filePathParts = explode('/', $relativeFilePath);
 
 		if (stripos($realfilepath, $rootdirpath) !== 0 || !in_array($filePathParts[0], $safeDirectories)) {
-			die('Sorry! Attempt to access restricted file. - '.$filepath);
+                    $a = debug_backtrace();
+                    $backtrace = 'Traced on '.date('Y-m-d H:i:s')."\n";
+                    $backtrace .= "FileAccessForDeletion - \n";
+                    foreach ($a as $b) {
+                        $backtrace .=  $b['file'] . '::' . $b['function'] . '::' . $b['line'] . '<br>'.PHP_EOL;
+                    }
+                    Vtiger_Utils::writeLogFile('fileMissing.log', $backtrace);
+		    die('Sorry! Attempt to access restricted file.');
 		}
 
 	}
@@ -475,7 +489,14 @@ class Vtiger_Deprecated {
 	/** Function to check the file access is made within web root directory. */
 	static function checkFileAccess($filepath) {
 		if (!self::isFileAccessible($filepath)) {
-			die('Sorry! Attempt to access restricted file. - '.$filepath);
+                    $a = debug_backtrace();
+                    $backtrace = 'Traced on '.date('Y-m-d H:i:s')."\n";
+                    $backtrace .= "FileAccess - \n";
+                    foreach ($a as $b) {
+                        $backtrace .=  $b['file'] . '::' . $b['function'] . '::' . $b['line'] . '<br>'.PHP_EOL;
+                    }
+                    Vtiger_Utils::writeLogFile('fileMissing.log', $backtrace);
+                    die('Sorry! Attempt to access restricted file.');
 		}
 	}
 
@@ -523,6 +544,23 @@ class Vtiger_Deprecated {
 	}
 
 	static function getSqlForNameInDisplayFormat($input, $module, $glue = ' ') {
+		if ($module == 'Users') {
+			if (is_string($input)) {
+				$input = array($input);
+			}
+
+			$tableName = '';
+			foreach ($input as $fieldTableColumn) {
+				if ($fieldTableColumn) {
+					list($tableName, $columnName) = explode('.', $fieldTableColumn);
+					break;
+				}
+			}
+			if ($tableName) {
+				return "$tableName.userlabel";
+			}
+		}
+
 		$entity_field_info = Vtiger_Functions::getEntityModuleInfoFieldsFormatted($module);
 		$fieldsName = $entity_field_info['fieldname'];
 		if(is_array($fieldsName)) {
@@ -541,19 +579,19 @@ class Vtiger_Deprecated {
 		global $adb;
 		switch ($module) {
 			case "Invoice":
-				$res = $adb->query("SELECT invoice_no FROM vtiger_invoice WHERE invoiceid = $recordId");
+				$res = $adb->pquery("SELECT invoice_no FROM vtiger_invoice WHERE invoiceid = ?", array($recordId));
 				$moduleSeqNo = $adb->query_result($res, 0, 'invoice_no');
 				break;
 			case "PurchaseOrder":
-				$res = $adb->query("SELECT purchaseorder_no FROM vtiger_purchaseorder WHERE purchaseorderid = $recordId");
+				$res = $adb->pquery("SELECT purchaseorder_no FROM vtiger_purchaseorder WHERE purchaseorderid = ?", array($recordId));
 				$moduleSeqNo = $adb->query_result($res, 0, 'purchaseorder_no');
 				break;
 			case "Quotes":
-				$res = $adb->query("SELECT quote_no FROM vtiger_quotes WHERE quoteid = $recordId");
+				$res = $adb->pquery("SELECT quote_no FROM vtiger_quotes WHERE quoteid = ?", array($recordId));
 				$moduleSeqNo = $adb->query_result($res, 0, 'quote_no');
 				break;
 			case "SalesOrder":
-				$res = $adb->query("SELECT salesorder_no FROM vtiger_salesorder WHERE salesorderid = $recordId");
+				$res = $adb->pquery("SELECT salesorder_no FROM vtiger_salesorder WHERE salesorderid = ?", array($recordId));
 				$moduleSeqNo = $adb->query_result($res, 0, 'salesorder_no');
 				break;
 		}

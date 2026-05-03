@@ -28,26 +28,35 @@ class Settings_Picklist_SaveAjax_Action extends Settings_Vtiger_Basic_Action {
     /*
      * @function updates user tables with new picklist value for default event and status fields
      */
-    public function updateDefaultPicklistValues($pickListFieldName,$oldValue,$newValue) {
+	public function updateDefaultPicklistValues($pickListFieldName,$oldValue,$newValue) {
+
+		// No change in value - likely a color change.
+		if ($oldValue == $newValue) {
+			return;
+		}
+
 		$db = PearDatabase::getInstance();
             if($pickListFieldName == 'activitytype')
                 $defaultFieldName = 'defaultactivitytype';
             else
                 $defaultFieldName = 'defaulteventstatus';
-            $queryToGetId = 'SELECT id FROM vtiger_users WHERE '.$defaultFieldName.' IN (';
+            $queryToGetId = "SELECT id FROM vtiger_users WHERE ".$defaultFieldName." IN (";
+            $params = array();
              if(is_array($oldValue)) {
                  for($i=0;$i<count($oldValue);$i++) {
-                     $queryToGetId .= '"'.$oldValue[$i].'"';
+                     $queryToGetId .= "?";
+                     array_push($params, $oldValue[$i]);
                      if($i<(count($oldValue)-1)) {
-                         $queryToGetId .= ',';
+                         $queryToGetId .= ",";
                      }
                  }
-                 $queryToGetId .= ')';
+                 $queryToGetId .= ")";
              }
              else {
-                 $queryToGetId .= '"'.$oldValue.'")';
+                 $queryToGetId .= "?)";
+                 array_push($params, $oldValue);
              }
-            $result = $db->pquery($queryToGetId, array());
+            $result = $db->pquery($queryToGetId, $params);
             $rowCount =  $db->num_rows($result);
             for($i=0; $i<$rowCount; $i++) {
                 $recordId = $db->query_result_rowdata($result, $i);

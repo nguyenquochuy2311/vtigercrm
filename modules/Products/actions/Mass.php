@@ -15,10 +15,6 @@ class Products_Mass_Action extends Vtiger_Mass_Action {
 		$this->exposeMethod('isChildProduct');
 	}
 
-	public function checkPermission(Vtiger_Request $request) {
-		return true;
-	}
-
 	public function process(Vtiger_Request $request) {
 		$mode = $request->getMode();
 		if(!empty($mode)) {

@@ -206,8 +206,8 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 			$queryGenerator->addUserSearchConditions(array('search_field' => $searchKey, 'search_text' => $searchValue, 'operator' => $operator));
 		}
 
-		$orderBy = $this->get('orderby');
-		$sortOrder = $this->get('sortorder');
+		$orderBy = $this->getForSql('orderby');
+		$sortOrder = $this->getForSql('sortorder');
 
 		if(!empty($orderBy)){
 			$queryGenerator = $this->get('query_generator');
@@ -232,6 +232,7 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 
 		$startIndex = $pagingModel->getStartIndex();
 		$pageLimit = $pagingModel->getPageLimit();
+		$paramArray = array();
 
 		if(!empty($orderBy) && $orderByFieldModel) {
 			if($orderBy == 'roleid' && $moduleName == 'Users'){
@@ -256,9 +257,11 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 
 		ListViewSession::setSessionQuery($moduleName, $listQuery, $viewid);
 
-		$listQuery .= " LIMIT $startIndex,".($pageLimit+1);
-
-		$listResult = $db->pquery($listQuery, array());
+		$listQuery .= " LIMIT ?, ?";
+		array_push($paramArray, $startIndex);
+		array_push($paramArray, ($pageLimit+1));
+		
+		$listResult = $db->pquery($listQuery, $paramArray);
 
 		$listViewRecordModels = array();
 		$listViewEntries =  $listViewContoller->getListViewRecords($moduleFocus,$moduleName, $listResult);

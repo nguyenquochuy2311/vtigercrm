@@ -1136,7 +1136,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			fieldName = multiPicklistFieldName[0];
 		}
 
-		var customHandlingFields = ['owner','ownergroup','picklist','multipicklist','reference','currencyList','text'];
+		var customHandlingFields = ['owner','ownergroup','picklist','multipicklist','reference','currencyList','text', 'documentsFolder'];
 		if(jQuery.inArray(fieldType, customHandlingFields) !== -1){
 			value = rawValue;
 		}
@@ -1148,7 +1148,18 @@ Vtiger.Class("Vtiger_Detail_Js",{
 			else{
 				 fieldInfo = uimeta.field.get(fieldName);
 			}
-			fieldInfo['value'] = value;
+			if(fieldType == "boolean"){
+				if(rawValue == 0){
+					fieldInfo['value'] = "No";
+				}
+				else{
+					fieldInfo['value'] = "Yes";
+				}
+			}
+			else{
+				fieldInfo['value'] = value;
+			}
+			
 			var fieldObject = Vtiger_Field_Js.getInstance(fieldInfo);
 			var fieldModel = fieldObject.getUiTypeModel();
 
@@ -2812,7 +2823,7 @@ Vtiger.Class("Vtiger_Detail_Js",{
 					var commentTextAreaElement = closestAddCommentBlock.find('.commentcontent');
 					var commentInfoBlock = currentTarget.closest('.singleComment');
 					commentTextAreaElement.val('');
-					closestAddCommentBlock.find('#is_private').removeAttr('checked');
+
 					if(mode == "add"){
 						var commentId = data['id'];
 						var commentHtml = self.getCommentUI(commentId);

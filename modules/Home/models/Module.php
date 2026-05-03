@@ -175,7 +175,7 @@ class Home_Module_Model extends Vtiger_Module_Model {
 	 * @param <String> $recordId - record id
 	 * @return <Array>
 	 */
-	function getCalendarActivities($mode, $pagingModel, $user) {
+	function getCalendarActivities($mode, $pagingModel, $user,$recordId=null) {
 		$currentUser = Users_Record_Model::getCurrentUserModel();
 		$db = PearDatabase::getInstance();
 
@@ -214,10 +214,8 @@ class Home_Module_Model extends Vtiger_Module_Model {
 
 		$params = array();
 		if($user != 'all' && $user != '') {
-			if($user === $currentUser->id) {
 				$query .= " AND vtiger_crmentity.smownerid = ?";
 				$params[] = $user;
-			}
 		}
 
 		$query .= " ORDER BY date_start, time_start LIMIT ?, ?";

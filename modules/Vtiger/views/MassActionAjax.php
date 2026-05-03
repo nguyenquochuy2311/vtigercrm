@@ -19,6 +19,34 @@ class Vtiger_MassActionAjax_View extends Vtiger_IndexAjax_View {
 		$this->exposeMethod('transferOwnership');
 	}
 
+	public function requiresPermission(Vtiger_Request $request){
+		$permissions = parent::requiresPermission($request);
+		$mode = $request->getMode();
+		$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView');
+		if(!empty($mode)) {
+			switch ($mode) {
+				case 'showMassEditForm':
+					$permissions[] = array('module_parameter' => 'module', 'action' => 'EditView');
+					break;
+				case 'showAddCommentForm':
+					$permissions[] = array('module_parameter' => 'custom_module', 'action' => 'CreateView');
+					$request->set('custom_module', 'ModComments');
+					break;
+				case 'showComposeEmailForm':
+					$permissions[] = array('module_parameter' => 'custom_module', 'action' => 'DetailView');
+					$request->set('custom_module', 'Emails');
+					break;
+				case 'showSendSMSForm':
+					$permissions[] = array('module_parameter' => 'custom_module', 'action' => 'CreateView');
+					$request->set('custom_module', 'SMSNotifier');
+					break;
+				default:
+					break;
+			}
+		}
+		return $permissions;
+	}
+	
 	function process(Vtiger_Request $request) {
 		$mode = $request->get('mode');
 		if(!empty($mode)) {
@@ -43,6 +71,10 @@ class Vtiger_MassActionAjax_View extends Vtiger_IndexAjax_View {
 		$cvId = $request->get('viewname');
 		$selectedIds = $request->get('selected_ids');
 		$excludedIds = $request->get('excluded_ids');
+        $tagParams = $request->get('tag_params');
+		if(empty($tagParams)){
+            $tagParams = array();
+        }
 
 		$viewer = $this->getViewer($request);
 
@@ -68,6 +100,7 @@ class Vtiger_MassActionAjax_View extends Vtiger_IndexAjax_View {
 		$viewer->assign('CVID', $cvId);
 		$viewer->assign('SELECTED_IDS', $selectedIds);
 		$viewer->assign('EXCLUDED_IDS', $excludedIds);
+        $viewer->assign('TAG_PARAMS', $tagParams);
 		$viewer->assign('VIEW_SOURCE','MASSEDIT');
 		$viewer->assign('RECORD_STRUCTURE_MODEL', $recordStructureInstance);
 		$viewer->assign('MODULE_MODEL',$moduleModel); 
@@ -101,6 +134,10 @@ class Vtiger_MassActionAjax_View extends Vtiger_IndexAjax_View {
 		$cvId = $request->get('viewname');
 		$selectedIds = $request->get('selected_ids');
 		$excludedIds = $request->get('excluded_ids');
+        $tagParams = $request->get('tag_params');
+        if(empty($tagParams)){
+            $tagParams = array();
+        }
 
 		$viewer = $this->getViewer($request);
 		$viewer->assign('SOURCE_MODULE', $sourceModule);
@@ -108,6 +145,7 @@ class Vtiger_MassActionAjax_View extends Vtiger_IndexAjax_View {
 		$viewer->assign('CVID', $cvId);
 		$viewer->assign('SELECTED_IDS', $selectedIds);
 		$viewer->assign('EXCLUDED_IDS', $excludedIds);
+        $viewer->assign('TAG_PARAMS', $tagParams);
 		$viewer->assign('USER_MODEL', Users_Record_Model::getCurrentUserModel());
         
         $modCommentsModel = Vtiger_Module_Model::getInstance($moduleName);
@@ -147,6 +185,10 @@ class Vtiger_MassActionAjax_View extends Vtiger_IndexAjax_View {
 		$excludedIds = $request->get('excluded_ids');
 		$step = $request->get('step');
 		$relatedLoad = $request->get('relatedLoad');
+        $tagParams = $request->get('tag_params');
+		if(empty($tagParams)){
+            $tagParams = array();
+        }
 		
 		$emailFieldsInfo = $this->getEmailFieldsInfo($request);
 		$viewer = $this->getViewer($request);
@@ -156,6 +198,7 @@ class Vtiger_MassActionAjax_View extends Vtiger_IndexAjax_View {
 		$viewer->assign('VIEWNAME', $cvId);
 		$viewer->assign('SELECTED_IDS', $selectedIds);
 		$viewer->assign('EXCLUDED_IDS', $excludedIds);
+        $viewer->assign('TAG_PARAMS', $tagParams);
 		$viewer->assign('USER_MODEL', Users_Record_Model::getCurrentUserModel());
         $viewer->assign('SELECTED_EMAIL_SOURCE_MODULE', $sourceModule);
         
@@ -370,6 +413,27 @@ class Vtiger_MassActionAjax_View extends Vtiger_IndexAjax_View {
 				return $selectedIds;
 			}
 		}
+        $tagParams = $request->get('tag_params');
+		$tag = $request->get('tag');
+		$listViewSessionKey = $module.'_'.$cvId;
+
+		if(!empty($tag)) {
+			$listViewSessionKey .='_'.$tag;
+		}
+
+		$orderParams = Vtiger_ListView_Model::getSortParamsSession($listViewSessionKey);
+		if(!empty($tag) && empty($tagParams)){
+			$tagParams = $orderParams['tag_params'];
+		}
+
+		if(empty($tagParams)){
+			$tagParams = array();
+		}
+		$searchParams = $request->get('search_params');
+		if(empty($searchParams) && !is_array($searchParams)){
+			$searchParams = array();
+		}
+		$searchAndTagParams = array_merge($searchParams, $tagParams);
 		
 		$sourceRecord = $request->get('sourceRecord');
 		$sourceModule = $request->get('sourceModule');
@@ -388,7 +452,7 @@ class Vtiger_MassActionAjax_View extends Vtiger_IndexAjax_View {
 				$customViewModel->set('search_key', $searchKey);
 				$customViewModel->set('search_value', $searchValue);
 			}
-            $customViewModel->set('search_params', $request->get('search_params'));
+            $customViewModel->set('search_params', $searchAndTagParams);
 			return $customViewModel->getRecordIds($excludedIds,$module);
 		}
 	}
