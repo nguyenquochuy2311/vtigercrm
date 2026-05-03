@@ -17,7 +17,7 @@ class Reports_ListView_Model extends Vtiger_ListView_Model {
 	 * Function to get the list of listview links for the module
 	 * @return <Array> - Associate array of Link Type to List of Vtiger_Link_Model instances
 	 */
-	public function getListViewLinks($linkParams = false) {
+	public function getListViewLinks() {
 		$moduleModel = $this->getModule();
 		$links = Vtiger_Link_Model::getAllByType($moduleModel->getId(), array('LISTVIEWBASIC'));
 		return $links;
@@ -28,7 +28,7 @@ class Reports_ListView_Model extends Vtiger_ListView_Model {
 	 * @param <Array> $linkParams
 	 * @return <Array> - Associative array of Link type to List of  Vtiger_Link_Model instances for Mass Actions
 	 */
-	public function getListViewMassActions($linkParams = false) {
+	public function getListViewMassActions() {
 		$currentUserModel = Users_Privileges_Model::getCurrentUserPrivilegesModel();
 
 		$massActionLinks = array();
@@ -73,8 +73,7 @@ class Reports_ListView_Model extends Vtiger_ListView_Model {
 	 * Function to get the list view header
 	 * @return <Array> - List of Vtiger_Field_Model instances
 	 */
-	public function getListViewHeaders() {
-            list($folderId) = func_get_args();
+	public function getListViewHeaders($folderId) {
 		$headers = array(
 			'reportname' => array('label' => 'LBL_REPORT_NAME', 'type' => 'string'),
 			'description' => array('label' => 'LBL_DESCRIPTION', 'type' => 'string'),
@@ -96,16 +95,16 @@ class Reports_ListView_Model extends Vtiger_ListView_Model {
 		$reportFolderModel = Reports_Folder_Model::getInstance();
 		$reportFolderModel->set('folderid', $this->get('folderid'));
 
-		$orderBy = $this->getForSql('orderby');
+		$orderBy = $this->get('orderby');
 		if (!empty($orderBy) && $orderBy === 'smownerid') {
 			$fieldModel = Vtiger_Field_Model::getInstance('assigned_user_id', $moduleModel);
 			if ($fieldModel->getFieldDataType() == 'owner') {
-				$orderBy = 'COALESCE(vtiger_users.userlabel,vtiger_groups.groupname)';
+				$orderBy = 'COALESCE(CONCAT(vtiger_users.first_name,vtiger_users.last_name),vtiger_groups.groupname)';
 			}
 		}
 		if(!empty($orderBy)) {
 			$reportFolderModel->set('orderby', $orderBy);
-			$reportFolderModel->set('sortby', $this->getForSql('sortorder'));
+			$reportFolderModel->set('sortby', $this->get('sortorder'));
 		}
 
 		$reportFolderModel->set('search_params', $this->get('search_params'));

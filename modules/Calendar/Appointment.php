@@ -42,15 +42,12 @@ class Appointment
 	var $shared = false;
 	var $recurring;
 	var $dur_hour;
-        function __construct()
-        {
-            $this->participant = Array();
-            $this->participant_state = Array();
-            $this->description = "";
-        }
+
 	function Appointment()
 	{
-            self::__construct();
+		$this->participant = Array();
+		$this->participant_state = Array();
+		$this->description = "";
 	}
 	
 	/** To get the events of the specified user and shared events

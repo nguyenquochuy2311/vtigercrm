@@ -206,8 +206,8 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 			$queryGenerator->addUserSearchConditions(array('search_field' => $searchKey, 'search_text' => $searchValue, 'operator' => $operator));
 		}
 
-		$orderBy = $this->getForSql('orderby');
-		$sortOrder = $this->getForSql('sortorder');
+		$orderBy = $this->get('orderby');
+		$sortOrder = $this->get('sortorder');
 
 		if(!empty($orderBy)){
 			$queryGenerator = $this->get('query_generator');
@@ -238,7 +238,8 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 			if($orderBy == 'roleid' && $moduleName == 'Users'){
 				$listQuery .= ' ORDER BY vtiger_role.rolename '.' '. $sortOrder; 
 			} else {
-				$listQuery .= ' ORDER BY '.$queryGenerator->getOrderByColumn($orderBy).' '.$sortOrder;
+				$listQuery .= ' ORDER BY ? '.$sortOrder;
+				array_push($paramArray, $queryGenerator->getOrderByColumn($orderBy));
 			}
 
 			if ($orderBy == 'first_name' && $moduleName == 'Users') {

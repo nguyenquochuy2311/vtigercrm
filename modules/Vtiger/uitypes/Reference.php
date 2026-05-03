@@ -46,15 +46,15 @@ class Vtiger_Reference_UIType extends Vtiger_Base_UIType {
 			$referenceModuleName = $referenceModule->get('name');
 			if($referenceModuleName == 'Users') {
 				$db = PearDatabase::getInstance();
-				$nameResult = $db->pquery('SELECT userlabel FROM vtiger_users WHERE id = ?', array($value));
+				$nameResult = $db->pquery('SELECT first_name, last_name FROM vtiger_users WHERE id = ?', array($value));
 				if($db->num_rows($nameResult)) {
-					return $db->query_result($nameResult, 0, 'userlabel');
+					return $db->query_result($nameResult, 0, 'first_name').' '.$db->query_result($nameResult, 0, 'last_name');
 				}
 			} else {
 				$fieldModel = $this->get('field');
 				$entityNames = getEntityName($referenceModuleName, array($value));
 				$linkValue = "<a href='index.php?module=$referenceModuleName&view=".$referenceModule->getDetailViewName()."&record=$value'
-							title='".vtranslate($referenceModuleName, $referenceModuleName).":". $entityNames[$value] ."' "
+							title='".vtranslate($fieldModel->get('label'), $referenceModuleName).":". $entityNames[$value] ."' "
 							. "data-original-title='".vtranslate($referenceModuleName, $referenceModuleName)."'>$entityNames[$value]</a>";
 				return $linkValue;
 			}

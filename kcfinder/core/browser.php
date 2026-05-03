@@ -262,8 +262,7 @@ class browser extends uploader {
             $this->errorMsg($message);
         }
 
-        $sanitizedFilename = file::sanitizeFileName($this->file['name']);
-        $target = "$dir/" . file::getInexistantFilename($sanitizedFilename, $dir);
+        $target = "$dir/" . file::getInexistantFilename($this->file['name'], $dir);
 
         if (!@move_uploaded_file($this->file['tmp_name'], $target) &&
             !@rename($this->file['tmp_name'], $target) &&

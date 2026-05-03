@@ -102,14 +102,11 @@ class Accounts extends CRMEntity {
 		'Project' => array('table_name' => 'vtiger_project', 'table_index' => 'projectid', 'rel_index' => 'linktoaccountscontacts'),
 		'PurchaseOrder' => array('table_name' => 'vtiger_purchaseorder', 'table_index' => 'purchaseorderid', 'rel_index' => 'accountid'),
 	);
-        function __construct()
-        {
-            $this->log =Logger::getLogger('account');
-            $this->db = PearDatabase::getInstance();
-            $this->column_fields = getColumnFields('Accounts');
-        }
+
 	function Accounts() {
-            self::__construct();
+		$this->log =LoggerManager::getLogger('account');
+		$this->db = PearDatabase::getInstance();
+		$this->column_fields = getColumnFields('Accounts');
 	}
 
 	/** Function to handle module specific operations when saving a entity

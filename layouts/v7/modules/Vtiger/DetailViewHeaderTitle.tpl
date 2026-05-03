@@ -13,7 +13,7 @@
 			{if !$MODULE}
 				{assign var=MODULE value=$MODULE_NAME}
 			{/if}
-			<div class="recordImage bg_{$MODULE} app-{$SELECTED_MENU_CATEGORY}">
+			<div class="hidden-sm hidden-xs recordImage bg_{$MODULE} app-{$SELECTED_MENU_CATEGORY}">
 				<div class="name"><span><strong>{$MODULE_MODEL->getModuleIcon()}</strong></span></div>
 			</div>
 
@@ -24,7 +24,7 @@
 							{foreach item=NAME_FIELD from=$MODULE_MODEL->getNameFields()}
 								{assign var=FIELD_MODEL value=$MODULE_MODEL->getField($NAME_FIELD)}
 								{if $FIELD_MODEL->getPermissions()}
-									<span class="{$NAME_FIELD}">{decode_html($RECORD->get($NAME_FIELD))}</span>&nbsp;
+									<span class="{$NAME_FIELD}">{$RECORD->get($NAME_FIELD)}</span>&nbsp;
 								{/if}
 							{/foreach}
 						</span>

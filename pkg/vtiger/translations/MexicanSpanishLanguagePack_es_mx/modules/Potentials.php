@@ -13,13 +13,13 @@ $languageStrings = array(
 	'LBL_ADD_RECORD'               => 'Agregar Oportunidad'         , 
 	'LBL_RECORDS_LIST'             => 'Lista de Oportunidades'      , 
 	'LBL_OPPORTUNITY_INFORMATION'  => 'Información de Oportunidad:', 
-	'Potential No'                 => 'Id Oportunidad'           , 
-	'Amount'                       => 'Monto'                     , 
+	'Potential No'                 => 'Núm. Oportunidad'           , 
+	'Amount'                       => 'Importe'                     , 
 	'Next Step'                    => 'Siguiente paso'              , 
 	'Sales Stage'                  => 'Fase de venta'               , 
-	'Probability'                  => 'Probabilidad de venta'                , 
+	'Probability'                  => 'Probabilidad'                , 
 	'Campaign Source'              => 'Campaña origen'             , 
-	'Forecast Amount'              => 'Monto proyectado'     , 
+	'Forecast Amount'              => 'Ingresos ponderados'     , 
 	'Funnel'                       => 'Embudo de ventas'            , 
 	'Potentials by Stage'          => 'Oportunidades por fase'      , 
 	'Total Revenue'                => 'Ingresos por vendedor'       , 
@@ -28,22 +28,21 @@ $languageStrings = array(
 	'Prospecting'                  => 'Investigando'                , 
 	'Qualification'                => 'Calificando'                 , 
 	'Needs Analysis'               => 'Necesita análisis'          , 
-	'Value Proposition'            => 'Propuesta de valor'    , 
+	'Value Proposition'            => 'Propuesta de evaluación'    , 
 	'Id. Decision Makers'          => 'Identificando quién decide'  , 
 	'Perception Analysis'          => 'Análisis'                   , 
-	'Proposal or Price Quote'      => 'Propuesta o Cotización'       , 
-	'Negotiation or Review'        => 'Negociando o Revisando'        , 
+	'Proposal/Price Quote'         => 'Cotización propuesta'       , 
+	'Negotiation/Review'           => 'Negociando/Revisando'        , 
 	'Closed Won'                   => 'Cerrada-Ganada'              , 
 	'Closed Lost'                  => 'Cerrada-Perdida'             , 
 	'--None--'                     => '-----'                       , 
-	'Existing Business'            => 'Cliente existente'           , 
-	'New Business'                 => 'Cliente nuevo'               , 
+	'Existing Business'            => 'Negocio existente'           , 
+	'New Business'                 => 'Nuevo negocio'               , 
 	'LBL_EXPECTED_CLOSE_DATE_ON'   => 'Fecha esperada de cierre'    , 
-	'LBL_RELATED_CONTACTS'         => 'Contactos relacionados'            ,
-	'LBL_RELATED_PRODUCTS'         => 'Productos relacionados'            ,
-    'Related To'                   => 'Cuenta'   ,
+	'LBL_RELATED_CONTACTS'         => 'Contactos relacionados'            , // TODO: Review
+	'LBL_RELATED_PRODUCTS'         => 'Productos relacionados'            , // TODO: Review
+    'Related To'                   => 'Nombre de la organización'   ,
     'Type'                         => 'Tipo'                        , 
-    'Potentials Won' => 'Oportunidades ganadas',
     
     //Convert Potentials
     'LBL_CONVERT_POTENTIAL' => 'Convertir Oportunidades',
@@ -55,7 +54,7 @@ $languageStrings = array(
     //Potentials Custom Field Mapping
 	'LBL_CUSTOM_FIELD_MAPPING'=> 'Asignación de Oportunidad a Proyecto',
 
-  'Contact Name' => 'Contacto',
+  'Contact Name' => 'Nombre del Contacto',
 
 );
 

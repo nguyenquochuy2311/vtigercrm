@@ -26,11 +26,7 @@ class Settings_Picklist_Field_Model extends Vtiger_Field_Model {
      * @param type $groupMode -- Intersection/Conjuction , intersection will give only picklist values that exist for all roles
      * @return type -- array
      */
-    public function getPicklistValues() {
-        list($roleIdList, $groupMode) = func_get_args();
-        if(empty($groupMode)){
-            $groupMode='INTERSECTION';
-        }
+    public function getPicklistValues($roleIdList, $groupMode='INTERSECTION') {
         if(!$this->isRoleBased()) {
             return parent::getPicklistValues();
         }
@@ -106,10 +102,9 @@ class Settings_Picklist_Field_Model extends Vtiger_Field_Model {
      * @param type $fieldName -- string
      * @return type -- array of values
      */
-	public function getEditablePicklistValues(){
-            list($fieldName) = func_get_args();
-            $cache = Vtiger_Cache::getInstance();
-            $EditablePicklistValues = $cache->get('EditablePicklistValues', $fieldName);
+	public function getEditablePicklistValues($fieldName){
+		$cache = Vtiger_Cache::getInstance();
+		$EditablePicklistValues = $cache->get('EditablePicklistValues', $fieldName);
         if($EditablePicklistValues) {
             return $EditablePicklistValues;
         }

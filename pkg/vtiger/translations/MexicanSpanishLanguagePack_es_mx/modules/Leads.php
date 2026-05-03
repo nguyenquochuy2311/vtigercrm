@@ -13,12 +13,12 @@ $languageStrings = array(
 	'LBL_RECORDS_LIST'             => 'Lista de Prospectos'         , 
 	'LBL_ADD_RECORD'               => 'Agregar Prospecto'           , 
 	'LBL_LEAD_INFORMATION'         => 'Información del Prospecto'   , 
-	'Lead No'                      => 'Id Prospecto'             , 
+	'Lead No'                      => 'Núm. de Prospecto'             , 
 	'Company'                      => 'Empresa'                     , 
 	'Designation'                  => 'Puesto'                      , 
 	'Website'                      => 'Página Web'                 , 
 	'Industry'                     => 'Actividad'                   , 
-	'Lead Status'                  => 'Estado'        , 
+	'Lead Status'                  => 'Estado del Prospecto'        , 
 	'No Of Employees'              => 'Número de empleados'        , 
 	'--None--'                     => '-----'                       , 
 	'Mr.'                          => 'Sr.'                         , 
@@ -37,7 +37,7 @@ $languageStrings = array(
 	'Pre Qualified'                => 'Pre calificado'              , 
 	'Qualified'                    => 'Calificado'                  , 
 	'Warm'                         => 'Tibio'                       , 
-	'LBL_CONVERT_LEAD'             => 'Convertir Prospecto'        , 
+	'LBL_CONVERT_LEAD'             => 'Convertir Prospecto:'        , 
 	'LBL_TRANSFER_RELATED_RECORD'  => 'Transferir registro relacionado a', 
 	'LBL_CONVERT_LEAD_ERROR'       => 'Necesita tener habilitado el módulo de Cuentas o Contactos para convertir el Prospecto', 
 	'LBL_LEADS_FIELD_MAPPING_INCOMPLETE' => 'No se han vinculado todos los campos obligatorios', 
@@ -47,9 +47,9 @@ $languageStrings = array(
     'Lead Image' => 'Imagen del Prospecto',
 	
 
-  'Phone' => 'Tel. principal',
-  'Secondary Email' => 'Correo adicional',
-  'Email' => 'Correo',
+  'Phone' => 'Teléfono principal',
+  'Secondary Email' => 'Correo electrónico secundario',
+  'Email' => 'Correo electrónico principal',
 
 );
 $jsLanguageStrings = array(

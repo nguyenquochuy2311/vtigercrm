@@ -97,13 +97,10 @@ class PurchaseOrder extends CRMEntity {
 	 *  This function creates an instance of LoggerManager class using getLogger method
 	 *  creates an instance for PearDatabase class and get values for column_fields array of Order class.
 	 */
-        function __construct() {
-            $this->log =Logger::getLogger('PurchaseOrder');
-            $this->db = PearDatabase::getInstance();
-            $this->column_fields = getColumnFields('PurchaseOrder');
-        }
 	function PurchaseOrder() {
-            self::__construct();
+		$this->log =LoggerManager::getLogger('PurchaseOrder');
+		$this->db = PearDatabase::getInstance();
+		$this->column_fields = getColumnFields('PurchaseOrder');
 	}
 
 	function save_module($module)

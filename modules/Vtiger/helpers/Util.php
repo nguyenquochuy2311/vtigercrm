@@ -1158,20 +1158,12 @@ class Vtiger_Util_Helper {
 									}
 									break;
 			case 'picklist'		:	$pickListDetails = $fieldModel->getPicklistValues();
-                                    if($defaultValue){ 
-                                        $value = $defaultValue; 
-                                        break; 
-                                    } 
 									foreach ($pickListDetails as $key => $value) {
 										$value = $key;
 										break;
 									}
 									break;
 			case 'multipicklist':	$pickListDetails = $fieldModel->getPicklistValues();
-                                    if($defaultValue){ 
-                                        $value = $defaultValue; 
-                                        break; 
-                                    }
 									foreach ($pickListDetails as $key => $value) {
 										$value = $key;
 										break;
@@ -1239,7 +1231,7 @@ class Vtiger_Util_Helper {
 
 	public static function convertSpaceToHyphen($string) {
 		if (!empty($string)) {
-			return str_replace(" ", "-", decode_html($string));
+			return str_replace(" ", "-", $string);
 		}
 	}
 
@@ -1265,13 +1257,13 @@ class Vtiger_Util_Helper {
         $fieldInfo = $fieldModel->getFieldInfo();
         $editablePicklistValues = $fieldInfo['editablepicklistvalues'];
         if($fieldValue && $fieldDataType == 'picklist'){
-           if(!empty($editablePicklistValues) && !isset($editablePicklistValues[$fieldValue])){
+           if(!empty($editablePicklistValues) && !in_array($fieldValue, $editablePicklistValues)){
                 $fieldValue = null;
             }
-        }elseif(!empty($fieldValue) && $fieldDataType == 'multipicklist'){
+        }elseif(count($fieldValue) > 0 && $fieldDataType == 'multipicklist'){
             if(!empty($editablePicklistValues)){
                 foreach($fieldValue as $key => $value){
-                    if(!isset($editablePicklistValues[$fieldValue])){
+                    if(!in_array($value, $editablePicklistValues)){
                         unset($fieldValue[$key]);
                     }
                 }

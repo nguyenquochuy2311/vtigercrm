@@ -726,7 +726,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 						$startDateValue = explode(' ', $values[0]);
 						$endDateValue = explode(' ', $values[1]);
 						if (count($startDateValue) == 2 && count($endDateValue) == 2) {
-							$fieldSql .= " CONCAT($dateFieldColumnName,' ',$timeFieldColumnName) $valueSql";
+							$fieldSql .= " CAST(CONCAT($dateFieldColumnName,' ',$timeFieldColumnName) AS DATETIME) $valueSql";
 						} else {
 							$fieldSql .= "$dateFieldColumnName $valueSql";
 						}
@@ -736,7 +736,7 @@ class EnhancedQueryGenerator extends QueryGenerator {
 						}
 						$values = explode(' ', $value);
 						if (count($values) == 2) {
-							$fieldSql .= "$fieldGlue CONCAT($dateFieldColumnName,' ',$timeFieldColumnName) $valueSql ";
+							$fieldSql .= "$fieldGlue CAST(CONCAT($dateFieldColumnName,' ',$timeFieldColumnName) AS DATETIME) $valueSql ";
 						} else {
 							$fieldSql .= "$fieldGlue $dateFieldColumnName $valueSql";
 						}

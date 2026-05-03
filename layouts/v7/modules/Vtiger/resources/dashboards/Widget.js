@@ -86,23 +86,11 @@ Vtiger.Class('Vtiger_Widget_Js',{
 	},
 
 	convertToDateRangePicketFormat : function(userDateFormat) {
-		if ('dd.mm.yyyy' === userDateFormat) {
-			return 'dd.MM.yyyy';
-		} else if ('mm.dd.yyyy' === userDateFormat) {
-			return 'MM.dd.yyyy'
-		} else if ('yyyy.mm.dd' === userDateFormat) {
-			return 'yyyy.MM.dd';
-		} else if ('dd/mm/yyyy' === userDateFormat) {
-			return 'dd/MM/yyyy';
-		} else if ('mm/dd/yyyy' === userDateFormat) {
-			return 'MM/dd/yyyy'
-		} else if ('yyyy/mm/dd' === userDateFormat) {
-			return 'yyyy/MM/dd';
-		} else if ('yyyy-mm-dd' === userDateFormat) {
+		if(userDateFormat == 'yyyy-mm-dd') {
 			return 'yyyy-MM-dd';
-		} else if ('mm-dd-yyyy' === userDateFormat) {
+		}else if( userDateFormat == 'mm-dd-yyyy') {
 			return 'MM-dd-yyyy';
-		} else if ('dd-mm-yyyy' === userDateFormat) {
+		}else if(userDateFormat == 'dd-mm-yyyy') {
 			return 'dd-MM-yyyy';
 		}
 	},

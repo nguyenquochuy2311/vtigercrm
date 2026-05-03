@@ -85,15 +85,12 @@ class Leads extends CRMEntity {
 	var $LBL_LEAD_MAPPING = 'LBL_LEAD_MAPPING';
 	//var $groupTable = Array('vtiger_leadgrouprelation','leadid');
 
-        function __construct() {
-            $this->log = Logger::getLogger('lead');
-            $this->log->debug("Entering Leads() method ...");
-            $this->db = PearDatabase::getInstance();
-            $this->column_fields = getColumnFields('Leads');
-            $this->log->debug("Exiting Lead method ...");
-        }   
 	function Leads()	{
-            self::__construct();
+		$this->log = LoggerManager::getLogger('lead');
+		$this->log->debug("Entering Leads() method ...");
+		$this->db = PearDatabase::getInstance();
+		$this->column_fields = getColumnFields('Leads');
+		$this->log->debug("Exiting Lead method ...");
 	}
 
 	/** Function to handle module specific operations when saving a entity

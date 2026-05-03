@@ -35,8 +35,9 @@
 		private $preLogin;
 		private $operationId;
 		private $operationParams;
-		function __construct($adb,$operationName,$format, $sessionManager)
-		{
+		
+		function OperationManager($adb,$operationName,$format, $sessionManager){
+			
 			$this->format = strtolower($format);
 			$this->sessionManager = $sessionManager;
 			$this->formatObjects = array();
@@ -56,13 +57,6 @@
 			$this->inParamProcess = array();
 			$this->inParamProcess["encoded"] = &$this->formatObjects[$this->format]["decode"];
 			$this->fillOperationDetails($operationName);
-		}
-		function OperationManager($adb,$operationName,$format, $sessionManager){
-			// PHP4-style constructor.
-			// This will NOT be invoked, unless a sub-class that extends `foo` calls it.
-			// In that case, call the new-style constructor to keep compatibility.
-			self::__construct($adb,$operationName,$format, $sessionManager);
-			
 		}
 		
 		function isPreLoginOperation(){
@@ -160,23 +154,8 @@
 						$webserviceObject = VtigerWebserviceObject::fromName($adb,"Users");
 						$userId = vtws_getId($webserviceObject->getEntityId(),$userDetails->id);
 						$vtigerVersion = vtws_getVtigerVersion();
-                        $userInfo = array(
-                            'username' => $userDetails->user_name,
-                            'first_name' => $userDetails->first_name,
-                            'last_name' => $userDetails->last_name,
-                            'email' => $userDetails->email1,
-                            'time_zone' => $userDetails->time_zone,
-                            'hour_format' => $userDetails->hour_format,
-                            'date_format' => $userDetails->date_format,
-                            'is_admin' => $userDetails->is_admin,
-                            'call_duration' => $userDetails->callduration,
-                            'other_event_duration' => $userDetails->othereventduration,
-                            'sessionName'=>$this->sessionManager->getSessionId(),
-                            'userId'=>$userId,
-                            'version'=>$API_VERSION,
-                            'vtigerVersion'=>$vtigerVersion
-                        );
-						return $userInfo;
+						$resp = array("sessionName"=>$this->sessionManager->getSessionId(),"userId"=>$userId,"version"=>$API_VERSION,"vtigerVersion"=>$vtigerVersion);
+						return $resp;
 					}
 				}
 			} catch (DuplicateException $e) {

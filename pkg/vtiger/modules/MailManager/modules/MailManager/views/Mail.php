@@ -164,7 +164,7 @@ class MailManager_Mail_View extends MailManager_Abstract_View {
 					}
 
 					$fromEmail = $connector->getFromEmailAddress();
-					$userFullName = $currentUserModel->get('userlabel');
+					$userFullName = getFullNameFromArray('Users', $currentUserModel->getData());
 					$userId = $currentUserModel->getId();
 
 					$mailer = new Vtiger_Mailer();

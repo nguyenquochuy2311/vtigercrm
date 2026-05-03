@@ -284,15 +284,13 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 				$deleteValueList[] = ' ( roleid = "'.$roleId.'" AND '.'picklistvalueid = "'.$pickListValueId.'") ';
 			}
 		}
-                if(!empty($insertValueList)){
-                    $insertQuery = 'INSERT IGNORE INTO vtiger_role2picklist (roleid,picklistvalueid,picklistid) VALUES '. implode(",", $insertValueList);
-                    $result = $db->pquery($insertQuery, array());
-                }
+		$query = 'INSERT IGNORE INTO vtiger_role2picklist (roleid,picklistvalueid,picklistid) VALUES '. generateQuestionMarks($insertValueList);
+		$result = $db->pquery($query, $insertValueList);
 
-                if(!empty($deleteValueList)){
-                    $deleteQuery = 'DELETE FROM vtiger_role2picklist WHERE '.implode(' OR ',$deleteValueList);
-                    $result = $db->pquery($deleteQuery,array());
-                }
+		$deleteQuery = 'DELETE FROM vtiger_role2picklist WHERE '.implode(' OR ',$deleteValueList);
+
+		$result = $db->pquery($deleteQuery,array());
+
 		//retaining to older value
 		$db->dieOnError = $dieOnErrorOldValue;
 
@@ -512,7 +510,7 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 					$picklistNameRaw = $db->query_result($result, $i, $fieldName);
 					$picklistName = decode_html($picklistNameRaw);
 					// show color only for accesable picklist values
-					if($isRoleBasedPicklist && !isset($accessablePicklistValues[$picklistName	])) {
+					if($isRoleBasedPicklist && !isset($accessablePicklistValues[$picklistNameRaw])) {
 						$color = '';
 					}
 					if(!empty($color)) {

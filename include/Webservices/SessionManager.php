@@ -26,8 +26,8 @@
 		private $sessionVar = "__SessionExists";
 		private $error ;
 		
-		function __construct()
-		{
+		function SessionManager(){
+			
 			global $maxWebServiceSessionLifeSpan, $maxWebServiceSessionIdleTime;
 			
 			$now = time();
@@ -41,13 +41,6 @@
 			// this method replaces the new with old time if second params is true 
 			//otherwise it subtracts the time from previous time
 			HTTP_Session2::setIdle($this->idleLife, true);
-		}
-		function SessionManager(){
-			// PHP4-style constructor.
-			// This will NOT be invoked, unless a sub-class that extends `foo` calls it.
-			// In that case, call the new-style constructor to keep compatibility.
-			self::__construct();
-			
 		}
 		
 		function isValid(){

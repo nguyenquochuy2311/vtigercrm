@@ -23,20 +23,13 @@ class RelatedListViewSession {
 	var $sorder = null;
 	var $sortby = null;
 	var $page_view = null;
-	
-	function __construct()
-    {
-        global $log,$currentModule;
+
+	function RelatedListViewSession() {
+		global $log,$currentModule;
 		$log->debug("Entering RelatedListViewSession() method ...");
 
 		$this->module = $currentModule;
 		$this->start =1;
-    }
-	function RelatedListViewSession() {
-		// PHP4-style constructor.
-        // This will NOT be invoked, unless a sub-class that extends `foo` calls it.
-        // In that case, call the new-style constructor to keep compatibility.
-        self::__construct();
 	}
 
 	public static function addRelatedModuleToSession($relationId, $header) {

@@ -13,8 +13,8 @@ class VtigerCRMObject{
 	private $moduleName ;
 	private $moduleId ;
 	private $instance ;
-	function __construct($moduleCredential, $isId=false)
-	{
+	
+	function VtigerCRMObject($moduleCredential, $isId=false){
 		
 		if($isId){
 			$this->moduleId = $moduleCredential;
@@ -25,12 +25,6 @@ class VtigerCRMObject{
 		}
 		$this->instance = null;
 		$this->getInstance();
-	}
-	function VtigerCRMObject($moduleCredential, $isId=false){
-		// PHP4-style constructor.
-		// This will NOT be invoked, unless a sub-class that extends `foo` calls it.
-		// In that case, call the new-style constructor to keep compatibility.
-		self::__construct($moduleCredential, $isId);
 	}
 	
 	public function getModuleName(){

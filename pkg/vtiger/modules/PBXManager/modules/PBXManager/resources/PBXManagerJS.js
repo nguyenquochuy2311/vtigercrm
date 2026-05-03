@@ -234,6 +234,6 @@ var Vtiger_PBXManager_Js = {
 }
 
 //On Page Load
-jQuery(window).on("load", function() {
+jQuery(window).load(function() {
 	Vtiger_PBXManager_Js.registerEvents();
 });

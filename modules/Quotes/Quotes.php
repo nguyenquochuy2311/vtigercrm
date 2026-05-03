@@ -104,13 +104,10 @@ class Quotes extends CRMEntity {
 
 	/**	Constructor which will set the column_fields in this object
 	 */
-        function __construct() {
-            $this->log =Logger::getLogger('quote');
-            $this->db = PearDatabase::getInstance();
-            $this->column_fields = getColumnFields('Quotes');
-        }
 	function Quotes() {
-            self::__construct();
+		$this->log =LoggerManager::getLogger('quote');
+		$this->db = PearDatabase::getInstance();
+		$this->column_fields = getColumnFields('Quotes');
 	}
 
 	function save_module()

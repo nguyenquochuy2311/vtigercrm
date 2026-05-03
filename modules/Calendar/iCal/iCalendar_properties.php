@@ -13,10 +13,10 @@ class iCalendar_property {
     var $val_default      = NULL;
 
     function iCalendar_property() {
-        self::__construct();
+        $this->construct();
     }
 
-    function __construct() {
+    function construct() {
         $this->parameters = array();
     }
 

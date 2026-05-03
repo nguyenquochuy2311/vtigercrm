@@ -167,7 +167,8 @@ class PEAR
      * @access public
      * @return void
      */
-    function __construct($error_class = null) {
+    function PEAR($error_class = null)
+    {
         $classname = strtolower(get_class($this));
         if ($this->_debug) {
             print "PEAR constructor called, class=$classname\n";
@@ -189,10 +190,6 @@ class PEAR
                 $classname = get_parent_class($classname);
             }
         }
-    }
-    function PEAR($error_class = null)
-    {
-        self::__construct($error_class);
     }
 
     // }}}
@@ -861,8 +858,9 @@ class PEAR_Error
      * @access public
      *
      */
-    function __construct($message = 'unknown error', $code = null,
-                        $mode = null, $options = null, $userinfo = null) {
+    function PEAR_Error($message = 'unknown error', $code = null,
+                        $mode = null, $options = null, $userinfo = null)
+    {
         if ($mode === null) {
             $mode = PEAR_ERROR_RETURN;
         }
@@ -918,11 +916,6 @@ class PEAR_Error
             trigger_error("PEAR_ERROR_EXCEPTION is obsolete, use class PEAR_Exception for exceptions", E_USER_WARNING);
             eval('$e = new Exception($this->message, $this->code);throw($e);');
         }
-    }
-    function PEAR_Error($message = 'unknown error', $code = null,
-                        $mode = null, $options = null, $userinfo = null)
-    {
-        self::__construct($message, $code, $mode , $options , $userinfo );
     }
 
     // }}}

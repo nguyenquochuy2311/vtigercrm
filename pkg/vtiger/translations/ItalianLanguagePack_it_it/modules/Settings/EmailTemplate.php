@@ -8,8 +8,8 @@
  * All Rights Reserved.
  ************************************************************************************/
 $languageStrings = array(
-	'EmailTemplate'                => 'Modello Email'              , // TODO: Review
-	'LBL_TEMPLATE_NAME'            => 'Nome Modello'               , 
+	'EmailTemplate'                => 'Email Template'              , // TODO: Review
+	'LBL_TEMPLATE_NAME'            => 'Template name'               , 
 	'LBL_DESCRIPTION'              => 'Descrizione'                 , 
-	'LBL_SUBJECT'                  => 'Oggetto'                     , // TODO: Review
+	'LBL_SUBJECT'                  => 'Subject'                     , // TODO: Review
 );

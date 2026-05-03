@@ -46,10 +46,10 @@ class Users_Module_Model extends Vtiger_Module_Model {
 		if(!empty($searchValue)) {
 			$db = PearDatabase::getInstance();
 
-			$query = 'SELECT * FROM vtiger_users WHERE userlabel LIKE ? AND status = ?';
+			$query = 'SELECT * FROM vtiger_users WHERE (first_name LIKE ? OR last_name LIKE ?) AND status = ?';
 			$currentUser = Users_Record_Model::getCurrentUserModel();
 			$allSubordinates = $currentUser->getAllSubordinatesByReportsToField($currentUser->getId());
-			$params = array("%$searchValue%", 'Active');
+			$params = array("%$searchValue%", "%$searchValue%", 'Active');
 
 			// do not allow the subordinates
 			if(count($allSubordinates) > 0) {
@@ -105,11 +105,8 @@ class Users_Module_Model extends Vtiger_Module_Model {
 	public function deleteRecord(Vtiger_Record_Model $recordModel) {
 		$db = PearDatabase::getInstance();
 		$currentUser = Users_Record_Model::getCurrentUserModel();
-        $deleteUserId = $recordModel->getId();
-        if($deleteUserId != 1){
-            $query = "UPDATE vtiger_users SET status=?, date_modified=?, modified_user_id=? WHERE id=?";
-            $db->pquery($query, array('Inactive', date('Y-m-d H:i:s'), $currentUser->getId(), $deleteUserId), true,"Error marking record deleted: ");
-        }
+		$query = "UPDATE vtiger_users SET status=?, date_modified=?, modified_user_id=? WHERE id=?";
+		$db->pquery($query, array('Inactive', date('Y-m-d H:i:s'), $currentUser->getId(), $recordModel->getId()), true,"Error marking record deleted: ");
 	}
 
 	/**

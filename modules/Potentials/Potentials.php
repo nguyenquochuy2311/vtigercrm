@@ -92,13 +92,10 @@ class Potentials extends CRMEntity {
 
 	var $LBL_POTENTIAL_MAPPING = 'LBL_OPPORTUNITY_MAPPING';
 	//var $groupTable = Array('vtiger_potentialgrouprelation','potentialid');
-	function __construct() {
-            $this->log = Logger::getLogger('potential');
-            $this->db = PearDatabase::getInstance();
-            $this->column_fields = getColumnFields('Potentials');
-        }   
-        function Potentials() {
-            self::__construct();
+	function Potentials() {
+		$this->log = LoggerManager::getLogger('potential');
+		$this->db = PearDatabase::getInstance();
+		$this->column_fields = getColumnFields('Potentials');
 	}
 
 	function save_module($module)

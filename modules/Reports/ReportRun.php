@@ -253,19 +253,19 @@ class ReportRunQueryPlanner {
 					}
 				}
 			}
-			if (!empty($newAdvFilterList) && (count($newAdvFilterList[$i]))) {
+			if (count($newAdvFilterList[$i])) {
 				$newAdvFilterList[$i]['condition'] = $advfilterlist[$i]['condition'];
 			}
 			if (isset($newAdvFilterList[$i]['columns'][$k - 1])) {
 				$newAdvFilterList[$i]['columns'][$k - 1]['column_condition'] = '';
 			}
-			if (!empty($newAdvFilterList) && (count($newAdvFilterList[$i]) != 2)) {
+			if (count($newAdvFilterList[$i]) != 2) {
 				unset($newAdvFilterList[$i]);
 			}
 		}
 		end($newAdvFilterList);
 		$lastConditionsGrpKey = key($newAdvFilterList);
-		if (!empty($newAdvFilterList) && (count($newAdvFilterList[$lastConditionsGrpKey]))) {
+		if (count($newAdvFilterList[$lastConditionsGrpKey])) {
 			$newAdvFilterList[$lastConditionsGrpKey]['condition'] = '';
 		}
 
@@ -325,18 +325,15 @@ class ReportRun extends CRMEntity {
 	 *  To ensure single-instance is present for $reportid
 	 *  as we optimize using ReportRunPlanner and setup temporary tables.
 	 */
-        function __construct($reportid) {
-            $oReport = new Reports($reportid);
-            $this->reportid = $reportid;
-            $this->primarymodule = $oReport->primodule;
-            $this->secondarymodule = $oReport->secmodule;
-            $this->reporttype = $oReport->reporttype;
-            $this->reportname = $oReport->reportname;
-            $this->queryPlanner = new ReportRunQueryPlanner();
-            $this->queryPlanner->reportRun = $this;
-        }
 	function ReportRun($reportid) {
-            self::__construct($reportid);
+		$oReport = new Reports($reportid);
+		$this->reportid = $reportid;
+		$this->primarymodule = $oReport->primodule;
+		$this->secondarymodule = $oReport->secmodule;
+		$this->reporttype = $oReport->reporttype;
+		$this->reportname = $oReport->reportname;
+		$this->queryPlanner = new ReportRunQueryPlanner();
+		$this->queryPlanner->reportRun = $this;
 	}
 
 	public static function getInstance($reportid) {
@@ -381,7 +378,7 @@ class ReportRun extends CRMEntity {
             $selectedModuleFields[$module][] = $fieldname;
 			$inventory_fields = array('serviceid');
 			$inventory_modules = getInventoryModules();
-			if (empty($permitted_fields[$module]) && $is_admin == false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1) {
+			if (sizeof($permitted_fields[$module]) == 0 && $is_admin == false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1) {
 				$permitted_fields[$module] = $this->getaccesfield($module);
 			}
 			if (in_array($module, $inventory_modules)) {
@@ -541,7 +538,7 @@ class ReportRun extends CRMEntity {
 					if ($module == 'Emails') {
 						$columnSQL = "YEAR(cast(concat($emailTableName.date_start,'  ',$emailTableName.time_start) as DATE)) AS Emails_Date_Sent_Year";
 					} else {
-						$columnSQL = "YEAR(concat(vtiger_activity.date_start,' ',vtiger_activity.time_start)) AS Calendar_Start_Date_and_Time_Year";
+						$columnSQL = "YEAR(cast(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start) as DATETIME)) AS Calendar_Start_Date_and_Time_Year";
 					}
 				} else if ($selectedfields[0] == "vtiger_crmentity" . $this->primarymodule) {
 					$columnSQL = "YEAR(vtiger_crmentity." . $selectedfields[1] . ") AS '" . decode_html($header_label) . "_Year'";
@@ -554,7 +551,7 @@ class ReportRun extends CRMEntity {
 					if ($module == 'Emails') {
 						$columnSQL = "MONTHNAME(cast(concat($emailTableName.date_start,'  ',$emailTableName.time_start) as DATE)) AS Emails_Date_Sent_Month";
 					} else {
-						$columnSQL = "MONTHNAME(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start)) AS Calendar_Start_Date_and_Time_Month";
+						$columnSQL = "MONTHNAME(cast(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start) as DATETIME)) AS Calendar_Start_Date_and_Time_Month";
 					}
 				} else if ($selectedfields[0] == "vtiger_crmentity" . $this->primarymodule) {
 					$columnSQL = "MONTHNAME(vtiger_crmentity." . $selectedfields[1] . ") AS '" . decode_html($header_label) . "_Month'";
@@ -567,7 +564,7 @@ class ReportRun extends CRMEntity {
 					if ($module == 'Emails') {
 						$columnSQL = "CONCAT('Week ',WEEK(cast(concat($emailTableName.date_start,'  ',$emailTableName.time_start) as DATE), 1)) AS Emails_Date_Sent_Week";
 					} else {
-						$columnSQL = "CONCAT('Week ',WEEK(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start), 1)) AS Calendar_Start_Date_and_Time_Week";
+						$columnSQL = "CONCAT('Week ',WEEK(cast(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start) as DATETIME), 1)) AS Calendar_Start_Date_and_Time_Week";
 					}
 				} else if ($selectedfields[0] == "vtiger_crmentity" . $this->primarymodule) {
 					$columnSQL = "CONCAT('Week ',WEEK(vtiger_crmentity." . $selectedfields[1] . ", 1)) AS '" . decode_html($header_label) . "_Week'";
@@ -580,7 +577,7 @@ class ReportRun extends CRMEntity {
 					if ($module == 'Emails') {
 						$columnSQL = "date_format(cast(concat($emailTableName.date_start,'  ',$emailTableName.time_start) as DATE), '%M %Y') AS Emails_Date_Sent_Month";
 					} else {
-						$columnSQL = "date_format(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start), '%M %Y') AS Calendar_Start_Date_and_Time_Month";
+						$columnSQL = "date_format(cast(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start) as DATETIME), '%M %Y') AS Calendar_Start_Date_and_Time_Month";
 					}
 				} else if ($selectedfields[0] == "vtiger_crmentity" . $this->primarymodule) {
 					$columnSQL = "date_format(vtiger_crmentity." . $selectedfields[1] . ", '%M %Y') AS '" . decode_html($header_label) . "_Month'";
@@ -593,7 +590,7 @@ class ReportRun extends CRMEntity {
 					if ($module == 'Emails') {
 						$columnSQL = "cast(concat($emailTableName.date_start,'  ',$emailTableName.time_start) as DATE) AS Emails_Date_Sent";
 					} else {
-						$columnSQL = "concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start) AS Calendar_Start_Date_and_Time";
+						$columnSQL = "cast(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start) as DATETIME) AS Calendar_Start_Date_and_Time";
 					}
 				} else if ($selectedfields[0] == "vtiger_crmentity" . $this->primarymodule) {
 					$columnSQL = "vtiger_crmentity." . $selectedfields[1] . " AS '" . decode_html($header_label) . "'";
@@ -608,7 +605,7 @@ class ReportRun extends CRMEntity {
 			if ($module == 'Emails') {
 				$columnSQL = "cast(concat($emailTableName.date_start,'  ',$emailTableName.time_start) as DATE) AS Emails_Date_Sent";
 			} else {
-				$columnSQL = "concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start) AS Calendar_Start_Date_and_Time";
+				$columnSQL = "cast(concat(vtiger_activity.date_start,'  ',vtiger_activity.time_start) as DATETIME) AS Calendar_Start_Date_and_Time";
 			}
 		} elseif (stristr($selectedfields[0], "vtiger_users") && ($selectedfields[1] == 'user_name')) {
 			$temp_module_from_tablename = str_replace("vtiger_users", "", $selectedfields[0]);
@@ -1079,7 +1076,7 @@ class ReportRun extends CRMEntity {
 										$endDateTime = "DATE_FORMAT('$endDateTime', '%m%d')";
 									} else {
 										if ($selectedFields[0] == 'vtiger_activity' && ($selectedFields[1] == 'date_start')) {
-											$tableColumnSql = '(CONCAT(date_start, " ", time_start))';
+											$tableColumnSql = 'CAST((CONCAT(date_start, " ", time_start)) AS DATETIME)';
 										} else {
 											if (empty($emailTableName)) {
 												$tableColumnSql = $selectedFields[0] . '.' . $selectedFields[1];
@@ -1110,7 +1107,7 @@ class ReportRun extends CRMEntity {
 							}
 
 							if ($selectedFields[0] == 'vtiger_activity' && ($selectedFields[1] == 'date_start')) {
-								$tableColumnSql = '(CONCAT(date_start, " ", time_start))';
+								$tableColumnSql = 'CAST((CONCAT(date_start, " ", time_start)) AS DATETIME)';
 							} else {
 								if (empty($emailTableName)) {
 									$tableColumnSql = $selectedFields[0] . '.' . $selectedFields[1];
@@ -1532,7 +1529,7 @@ class ReportRun extends CRMEntity {
 					} else {
 						if ($selectedfields[0] == 'vtiger_activity' && ($selectedfields[1] == 'date_start')) {
 							$tableColumnSql = '';
-							$tableColumnSql = "(CONCAT(date_start,' ',time_start))";
+							$tableColumnSql = "CAST((CONCAT(date_start,' ',time_start)) AS DATETIME)";
 						} else {
 							$tableColumnSql = $selectedfields[0] . "." . $selectedfields[1];
 						}

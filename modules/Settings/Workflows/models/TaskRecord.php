@@ -95,8 +95,7 @@ class Settings_Workflows_TaskRecord_Model extends Settings_Vtiger_Record_Model {
 		return $taskModels;
 	}
 
-	public static function getInstance() {
-                list($taskId, $workflowModel) = func_get_args();
+	public static function getInstance($taskId, $workflowModel=null) {
 		$db = PearDatabase::getInstance();
 		$tm = new VTTaskManager($db);
 		$task = $tm->retrieveTask($taskId);

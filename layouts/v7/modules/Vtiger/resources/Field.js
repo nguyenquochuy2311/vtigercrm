@@ -187,7 +187,7 @@ Vtiger_Field_Js('Vtiger_Reference_Field_Js',{},{
 	getUi : function(){
 		var referenceModules = this.getReferenceModules();
 		var value = this.getValue();
-		var html = '<div class="';
+		var html = '<div class="referencefield-wrapper';
 		if(value){
 			html += ' selected';
 		} else {
@@ -475,7 +475,7 @@ Vtiger_Field_Js('Vtiger_Date_Field_Js',{},{
 	 */
 	getUi : function() {
 		//wrappig with another div for consistency
-		var html = '<div class=""><div class="input-group date">'+
+		var html = '<div class="referencefield-wrapper"><div class="input-group date">'+
 						'<input class="inputElement dateField form-control" type="text" data-rule-date="true" data-format="'+ this.getDateFormat() +'" name="'+ this.getName() +'" value="'+ this.getValue() + '" />'+
 						'<span class="input-group-addon"><i class="fa fa-calendar"></i></span>'+
 					'</div></div>';
@@ -495,7 +495,7 @@ Vtiger_Field_Js('Vtiger_Currency_Field_Js',{},{
 
 	getUi : function() {
 		//wrappig with another div for consistency
-		var html = '<div class=""><div class="input-group">'+
+		var html = '<div class="referencefield-wrapper"><div class="input-group">'+
 						'<span class="input-group-addon" id="basic-addon1">'+this.getCurrencySymbol()+'</span>'+
 						'<input class="inputElement" type="text" name="'+ this.getName() +'" data-rule-currency="true" value="'+ this.getValue() + '" />'+
 					'</div></div>';
@@ -560,7 +560,7 @@ Vtiger_Field_Js('Vtiger_Time_Field_Js',{},{
 	 * @return - input text field
 	 */
 	getUi : function() {
-		var html = '<div class="">'+'<div class="input-group time">'+
+		var html = '<div class="referencefield-wrapper">'+'<div class="input-group time">'+
 						'<input class="timepicker-default form-control inputElement" type="text" data-format="'+ this.getTimeFormat() +'" name="'+ this.getName() +'" value="'+ this.getValue() + '" />'+
 						'<span class="input-group-addon"><i class="fa fa-clock-o"></i></span>'+
 					'</div>'+'</div>';
@@ -636,7 +636,7 @@ Vtiger_Field_Js('Vtiger_Email_Field_Js',{},{
 	 * return <String or Jquery> it can return either plain html or jquery object
 	 */
 	getUi : function() {
-		var html = '<input class="getPopupUi inputElement" type="text" name="'+ this.getName() +'" data-label="'+this.get('label')+'" data-rule-email="true" data-rule-illegal="true"/>';
+		var html = '<input class="inputElement" type="text" name="'+ this.getName() +'" data-label="'+this.get('label')+'" data-rule-email="true" data-rule-illegal="true"/>';
 		html = jQuery(html).val(app.htmlDecode(this.getValue()));
 		this.addValidationToElement(html);
 		return jQuery(html);

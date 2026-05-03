@@ -13,22 +13,13 @@ require_once 'data/VTEntityDelta.php';
 class ModTrackerHandler extends VTEventHandler {
 
 	function handleEvent($eventName, $data) {
-		global $adb;
-		if (isset($_SESSION["authenticated_user_id"])) {
-			$current_user_id = $_SESSION["authenticated_user_id"];
-			$current_user = Users_Record_Model::getInstanceById($current_user_id, 'Users');
-			$curid = $current_user->get('id');
-		} else {
-			//$_SESSION["authenticated_user_id"] is not set when creating/updating via Webservice
-			global $current_user;
-			$curid = $current_user->id;
-		}
+		global $adb, $current_user;
 		$moduleName = $data->getModuleName();
 		$isTrackingEnabled = ModTracker::isTrackingEnabledForModule($moduleName);
-		if (!$isTrackingEnabled) {
+		if(!$isTrackingEnabled) {
 			return;
 		}
-		if ($eventName == 'vtiger.entity.aftersave.final') {
+		if($eventName == 'vtiger.entity.aftersave.final') {
 			$recordId = $data->getId();
 			$columnFields = $data->getData();
 			$vtEntityDelta = new VTEntityDelta();
@@ -56,7 +47,7 @@ class ModTrackerHandler extends VTEventHandler {
 							}
 							$adb->pquery('INSERT INTO vtiger_modtracker_basic(id, crmid, module, whodid, changedon, status)
 										VALUES(?,?,?,?,?,?)', Array($this->id, $recordId, $moduleName,
-										$curid, $changedOn, $status));
+										$current_user->id, $changedOn, $status));
 							$inserted = true;
 						}
 						$adb->pquery('INSERT INTO vtiger_modtracker_detail(id,fieldname,prevalue,postvalue) VALUES(?,?,?,?)',
@@ -71,7 +62,7 @@ class ModTrackerHandler extends VTEventHandler {
 			$columnFields = $data->getData();
 			$id = $adb->getUniqueId('vtiger_modtracker_basic');
 			$adb->pquery('INSERT INTO vtiger_modtracker_basic(id, crmid, module, whodid, changedon, status)
-				VALUES(?,?,?,?,?,?)', Array($id, $recordId, $moduleName, $curid, date('Y-m-d H:i:s',time()), ModTracker::$DELETED));
+				VALUES(?,?,?,?,?,?)', Array($id, $recordId, $moduleName, $current_user->id, date('Y-m-d H:i:s',time()), ModTracker::$DELETED));
 		}
 
 		if($eventName == 'vtiger.entity.afterrestore') {
@@ -79,7 +70,7 @@ class ModTrackerHandler extends VTEventHandler {
 			$columnFields = $data->getData();
 			$id = $adb->getUniqueId('vtiger_modtracker_basic');
 			$adb->pquery('INSERT INTO vtiger_modtracker_basic(id, crmid, module, whodid, changedon, status)
-				VALUES(?,?,?,?,?,?)', Array($id, $recordId, $moduleName, $curid, date('Y-m-d H:i:s',time()), ModTracker::$RESTORED));
+				VALUES(?,?,?,?,?,?)', Array($id, $recordId, $moduleName, $current_user->id, date('Y-m-d H:i:s',time()), ModTracker::$RESTORED));
 		}
 	}
 }

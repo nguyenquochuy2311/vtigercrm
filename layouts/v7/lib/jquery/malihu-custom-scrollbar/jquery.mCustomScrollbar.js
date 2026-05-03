@@ -2162,7 +2162,7 @@ and dependencies (minified).
 	*/
 	window[pluginNS]=true;
 	
-        $(document).on("load",function(){
+	$(window).load(function(){
 		$(defaultSelector)[pluginNS](); /* add scrollbars automatically on default selector */
 	});
 

@@ -25,12 +25,12 @@
 					</div>
 				</div>
 				<div class='row'>
-					<div class="col-xs-6 pull-right paddingTop10 paddingLeft0">
+					<div class="col-xs-6 pull-right paddingTop5 paddingLeft0">
 						<div style="text-align: right;">
 							{if in_array($MODULE_NAME, $PRIVATE_COMMENT_MODULES)}
 								<div class="" style="margin: 7px 0;">
 									<label>
-										<input type="checkbox" id="is_private" style="margin:2px 0px -2px 0px" checked>&nbsp;&nbsp;{vtranslate('LBL_INTERNAL_COMMENT')}
+										<input type="checkbox" id="is_private" style="margin:2px 0px -2px 0px">&nbsp;&nbsp;{vtranslate('LBL_INTERNAL_COMMENT')}
 									</label>&nbsp;&nbsp;
 									<i class="fa fa-question-circle cursorPointer" data-toggle="tooltip" data-placement="top" data-original-title="{vtranslate('LBL_INTERNAL_COMMENT_INFO')}"></i>&nbsp;&nbsp;
 								</div>
@@ -38,11 +38,11 @@
 							<button class="btn btn-success btn-sm detailViewSaveComment" type="button" data-mode="add">{vtranslate('LBL_POST', $MODULE_NAME)}</button>
 						</div>
 					</div>
-					{if $FIELD_MODEL->getProfileReadWritePermission()}
-						<div class="col-xs-6 paddingTop10 pull-left">
-								{include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE_NAME) MODULE="ModComments"}
-						</div>
-					{/if}
+                                        {if $FIELD_MODEL->getProfileReadWritePermission()}
+                                            <div class="col-xs-6 pull-left">
+                                                    {include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE_NAME) MODULE="ModComments"}
+                                            </div>
+                                        {/if}
 				</div>
 			</div>
 		{/if}
@@ -82,7 +82,7 @@
 											<div class="col-lg-2 recordImage commentInfoHeader" data-commentid="{$COMMENT->getId()}" data-parentcommentid="{$COMMENT->get('parent_comments')}" data-relatedto = "{$COMMENT->get('related_to')}">
 												{assign var=IMAGE_PATH value=$COMMENT->getImagePath()}
 												{if !empty($IMAGE_PATH)}
-													<img src="{$IMAGE_PATH}" width="100%" height="100%" align="left">
+													<img src="{$IMAGE_PATH}" width="40px" height="40px" align="left">
 												{else}
 													<div class="name"><span><strong> {$CREATOR_NAME|mb_substr:0:2|escape:"html"} </strong></span></div>
 												{/if}
@@ -107,18 +107,8 @@
 												{/if}
 												<span class="commentTime text-muted cursorDefault">
 													<small title="{Vtiger_Util_Helper::formatDateTimeIntoDayString($COMMENT->getCommentedTime())}">{Vtiger_Util_Helper::formatDateDiffInStrings($COMMENT->getCommentedTime())}</small>
-												</span>&nbsp;&nbsp;
-												
-												{if in_array($MODULE_NAME, $PRIVATE_COMMENT_MODULES)}
-													<span>
-														{if $COMMENT->get('is_private')}
-															<i class="fa fa-lock" data-toggle="tooltip" data-placement="top" data-original-title="{vtranslate('LBL_INTERNAL_COMMENT_TOOTLTIP',$MODULE)}"></i>
-														{else}
-															<i class="fa fa-unlock" data-toggle="tooltip" data-placement="top" data-original-title="{vtranslate('LBL_EXTERNAL_COMMENT_TOOTLTIP',$MODULE)}"></i>
-														{/if}
-													</span>
-												{/if}
-												
+												</span>
+
 												<div class="commentInfoContentBlock">
 													{assign var=COMMENT_CONTENT value={nl2br($COMMENT->get('commentcontent'))}}
 													{if $COMMENT_CONTENT}
@@ -223,7 +213,7 @@
 			{if in_array($MODULE_NAME, $PRIVATE_COMMENT_MODULES)}
 				<div class="checkbox">
 					<label>
-						<input type="checkbox" id="is_private" checked>&nbsp;&nbsp;{vtranslate('LBL_INTERNAL_COMMENT')}&nbsp;&nbsp;
+						<input type="checkbox" id="is_private">&nbsp;&nbsp;{vtranslate('LBL_INTERNAL_COMMENT')}&nbsp;&nbsp;
 					</label>
 				</div>
 			{/if}

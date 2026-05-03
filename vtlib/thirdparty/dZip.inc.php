@@ -15,7 +15,7 @@ class dZip{
 	var $files_count  = 0;
 	var $fh;
 	
-	Function __construct($filename, $overwrite=true){
+	Function dZip($filename, $overwrite=true){
 		$this->filename  = $filename;
 		$this->overwrite = $overwrite;
 	}
@@ -24,12 +24,9 @@ class dZip{
 			$dirname .= '/';
 		$this->addFile(false, $dirname, $fileComments);
 	}
-    function ensureFh(){
-        if(!$this->fh)
-			$this->fh = fopen($this->filename, $this->overwrite?'wb':'a+b');
-    }
-    Function addFile($filename, $cfilename, $fileComments='', $data=false){
-        $this->ensureFh();
+	Function addFile($filename, $cfilename, $fileComments='', $data=false){
+		if(!($fh = $this->fh))
+			$fh = fopen($this->filename, $this->overwrite?'wb':'a+b');
 		
 		// $filename can be a local file OR the data wich will be compressed
 		if(substr($cfilename, -1)=='/'){
@@ -80,21 +77,21 @@ class dZip{
 		$details['modtime'] = bindec("$lastmod_timeH$lastmod_timeM$lastmod_timeS");
 		$details['moddate'] = bindec("$lastmod_dateY$lastmod_dateM$lastmod_dateD");
 		
-		$details['offset'] = ftell($this->fh);
-		fwrite($this->fh, $this->zipSignature);
-		fwrite($this->fh, pack('s', $details['vneeded'])); // version_needed
-		fwrite($this->fh, pack('s', $details['bitflag'])); // general_bit_flag
-		fwrite($this->fh, pack('s', $details['cmethod'])); // compression_method
-		fwrite($this->fh, pack('s', $details['modtime'])); // lastmod_time
-		fwrite($this->fh, pack('s', $details['moddate'])); // lastmod_date
-		fwrite($this->fh, pack('V', $details['crc_32']));  // crc-32
-		fwrite($this->fh, pack('I', $details['comsize'])); // compressed_size
-		fwrite($this->fh, pack('I', $details['uncsize'])); // uncompressed_size
-		fwrite($this->fh, pack('s', strlen($cfilename)));   // file_name_length
-		fwrite($this->fh, pack('s', 0));  // extra_field_length
-		fwrite($this->fh, $cfilename);    // file_name
+		$details['offset'] = ftell($fh);
+		fwrite($fh, $this->zipSignature);
+		fwrite($fh, pack('s', $details['vneeded'])); // version_needed
+		fwrite($fh, pack('s', $details['bitflag'])); // general_bit_flag
+		fwrite($fh, pack('s', $details['cmethod'])); // compression_method
+		fwrite($fh, pack('s', $details['modtime'])); // lastmod_time
+		fwrite($fh, pack('s', $details['moddate'])); // lastmod_date
+		fwrite($fh, pack('V', $details['crc_32']));  // crc-32
+		fwrite($fh, pack('I', $details['comsize'])); // compressed_size
+		fwrite($fh, pack('I', $details['uncsize'])); // uncompressed_size
+		fwrite($fh, pack('s', strlen($cfilename)));   // file_name_length
+		fwrite($fh, pack('s', 0));  // extra_field_length
+		fwrite($fh, $cfilename);    // file_name
 		// ignoring extra_field
-		fwrite($this->fh, $zdata);
+		fwrite($fh, $zdata);
 		
 		// Append it to central dir
 		$details['external_attributes']  = (substr($cfilename, -1)=='/'&&!$zdata)?16:32; // Directory or file name
@@ -106,8 +103,9 @@ class dZip{
 		$this->centraldirs[$filename][$property] = $value;
 	}
 	Function save($zipComments=''){
-		$this->ensureFh();
-        
+		if(!($fh = $this->fh))
+			$fh = fopen($this->filename, $this->overwrite?'w':'a+');
+		
 		$cdrec = "";
 		foreach($this->centraldirs as $filename=>$cd){
 			$cdrec .= $this->dirSignature;
@@ -130,21 +128,21 @@ class dZip{
 			$cdrec .= $filename;
 			$cdrec .= $cd['comments'];
 		}
-		$before_cd = ftell($this->fh);
-		fwrite($this->fh, $cdrec);
+		$before_cd = ftell($fh);
+		fwrite($fh, $cdrec);
 		
 		// end of central dir
-		fwrite($this->fh, $this->dirSignatureE);
-		fwrite($this->fh, pack('v', 0)); // number of this disk
-		fwrite($this->fh, pack('v', 0)); // number of the disk with the start of the central directory
-		fwrite($this->fh, pack('v', $this->files_count)); // total # of entries "on this disk" 
-		fwrite($this->fh, pack('v', $this->files_count)); // total # of entries overall 
-		fwrite($this->fh, pack('V', strlen($cdrec)));     // size of central dir 
-		fwrite($this->fh, pack('V', $before_cd));         // offset to start of central dir
-		fwrite($this->fh, pack('v', strlen($zipComments))); // .zip file comment length
-		fwrite($this->fh, $zipComments);
+		fwrite($fh, $this->dirSignatureE);
+		fwrite($fh, pack('v', 0)); // number of this disk
+		fwrite($fh, pack('v', 0)); // number of the disk with the start of the central directory
+		fwrite($fh, pack('v', $this->files_count)); // total # of entries "on this disk" 
+		fwrite($fh, pack('v', $this->files_count)); // total # of entries overall 
+		fwrite($fh, pack('V', strlen($cdrec)));     // size of central dir 
+		fwrite($fh, pack('V', $before_cd));         // offset to start of central dir
+		fwrite($fh, pack('v', strlen($zipComments))); // .zip file comment length
+		fwrite($fh, $zipComments);
 		
-		fclose($this->fh);
+		fclose($fh);
 	}
 	
 	// Private

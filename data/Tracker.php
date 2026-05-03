@@ -44,20 +44,13 @@ class Tracker {
         "item_id",
         "item_summary"
     );
-	function __construct()
-    {
-        $this->log = Logger::getLogger('Tracker');
-		// $this->db = PearDatabase::getInstance();
-		global $adb;
-        $this->db = $adb;
-    }
+
     function Tracker()
     {
-		
-		// PHP4-style constructor.
-        // This will NOT be invoked, unless a sub-class that extends `foo` calls it.
-        // In that case, call the new-style constructor to keep compatibility.
-        self::__construct();
+        $this->log = LoggerManager::getLogger('Tracker');
+	// $this->db = PearDatabase::getInstance();
+	global $adb;
+        $this->db = $adb;
     }
 
     /**

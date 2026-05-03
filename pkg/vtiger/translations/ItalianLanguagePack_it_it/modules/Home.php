@@ -12,7 +12,7 @@ $languageStrings = array(
 	'PLVT'                         => 'Migliori Opportunità '      , 
 	'QLTQ'                         => 'Migliori Preventivi'         , 
 	'CVLVT'                        => 'Indici chiave'               , 
-	'HLT'                          => 'Migliori Ticket di Supporto'         , 
+	'HLT'                          => 'Top Support Tickets'         , 
 	'GRT'                          => 'I miei Gruppi'               , 
 	'OLTSO'                        => 'Ordini di Vendita Importanti', 
 	'ILTI'                         => 'Fatture Importanti'          , 
@@ -25,7 +25,7 @@ $languageStrings = array(
 
   'LBL_SAVE_ORDER' => 'Salvare L\'Ordine',
   'LBL_ADD_NEW_DASHBOARD' => 'Aggiungere un nuovo pannello',
-	'LBL_MAX_CHARACTERS_ALLOWED_DASHBOARD' => 'Sono consentiti Massimo 30 caratteri per il nome del cruscotto.',
+	'LBL_MAX_CHARACTERS_ALLOWED_DASHBOARD' => 'Massimo 30 caratteri sono consentiti per il nome cruscotto.',
 );
 
 $jsLanguageStrings = array(

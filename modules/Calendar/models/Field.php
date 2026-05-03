@@ -34,12 +34,8 @@ class Calendar_Field_Model extends Vtiger_Field_Model {
 			/*case 'date_start' : $funcName = array('name'=>'greaterThanToday');
 								array_push($validator, $funcName);
 								break;*/
-			case 'recurringtype':	$funcName = array('name' => 'greaterThanDependentRepeatTillDate',
-													'params' => array('date_start'));
-									array_push($validator, $funcName);
-									break;
-			default				:	$validator = parent::getValidator();
-									break;
+			default : $validator = parent::getValidator();
+						break;
 		}
 		return $validator;
 	}

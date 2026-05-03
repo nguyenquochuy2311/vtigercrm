@@ -157,10 +157,7 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 		$allUserTags = Vtiger_Tag_Model::getAllUserTags($currentUserModel->getId());
 		$viewer->assign('TAGS_LIST', $tagsList);
 		$viewer->assign('ALL_USER_TAGS', $allUserTags);
-		$appName = $request->get('app');
-		if(!empty($appName)){
-			$viewer->assign('SELECTED_MENU_CATEGORY',$appName);
-		}
+		$viewer->assign('SELECTED_MENU_CATEGORY', 'MARKETING');
 
 		$selectedTabLabel = $request->get('tab_label');
 		$relationId = $request->get('relationId');
@@ -283,7 +280,7 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 		return $headerScriptInstances;
 	}
 
-	function showDetailViewByMode(Vtiger_Request $request) {
+	function showDetailViewByMode($request) {
 		$requestMode = $request->get('requestMode');
 		if($requestMode == 'full') {
 			return $this->showModuleDetailView($request);
@@ -378,7 +375,7 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 	 * Function shows basic detail for the record
 	 * @param <type> $request
 	 */
-	function showModuleBasicView(Vtiger_Request $request) {
+	function showModuleBasicView($request) {
 
 		$recordId = $request->get('record');
 		$moduleName = $request->getModule();
@@ -574,13 +571,11 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 		$childComments = $parentCommentModel->getChildComments();
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
 		$modCommentsModel = Vtiger_Module_Model::getInstance('ModComments');
-		$moduleName = $parentCommentModel->getParentRecordModel()->getModuleName();
 
 		$viewer = $this->getViewer($request);
 		$viewer->assign('PARENT_COMMENTS', $childComments);
 		$viewer->assign('CURRENTUSER', $currentUserModel);
 		$viewer->assign('COMMENTS_MODULE_MODEL', $modCommentsModel);
-		$viewer->assign('MODULE_NAME', $moduleName);
 
 		return $viewer->view('CommentsList.tpl', $moduleName, 'true');
 	}

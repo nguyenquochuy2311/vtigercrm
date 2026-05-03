@@ -82,7 +82,7 @@ class Settings_Webforms_Field_Model extends Vtiger_Field_Model {
 		return $this->getPicklistValues();
 	}
 	
-	public function getDisplayValue($value, $record=false, $recordInstance = false) {
+	public function getDisplayValue($value) {
 		if ($this->getName() === 'enabled') {
 			$moduleName = 'Settings:Webforms';
 			if ($value) {
@@ -93,7 +93,7 @@ class Settings_Webforms_Field_Model extends Vtiger_Field_Model {
 		return parent::getDisplayValue($value);
 	}
     
-	public function getPermissions($accessmode = 'readonly') {
+	public function getPermissions() {
 		return true;
 	}
     

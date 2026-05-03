@@ -44,9 +44,13 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 				$record = Vtiger_Record_Model::getInstanceById($recordId, $moduleName);
 				$record->set('mode','edit');
 
-                $startDateTime = $this->getFormattedDateTime($record->get('date_start'), $record->get('time_start'));
-                $oldDateTime = $this->getFormattedDateTime($record->get('due_date'), $record->get('time_end'));
+				$startDateTime[] = $record->get('date_start');
+				$startDateTime[] = $record->get('time_start');
+				$startDateTime = implode(' ',$startDateTime);
 
+				$oldDateTime[] = $record->get('due_date');
+				$oldDateTime[] = $record->get('time_end');
+				$oldDateTime = implode(' ',$oldDateTime);
 				$resultDateTime = $this->changeDateTime($oldDateTime,$dayDelta,$minuteDelta,$secondsDelta);
 				$interval = strtotime($resultDateTime) - strtotime($startDateTime);
 
@@ -64,18 +68,24 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 						$recordModel = Vtiger_Record_Model::getInstanceById($childId, 'Events');
 						$recordModel->set('mode','edit');
 
-                        $startDateTime = $this->getFormattedDateTime($recordModel->get('date_start'), $recordModel->get('time_start'));
+						$startDateTime = '';
+						$startDateTime[] = $recordModel->get('date_start');
+						$startDateTime[] = $recordModel->get('time_start');
+						$startDateTime = implode(' ',$startDateTime);
 						$dueDate = strtotime($startDateTime) + $interval;
 						$formatDate = date("Y-m-d H:i:s", $dueDate);
 						$parts = explode(' ',$formatDate);
 						$startDateTime = new DateTime($startDateTime);
 
 						$recordModel->set('due_date',$parts[0]);
-						if($activityType != 'Task') {
+						if(activitytype != 'Task') {
 							$recordModel->set('time_end',$parts[1]);
 						}
 
-                        $endDateTime = $this->getFormattedDateTime($recordModel->get('due_date'), $recordModel->get('time_end'));
+						$endDateTime = '';
+						$endDateTime[] = $recordModel->get('due_date');
+						$endDateTime[] = $recordModel->get('time_end');
+						$endDateTime = implode(' ',$endDateTime);
 						$endDateTime = new DateTime($endDateTime);
 
 						if($startDateTime <= $endDateTime) {
@@ -87,18 +97,26 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 					}
 					$result['recurringRecords'] = true;
 				} else {
-                    $oldDateTime = $this->getFormattedDateTime($record->get('due_date'), $record->get('time_end'));
+					$oldDateTime = '';
+					$oldDateTime[] = $record->get('due_date');
+					$oldDateTime[] = $record->get('time_end');
+					$oldDateTime = implode(' ',$oldDateTime);
 					$resultDateTime = $this->changeDateTime($oldDateTime,$dayDelta,$minuteDelta,$secondsDelta);
 					$parts = explode(' ',$resultDateTime);
 					$record->set('due_date',$parts[0]);
-					if($activityType != 'Task') {
+					if(activitytype != 'Task') {
 						$record->set('time_end',$parts[1]);
 					}
 
-                    $startDateTime = $this->getFormattedDateTime($record->get('date_start'), $record->get('time_start'));
+					$startDateTime = '';
+					$startDateTime[] = $record->get('date_start');
+					$startDateTime[] = $record->get('time_start');
+					$startDateTime = implode(' ',$startDateTime);
 					$startDateTime = new DateTime($startDateTime);
 
-                    $endDateTime = $this->getFormattedDateTime($record->get('due_date'), $record->get('time_end'));
+					$endDateTime[] = $record->get('due_date');
+					$endDateTime[] = $record->get('time_end');
+					$endDateTime = implode(' ',$endDateTime);
 					$endDateTime = new DateTime($endDateTime);
 					//Checking if startDateTime is less than or equal to endDateTime
 					if($startDateTime <= $endDateTime) {
@@ -177,11 +195,15 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 				$record = Vtiger_Record_Model::getInstanceById($recordId, $moduleName);
 				$record->set('mode','edit');
 
-                $oldStartDateTime = $this->getFormattedDateTime($record->get('date_start'), $record->get('time_start'));
+				$oldStartDateTime[] = $record->get('date_start');
+				$oldStartDateTime[] = $record->get('time_start');
+				$oldStartDateTime = implode(' ',$oldStartDateTime);
 				$resultDateTime = $this->changeDateTime($oldStartDateTime, $dayDelta, $minuteDelta, $secondsDelta);
 				$startDateInterval = strtotime($resultDateTime) - strtotime($oldStartDateTime);
 
-                $oldEndDateTime = $this->getFormattedDateTime($record->get('due_date'), $record->get('time_end'));
+				$oldEndDateTime[] = $record->get('due_date');
+				$oldEndDateTime[] = $record->get('time_end');
+				$oldEndDateTime = implode(' ', $oldEndDateTime);
 				$resultDateTime = $this->changeDateTime($oldEndDateTime, $dayDelta, $minuteDelta, $secondsDelta);
 				$endDateInterval = strtotime($resultDateTime) - strtotime($oldEndDateTime);
 
@@ -199,23 +221,29 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 						$recordModel = Vtiger_Record_Model::getInstanceById($childId, 'Events');
 						$recordModel->set('mode', 'edit');
 
-                        $startDateTime = $this->getFormattedDateTime($recordModel->get('date_start'), $recordModel->get('time_start'));
+						$startDateTime = '';
+						$startDateTime[] = $recordModel->get('date_start');
+						$startDateTime[] = $recordModel->get('time_start');
+						$startDateTime = implode(' ', $startDateTime);
 						$startDate = strtotime($startDateTime) + $startDateInterval;
 						$formatStartDate = date("Y-m-d H:i:s", $startDate);
 						$parts = explode(' ', $formatStartDate);
 						$startDateTime = new DateTime($startDateTime);
 
 						$recordModel->set('date_start', $parts[0]);
-						if ($activityType != 'Task')
+						if (activitytype != 'Task')
 							$recordModel->set('time_start', $parts[1]);
 
-                        $endDateTime = $this->getFormattedDateTime($recordModel->get('due_date'), $recordModel->get('time_end'));
+						$endDateTime = '';
+						$endDateTime[] = $recordModel->get('due_date');
+						$endDateTime[] = $recordModel->get('time_end');
+						$endDateTime = implode(' ', $endDateTime);
 						$endDate = strtotime($endDateTime) + $endDateInterval;
 						$formatEndDate = date("Y-m-d H:i:s", $endDate);
 						$endDateParts = explode(' ', $formatEndDate);
 						$endDateTime = new DateTime($endDateTime);
 						$recordModel->set('due_date', $endDateParts[0]);
-						if ($activityType != 'Task')
+						if (activitytype != 'Task')
 							$recordModel->set('time_end', $endDateParts[1]);
 
 						$this->setRecurrenceInfo($recordModel);
@@ -223,17 +251,23 @@ class Calendar_DragDropAjax_Action extends Calendar_SaveAjax_Action {
 					}
 					$result['recurringRecords'] = true;
 				} else {
-                    $oldStartDateTime = $this->getFormattedDateTime($record->get('date_start'), $record->get('time_start'));
+                    $oldStartDateTime = array();
+					$oldStartDateTime[] = $record->get('date_start');
+					$oldStartDateTime[] = $record->get('time_start');
+					$oldStartDateTime = implode(' ', $oldStartDateTime);
 					$resultDateTime = $this->changeDateTime($oldStartDateTime,$dayDelta,$minuteDelta,$secondsDelta);
 					$parts = explode(' ',$resultDateTime);
 					$record->set('date_start',$parts[0]);
 					$record->set('time_start',$parts[1]);
 
-                    $oldEndDateTime = $this->getFormattedDateTime($record->get('due_date'), $record->get('time_end'));
+					$oldEndDateTime = array();
+					$oldEndDateTime[] = $record->get('due_date');
+					$oldEndDateTime[] = $record->get('time_end');
+					$oldEndDateTime = implode(' ',$oldEndDateTime);
 					$resultDateTime = $this->changeDateTime($oldEndDateTime,$dayDelta,$minuteDelta,$secondsDelta);
 					$parts = explode(' ',$resultDateTime);
 					$record->set('due_date',$parts[0]);
-					if($activityType != 'Task') {
+					if(activitytype != 'Task') {
 						$record->set('time_end',$parts[1]);
 					}
 

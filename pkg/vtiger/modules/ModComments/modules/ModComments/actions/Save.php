@@ -65,6 +65,7 @@ class ModComments_Save_Action extends Vtiger_Save_Action {
 	protected function getRecordModelFromRequest(Vtiger_Request $request) {
 		$recordModel = parent::getRecordModelFromRequest($request);
 		
+		$recordModel->set('commentcontent', $request->getRaw('commentcontent'));
 		$recordModel->set('reasontoedit', $request->getRaw('reasontoedit'));
 
 		return $recordModel;

@@ -232,28 +232,6 @@ jQuery.validator.addMethod("greaterThanDependentField", function(value, element,
 	}, jQuery.validator.format(app.vtranslate('JS_PLEASE_ENTER_VALID_VALUE'))
 );
 
-jQuery.validator.addMethod("greaterThanDependentRepeatTillDate", function(value, element, params) {
-        var form = jQuery(element).closest('form');
-		var recurringCheck = form.find('input[name="recurringcheck"]').is(':checked');
-		//checking if the element sent has is date field
-		if(!recurringCheck || !jQuery(element).hasClass('dateField')) {
-			return true;
-		}
-		
-        var startDateElement = form.find('[name="date_start"]');
-        var endDateElement = form.find('[name="calendar_repeat_limit_date"]');
-        var dateFormat = app.getDateFormat();
-        
-        //converting to moment time format
-        var startDate = startDateElement.val();
-        var endDate = endDateElement.val();
-        var momentFormat = dateFormat.toUpperCase();
-        var m1 = moment(startDate , momentFormat);
-        var m2 = moment(endDate, momentFormat);
-        return m2.unix() >= m1.unix();
-    }, jQuery.validator.format(app.vtranslate('JS_REPEAT_DATE_SHOULD_BE_GREATER_THAN_START_DATE'))
-);
-
 jQuery.validator.addMethod("currency", function(value, element, params) {
 	element = jQuery(element);
 	var groupSeparator = app.getGroupingSeparator();
@@ -736,7 +714,7 @@ jQuery.validator.addMethod("RepeatMonthDate", function(value, element, params) {
 jQuery.validator.addMethod("reference_required", function (value, element, params) {
 	var referenceValue = jQuery(element).parent().parent().find('input.sourceField').val();
 	if (isNaN(referenceValue)) {
-		referenceValue = jQuery(element).parent().parent().find('input.sourceField').data('value');
+		referenceValue = jQuery(element).parent().parent().find('input.sourceField').attr('value');
 	}
 	if (referenceValue && parseInt(referenceValue) > 0) {
 		return true;

@@ -28,16 +28,12 @@ class Calendar
 	/*
 	constructor
 	*/
-        function __construct($view='',$data=Array())
-        {
-            $this->view = $view;
-            $this->date_time = new vt_DateTime($data,true);
-            $this->constructLayout();
-        }
 	//var $groupTable = Array('vtiger_activitygrouprelation','activityid');
 	function Calendar($view='',$data=Array())
 	{
-            self::__construct($view,$data);
+		$this->view = $view;
+		$this->date_time = new vt_DateTime($data,true);
+		$this->constructLayout();
 	}
 	/**
 	 * Function to get calendarview Label
@@ -260,23 +256,17 @@ class Layout
 	* @param  string   $view - calendarview
 	* @param  string   $time - time string 
 	*/
-        function __construct($view,$time)
-        {
-            $this->view = $view;
-            $this->start_time = $time;
-            if ($view == 'month') {
-                $this->end_time = $this->start_time->getMonthendtime();
-            }
-            if ($view == 'day') {
-                $this->end_time = $this->start_time->getDayendtime();
-            }
-            if ($view == 'hour') {
-                $this->end_time = $this->start_time->getHourendtime();
-            }
-        }
+
 	function Layout($view,$time)
         {
-            self::__construct($view,$time);    
+                $this->view = $view;
+                $this->start_time = $time;
+		if ( $view == 'month')
+			 $this->end_time = $this->start_time->getMonthendtime();
+                if ( $view == 'day')
+                        $this->end_time = $this->start_time->getDayendtime();
+                if ( $view == 'hour')
+                        $this->end_time = $this->start_time->getHourendtime();
         }
 
 	/**

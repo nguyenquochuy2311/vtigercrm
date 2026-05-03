@@ -24,13 +24,10 @@ class Vtiger_PackageExport {
 	/**
 	 * Constructor
 	 */
-        function __construct() {
-            if(is_dir($this->_export_tmpdir) === FALSE) {
-			mkdir($this->_export_tmpdir);
-            }
-        }
 	function Vtiger_PackageExport() {
-            self::__construct();
+		if(is_dir($this->_export_tmpdir) === FALSE) {
+			mkdir($this->_export_tmpdir);
+		}
 	}
 
 	/** Output Handlers */

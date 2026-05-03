@@ -34,10 +34,9 @@ class Import_Main_View extends Vtiger_View_Controller{
 		}
 
 		$isImportScheduled = $importController->request->get('is_scheduled');
-                $enableCron = $importController->request->get('enable_cron');
 		if($isImportScheduled) {
 			$importInfo = Import_Queue_Action::getUserCurrentImportInfo($importController->user);
-			self::showScheduledStatus($importInfo, $enableCron);
+			self::showScheduledStatus($importInfo);
 		} else {
 			$importController->triggerImport();
 		}
@@ -134,12 +133,12 @@ class Import_Main_View extends Vtiger_View_Controller{
 		$viewer->view('ImportResult.tpl', 'Import');
 	}
 
-	public static function showScheduledStatus($importInfo, $enableCronStatus) {
+	public static function showScheduledStatus($importInfo) {
 		$moduleName = $importInfo['module'];
 		$importId = $importInfo['id'];
 
 		$viewer = new Vtiger_Viewer();
-                $viewer->assign('ENABLE_SCHEDULE_IMPORT_CRON', $enableCronStatus);
+
 		$viewer->assign('FOR_MODULE', $moduleName);
 		$viewer->assign('MODULE', 'Import');
 		$viewer->assign('IMPORT_ID', $importId);
@@ -197,16 +196,6 @@ class Import_Main_View extends Vtiger_View_Controller{
 		$immediateImportRecordLimit = $configReader->get('immediateImportLimit');
 		$pagingLimit  = $configReader->get('importPagingLimit');
 
-                $cronTasks = Vtiger_Cron::listAllInstancesByModule('Import');
-                $importCronTask = $cronTasks[0];
-                if(!empty($importCronTask)){
-                    $cronStatus = $importCronTask->getStatus();
-                    $enableCron = false;
-                    if(empty($cronStatus)){
-                        $enableCron = true;
-                    }
-                    $this->request->set('enable_cron', $enableCron);
-                }
 		$numberOfRecordsToImport = $this->numberOfRecords;
 		if($numberOfRecordsToImport > $immediateImportRecordLimit) {
 			$this->request->set('is_scheduled', true);

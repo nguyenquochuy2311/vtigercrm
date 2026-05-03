@@ -8,12 +8,8 @@ class iCalendar_component {
     var $valid_properties = NULL;
     var $valid_components = NULL;
 
-    function __construct()
-    {
-        $this->construct();
-    }
     function iCalendar_component() {
-        self::__construct();
+        $this->construct();
     }
 
     function construct() {

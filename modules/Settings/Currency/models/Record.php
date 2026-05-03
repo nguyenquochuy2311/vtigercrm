@@ -92,8 +92,7 @@ class Settings_Currency_Record_Model extends Settings_Vtiger_Record_Model{
         return $id;
     }
 
-    public static function getInstance() {
-        list($id) = func_get_args();
+    public static function getInstance($id) {
         $db = PearDatabase::getInstance();
         if(Vtiger_Utils::isNumber($id)){
             $query = 'SELECT * FROM ' . Settings_Currency_Module_Model::tableName . ' WHERE id=?';

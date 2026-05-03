@@ -23,7 +23,7 @@ class Vtiger_Double_UIType extends Vtiger_Base_UIType {
 	 * @param <Object> $value
 	 * @return <Object>
 	 */
-	public function getDisplayValue($value, $record=false, $recordInstance=false) {
+	public function getDisplayValue($value) {
 		return decimalFormat($value);
 	}
 

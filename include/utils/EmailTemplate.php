@@ -99,7 +99,7 @@ class EmailTemplate {
 		$baseTable = $meta->getEntityBaseTable();
 		$tableList[$baseTable] = $baseTable;
 		
-		if (!empty($variableList) && (count($variableList) > 0)) {
+		if (count($variableList) > 0) {
 			foreach ($variableList as $column) {
 				if (in_array($column, $allColumnList)) {
 					$fieldList[] = array_search($column, $fieldColumnMapping);

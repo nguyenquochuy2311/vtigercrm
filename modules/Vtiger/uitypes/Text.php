@@ -15,14 +15,8 @@ class Vtiger_Text_UIType extends Vtiger_Base_UIType {
 	 * @param <Object> $value
 	 * @return <Object>
 	 */
-	public function getDisplayValue($value, $record=false, $recordInstance = false,$removeTags = false) {
-		if(in_array($this->get('field')->getFieldName(),array('signature','commentcontent'))) {
-			return $value;
-		}
-                if($removeTags){
-                    $value = strip_tags($value,'<br>');
-                }
-		return nl2br(purifyHtmlEventAttributes($value, true));
+	public function getDisplayValue($value, $record=false, $recordInstance=false) {
+		return nl2br($value);
 	}
     
     /**

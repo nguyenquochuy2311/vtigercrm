@@ -22,8 +22,7 @@
             data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
         {/if}
         >
-    {purifyHtmlEventAttributes($FIELD_MODEL->get('fieldvalue'),true)|regex_replace:"/(?!\w)\&nbsp;(?=\w)/":" "}
-    </textarea>
+    {$FIELD_MODEL->get('fieldvalue')}</textarea>
 {else}
     <textarea rows="5" id="{$MODULE}_editView_fieldName_{$FIELD_NAME}" class="inputElement {if $FIELD_MODEL->isNameField()}nameField{/if}" name="{$FIELD_NAME}" {if !empty($SPECIAL_VALIDATOR)}data-validator='{Zend_Json::encode($SPECIAL_VALIDATOR)}'{/if}
         {if $FIELD_INFO["mandatory"] eq true} data-rule-required="true" {/if}
@@ -31,7 +30,6 @@
             data-specific-rules='{ZEND_JSON::encode($FIELD_INFO["validator"])}'
         {/if}
         >
-    {purifyHtmlEventAttributes($FIELD_MODEL->get('fieldvalue'),true)|regex_replace:"/(?!\w)\&nbsp;(?=\w)/":" "}
-    </textarea>
+    {$FIELD_MODEL->get('fieldvalue')}</textarea>
 {/if}
 {/strip}

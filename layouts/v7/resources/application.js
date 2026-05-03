@@ -40,7 +40,7 @@ window.app = (function () {
 					if (!data['success'] && data['error']['message']) {
 						aDeferred.resolve(new VtError(data['error']));
 						return;
-					} else if (data['result'] && data['result'] !== null) {
+					} else if (data['result']) {
 						data = data['result'];
 					}
 				}
@@ -73,7 +73,7 @@ window.app = (function () {
 						if (!response['success'] && response['error']['message']) {
 									aDeferred.resolve(new VtError(response['error']));
 							return;
-						} else if (response['result'] && response['result'] !== null) {
+						} else if (response['result']) {
 							response = response['result'];
 						}
 					}
@@ -206,8 +206,7 @@ window.app = (function () {
 			for (var index = 0; index < queryParameters.length; index++) {
 				var queryParam = queryParameters[index];
 				var queryParamComponents = queryParam.split('=');
-                if (queryParamComponents[0] in params) params[queryParamComponents[0]] += '&' + queryParamComponents[0] + '=' + queryParamComponents[1];
-				else params[queryParamComponents[0]] = queryParamComponents[1];
+				params[queryParamComponents[0]] = queryParamComponents[1];
 			}
 			return params;
 		},

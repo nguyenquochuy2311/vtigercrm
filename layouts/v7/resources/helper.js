@@ -87,30 +87,12 @@ jQuery.Class("Vtiger_Helper_Js",{
 		var timeComponent = dateTimeComponents[1];
         var seconds = '00';
 
-        var splittedDate = '';
-        var splittedDateFormat = '';
-
-        if (dateFormat.indexOf('.') !== -1) {
-            splittedDate = dateComponent.split('.');
-        } else if (dateFormat.indexOf('/') !== -1) {
-            splittedDate = dateComponent.split('/');
-        } else {
-            splittedDate = dateComponent.split('-');
-        }
-
+		var splittedDate = dateComponent.split("-");
         if(splittedDate.length > 3) {
             var errorMsg = app.vtranslate("JS_INVALID_DATE");
             throw errorMsg;
         }
-
-        if (dateFormat.indexOf('.') !== -1) {
-            splittedDateFormat = dateFormat.split('.');
-        } else if (dateFormat.indexOf('/') !== -1) {
-            splittedDateFormat = dateFormat.split('/');
-        } else {
-            splittedDateFormat = dateFormat.split('-');
-        }
-
+		var splittedDateFormat = dateFormat.split("-");
 		var year = splittedDate[splittedDateFormat.indexOf("yyyy")];
 		var month = splittedDate[splittedDateFormat.indexOf("mm")];
 		var date = splittedDate[splittedDateFormat.indexOf("dd")];
@@ -446,10 +428,10 @@ jQuery.Class("Vtiger_Helper_Js",{
         var cb = params.cb;
         var container = jQuery('.myModal');
 		
-        container.on('hidden.bs.modal',function() {
+		container.on('hidden.bs.modal',function() {
 			container.html('');
 			window.onbeforeunload = null;
-        });
+		});
 		
         if(typeof cb === "function") {
             container.off('shown.bs.modal');
@@ -471,7 +453,6 @@ jQuery.Class("Vtiger_Helper_Js",{
             aDeferred.resolve();
         })
 		$('.myModal').modal('hide'); 
-                $('.myModal').data('bs.modal',null); // clear any options previously set
         return aDeferred.promise();
     },
 
@@ -793,7 +774,6 @@ jQuery.Class("Vtiger_Helper_Js",{
         if(typeof params === "undefined") {
             params = {};
         }
-        
         var defaultParams = app.helper.defaultModalParams();
         params = jQuery.extend(defaultParams,params);
 
@@ -801,7 +781,7 @@ jQuery.Class("Vtiger_Helper_Js",{
         if(jQuery('#popupModal').length) return;
         var container = jQuery('<div id="popupModal" class="modal"></div>');
 		
-	container.on('hidden.bs.modal',function() {
+		container.on('hidden.bs.modal',function() {
 			container.html('').remove();
 		});
 		

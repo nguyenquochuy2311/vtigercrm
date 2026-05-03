@@ -14,17 +14,10 @@
 		var $result ;
 		var $error;
 		
-		function __construct()
-		{
+		function State(){
 			$this->success = false;
 			$this->result = array();
 			$this->error = array();
-		}
-		function State(){
-			// PHP4-style constructor.
-			// This will NOT be invoked, unless a sub-class that extends `foo` calls it.
-			// In that case, call the new-style constructor to keep compatibility.
-			self::__construct();
 		}
 		
 		

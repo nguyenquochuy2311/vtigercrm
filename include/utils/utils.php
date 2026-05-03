@@ -40,7 +40,6 @@ require_once 'vtlib/Vtiger/Deprecated.php';
 require_once 'includes/runtime/Cache.php';
 require_once 'modules/Vtiger/helpers/Util.php';
 require_once 'vtlib/Vtiger/AccessControl.php';
-require_once 'includes/runtime/Configs.php';
 // Constants to be defined here
 
 // For Migration status.
@@ -137,24 +136,24 @@ function get_user_array($add_blank=true, $status="Active", $assigned_user="",$pr
 		$temp_result = Array();
 		// Including deleted vtiger_users for now.
 		if (empty($status)) {
-				$query = "SELECT id, user_name, userlabel from vtiger_users";
+				$query = "SELECT id, user_name from vtiger_users";
 				$params = array();
 		}
 		else {
 				if($private == 'private')
 				{
 					$log->debug("Sharing is Private. Only the current user should be listed");
-					$query = "select id as id,user_name as user_name,first_name,last_name,userlabel from vtiger_users where id=? and status='Active' union select vtiger_user2role.userid as id,vtiger_users.user_name as user_name ,
-							  vtiger_users.first_name as first_name ,vtiger_users.last_name as last_name, vtiger_users.userlabel AS userlabel 
+					$query = "select id as id,user_name as user_name,first_name,last_name from vtiger_users where id=? and status='Active' union select vtiger_user2role.userid as id,vtiger_users.user_name as user_name ,
+							  vtiger_users.first_name as first_name ,vtiger_users.last_name as last_name
 							  from vtiger_user2role inner join vtiger_users on vtiger_users.id=vtiger_user2role.userid inner join vtiger_role on vtiger_role.roleid=vtiger_user2role.roleid where vtiger_role.parentrole like ? and status='Active' union
 							  select shareduserid as id,vtiger_users.user_name as user_name ,
-							  vtiger_users.first_name as first_name ,vtiger_users.last_name as last_name,vtiger_users.userlabel AS userlabel from vtiger_tmp_write_user_sharing_per inner join vtiger_users on vtiger_users.id=vtiger_tmp_write_user_sharing_per.shareduserid where status='Active' and vtiger_tmp_write_user_sharing_per.userid=? and vtiger_tmp_write_user_sharing_per.tabid=? and (user_name != 'admin' OR is_owner=1)";
+							  vtiger_users.first_name as first_name ,vtiger_users.last_name as last_name  from vtiger_tmp_write_user_sharing_per inner join vtiger_users on vtiger_users.id=vtiger_tmp_write_user_sharing_per.shareduserid where status='Active' and vtiger_tmp_write_user_sharing_per.userid=? and vtiger_tmp_write_user_sharing_per.tabid=? and (user_name != 'admin' OR is_owner=1)";
 					$params = array($current_user->id, $current_user_parent_role_seq."::%", $current_user->id, getTabid($module));
 				}
 				else
 				{
 					$log->debug("Sharing is Public. All vtiger_users should be listed");
-					$query = "SELECT id, user_name,first_name,last_name,userlabel from vtiger_users WHERE status=? and (user_name != 'admin' OR is_owner=1)";
+					$query = "SELECT id, user_name,first_name,last_name from vtiger_users WHERE status=? and (user_name != 'admin' OR is_owner=1)";
 					$params = array($status);
 				}
 		}
@@ -175,7 +174,7 @@ function get_user_array($add_blank=true, $status="Active", $assigned_user="",$pr
 		// Get the id and the name.
 		while($row = $db->fetchByAssoc($result))
 		{
-			$temp_result[$row['id']] = $row['userlabel'];
+			$temp_result[$row['id']] = getFullNameFromArray('Users', $row);
 		}
 
 		$user_array = &$temp_result;
@@ -215,7 +214,7 @@ function get_group_array($add_blank=true, $status="Active", $assigned_user="",$p
 			$query .= " WHERE groupid=?";
 			$params = array( $current_user->id);
 
-			if(!empty($current_user_groups) && (count($current_user_groups) != 0)) {
+			if(count($current_user_groups) != 0) {
 				$query .= " OR vtiger_groups.groupid in (".generateQuestionMarks($current_user_groups).")";
 				array_push($params, $current_user_groups);
 			}
@@ -223,7 +222,7 @@ function get_group_array($add_blank=true, $status="Active", $assigned_user="",$p
 			$query .= " union select vtiger_group2role.groupid as groupid,vtiger_groups.groupname as groupname from vtiger_group2role inner join vtiger_groups on vtiger_groups.groupid=vtiger_group2role.groupid inner join vtiger_role on vtiger_role.roleid=vtiger_group2role.roleid where vtiger_role.parentrole like ?";
 			array_push($params, $current_user_parent_role_seq."::%");
 
-			if(!empty($current_user_groups) && (count($current_user_groups) != 0)) {
+			if(count($current_user_groups) != 0) {
 				$query .= " union select vtiger_groups.groupid as groupid,vtiger_groups.groupname as groupname from vtiger_groups inner join vtiger_group2rs on vtiger_groups.groupid=vtiger_group2rs.groupid where vtiger_group2rs.roleandsubid in (".generateQuestionMarks($parent_roles).")";
 				array_push($params, $parent_roles);
 			}
@@ -1218,7 +1217,7 @@ function getAccessPickListValues($module)
 	$roleid = $current_user->roleid;
 	$subrole = getRoleSubordinates($roleid);
 
-	if(!empty($subrole) && (count($subrole)> 0))
+	if(count($subrole)> 0)
 {
 		$roleids = $subrole;
 		array_push($roleids, $roleid);
@@ -1239,7 +1238,7 @@ function getAccessPickListValues($module)
 
 		$keyvalue = $columnname;
 		$fieldvalues = Array();
-		if (!empty($roleids) && (count($roleids) > 1))
+		if (count($roleids) > 1)
 	{
 			$mulsel="select distinct $fieldname from vtiger_$fieldname inner join vtiger_role2picklist on vtiger_role2picklist.picklistvalueid = vtiger_$fieldname.picklist_valueid where roleid in (\"". implode($roleids,"\",\"") ."\") and picklistid in (select picklistid from vtiger_$fieldname) order by sortid asc";
 	}
@@ -1377,7 +1376,7 @@ function transferProductCurrency($old_cur, $new_cur) {
 	for($i=0;$i<$numRows;$i++) {
 		$prod_ids[] = $adb->query_result($prod_res,$i,'productid');
 	}
-	if(!empty($prod_ids) && (count($prod_ids) > 0)) {
+	if(count($prod_ids) > 0) {
 		$prod_price_list = getPricesForProducts($new_cur,$prod_ids);
 
 		for($i=0;$i<count($prod_ids);$i++) {
@@ -1403,7 +1402,7 @@ function transferPriceBookCurrency($old_cur, $new_cur) {
 		$pb_ids[] = $adb->query_result($pb_res,$i,'pricebookid');
 }
 
-	if(!empty($pb_ids) && (count($pb_ids) > 0)) {
+	if(count($pb_ids) > 0) {
 		require_once('modules/PriceBooks/PriceBooks.php');
 
 		for($i=0;$i<count($pb_ids);$i++) {
@@ -1430,7 +1429,7 @@ function transferServicesCurrency($old_cur, $new_cur) {
     for ($i = 0; $i < $numRows; $i++) {
         $ser_ids[] = $adb->query_result($ser_res, $i, 'serviceid');
     }
-    if (!empty($ser_ids) && (count($ser_ids) > 0)) {
+    if (count($ser_ids) > 0) {
         $ser_price_list = getPricesForProducts($new_cur, $ser_ids, 'Services');
         for ($i = 0; $i < count($ser_ids); $i++) {
             $service_id = $ser_ids[$i];
@@ -1598,7 +1597,7 @@ function getRelationTables($module,$secmodule){
 				}
 			}
 	}else {
-		if(method_exists($primary_obj,'setRelationTables')){
+		if(method_exists($primary_obj,setRelationTables)){
 			$reltables = $primary_obj->setRelationTables($secmodule);
 		} else {
 			$reltables = '';
@@ -1633,18 +1632,11 @@ function DeleteEntity($module,$return_module,$focus,$record,$return_id) {
  * Function to related two records of different entity types
   */
 function relateEntities($focus, $sourceModule, $sourceRecordId, $destinationModule, $destinationRecordIds) {
-    $db = PearDatabase::getInstance();
-    $em = new VTEventsManager($db);
-    $data = array('sourceModule'=>$sourceModule, 'sourceRecordId'=>$sourceRecordId,
-                  'destinationModule'=>$destinationModule,'destinationRecordIds'=>$destinationRecordIds);
-    $em->triggerEvent("vtiger.entity.beforerelate", $data);
 	if(!is_array($destinationRecordIds)) $destinationRecordIds = Array($destinationRecordIds);
 	foreach($destinationRecordIds as $destinationRecordId) {
 		$focus->save_related_module($sourceModule, $sourceRecordId, $destinationModule, $destinationRecordId);
 		$focus->trackLinkedInfo($sourceModule, $sourceRecordId, $destinationModule, $destinationRecordId);
 	}
-    
-    $em->triggerEvent("vtiger.entity.afterrelate", $data);
 }
 
 /**
@@ -1804,12 +1796,7 @@ function getValidDBInsertDateValue($value) {
 			break;
 		}
 	}
-	global $current_user;
-	$formate=$current_user->date_format;
-	list($d,$m,$y) = explode('-',$value);
-	if(strlen($d) == 4 || $formate == 'mm-dd-yyyy'){
-		list($y,$m,$d)=explode('-',$value);
-	}
+	list($y,$m,$d) = explode('-',$value);
 	if(strlen($y) == 1) $y = '0'.$y;
 	if(strlen($m) == 1) $m = '0'.$m;
 	if(strlen($d) == 1) $d = '0'.$d;
@@ -1832,8 +1819,7 @@ function getValidDBInsertDateValue($value) {
 function getValidDBInsertDateTimeValue($value) {
 	$value = trim($value);
 	$valueList = explode(' ',$value);
-    //checking array count = 3 if datatime format is 12hr.
-	if(is_array($valueList) && (count($valueList) == 2 || count($valueList) == 3)) {
+	if(count($valueList) == 2) {
 		$dbDateValue = getValidDBInsertDateValue($valueList[0]);
 		$dbTimeValue = $valueList[1];
 		if(!empty($dbTimeValue) && strpos($dbTimeValue, ':') === false) {
@@ -1849,7 +1835,7 @@ function getValidDBInsertDateTimeValue($value) {
 		} catch (Exception $ex) {
 			return '';
 		}
-	} elseif(is_array($valueList) && count($valueList) == 1) {
+	} elseif(count($valueList == 1)) {
 		return getValidDBInsertDateValue($value);
 	}
 }
@@ -2436,7 +2422,7 @@ function getRecordGroupId($record) {
  */
 function deleteRecordFromDetailViewNavigationRecords($recordId, $cvId, $moduleName) {
 	$recordNavigationInfo = Zend_Json::decode($_SESSION[$moduleName . '_DetailView_Navigation' . $cvId]);
-	if (!empty($recordNavigationInfo) && (count($recordNavigationInfo) != 0)) {
+	if (count($recordNavigationInfo) != 0) {
 		foreach ($recordNavigationInfo as $key => $recordIdList) {
 			$recordIdList = array_diff($recordIdList, array($recordId));
 			$recordNavigationInfo[$key] = $recordIdList;

@@ -710,21 +710,9 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 					}
 
 					$userDateFormat = $current_user->column_fields['date_format'];
-					if ('dd.mm.yyyy' === $userDateFormat) {
-						$dateFormat = 'd.m.Y';
-					} else if ('mm.dd.yyyy' === $userDateFormat) {
-						$dateFormat = 'm.d.Y';
-					} else if ('yyyy.mm.dd' === $userDateFormat) {
-						$dateFormat = 'Y.m.d';
-					} else if ('dd/mm/yyyy' === $userDateFormat) {
-						$dateFormat = 'd/m/Y';
-					} else if ('mm/dd/yyyy' === $userDateFormat) {
-						$dateFormat = 'm/d/Y';
-					} else if ('yyyy/mm/dd' === $userDateFormat) {
-						$dateFormat = 'Y/m/d';
-					} else if ('dd-mm-yyyy' === $userDateFormat) {
+					if ($userDateFormat == 'dd-mm-yyyy') {
 						$dateFormat = 'd-m-Y';
-					} else if ('mm-dd-yyyy' === $userDateFormat) {
+					} else if ($userDateFormat == 'mm-dd-yyyy') {
 						$dateFormat = 'm-d-Y';
 					} else {
 						$dateFormat = 'Y-m-d';
@@ -885,7 +873,8 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			$importDataController->importData();
 			$importStatusCount = $importDataController->getImportStatusCount();
 			$recordsToImport = $importDataController->getNumberOfRecordsToImport($importDataController->user);
-			$emailSubject = getTranslatedString('LBL_SCHEDULE_IMPORT_SUBJECT', 'Import').' '.$importDataController->module;
+
+			$emailSubject = 'vtiger CRM - Scheduled Import Report for '.$importDataController->module;
 			$viewer = new Vtiger_Viewer();
 			$viewer->assign('FOR_MODULE', $importDataController->module);
 			$viewer->assign('INVENTORY_MODULES', getInventoryModules());
@@ -894,17 +883,20 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			$importResult = $viewer->view('Import_Result_Details.tpl','Import',true);
 			$importResult = str_replace('align="center"', '', $importResult);
 
-                        $emailData = getTranslatedString('LBL_IMPORT_COMPLETED', 'Import').' '.$importResult.getTranslatedString('LBL_CHECK_IMPORT_STATUS', 'Import');
+			$emailData = 'vtiger CRM has just completed your import process. <br/><br/>' .
+						$importResult.'<br/><br/>'.
+						'We recommend you to login to the CRM and check few records to confirm that the import has been successful.';
 
-			$userName = $importDataController->user->column_fields['userlabel'];
+			$userName = getFullNameFromArray('Users', $importDataController->user->column_fields);
 			$userEmail = $importDataController->user->email1;
 			$vtigerMailer->AddAddress($userEmail, $userName);
 			$vtigerMailer->Subject = $emailSubject;
 			$vtigerMailer->Body    = $emailData;
-			$vtigerMailer->Send(true);
+			$vtigerMailer->Send();
 
 			$importDataController->finishImport();
 		}
+		Vtiger_Mailer::dispatchQueue(null);
 	}
 
 	public function getNumberOfRecordsToImport($user){

@@ -65,9 +65,6 @@ class Users_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 				if(($fieldName == 'currency_decimal_separator' || $fieldName == 'currency_grouping_separator') && ($displayValue == '&nbsp;')) {
 					$displayValue = vtranslate('Space', 'Users');
 				}
-                if($fieldName == 'defaultlandingpage'){
-                    $displayValue = vtranslate($fieldValue, $fieldValue);
-                }
 				$result[$fieldName] = array('value' => $fieldValue, 'display_value' => $displayValue);
 			}
 		}
@@ -87,96 +84,31 @@ class Users_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 	 * @return Vtiger_Record_Model or Module specific Record Model instance
 	 */
 	public function getRecordModelFromRequest(Vtiger_Request $request) {
-		$moduleName = $request->getModule();
-		$recordId = $request->get('record');
+		$recordModel = parent::getRecordModelFromRequest($request);
+		$fieldName = $request->get('field');
+
 		$currentUserModel = Users_Record_Model::getCurrentUserModel();
-
-		if(!empty($recordId)) {
-			$recordModel = Vtiger_Record_Model::getInstanceById($recordId, $moduleName);
-			$modelData = $recordModel->getData();
-			$recordModel->set('id', $recordId);
-			$sharedType = $request->get('sharedtype');
-			if(!empty($sharedType))
-				$recordModel->set('calendarsharedtype', $request->get('sharedtype'));
-			$recordModel->set('mode', 'edit');
-			
-		} else {
-			$recordModel = Vtiger_Record_Model::getCleanInstance($moduleName);
-			$modelData = $recordModel->getData();
-			$recordModel->set('mode', '');
+		if ($fieldName === 'is_admin' && (!$currentUserModel->isAdminUser() || !$request->get('value'))) {
+			$recordModel->set($fieldName, 'off');
+		} else if($fieldName === 'is_admin' && $currentUserModel->isAdminUser()) {
+			$requestValue = $request->get('value');
+			$value = $requestValue==1?"on":"off";
+			$recordModel->set($fieldName,$value);
 		}
-
-		foreach ($modelData as $fieldName => $value) {
-			$requestFieldExists = false;
-			 if($request->has($fieldName)){
-				$fieldValue = $request->get($fieldName,null);
-				$requestFieldExists = true;
-			}else if($fieldName === $request->get('field')){
-				$fieldValue = $request->get('value');
-				$requestFieldExists = true;
-			}
 			
-			if(!$requestFieldExists){
-				continue;
-			}
-			
-			if ($fieldName === 'is_admin' && (!$currentUserModel->isAdminUser() || !$fieldValue)) {
-				$fieldValue = 'off';
-			}else if($fieldName === 'is_admin' && $currentUserModel->isAdminUser()) {
-				$fieldValue = $fieldValue==1?"on":"off";
-			}
-
-			//to not update is_owner from ui
-			 if ($fieldName == 'is_owner' || (in_array($fieldName, array('user_type', 'roleid')) && !$currentUserModel->isAdminUser())) {
-				$fieldValue = null;
-			}
-			if($fieldName == 'signature'){
-				$requestData = $request->getAll();
-				$instyle = new InStyle();
-				$signature = $instyle->convertStylesToInlineCss($requestData['signature']);
-				//#4823970 - Added to remove any action tags like <form>, <input>, <button>..
-				$fieldValue = vtlib_purify($signature);
-				// Purify malicious html event attributes
-	                        $fieldValue = purifyHtmlEventAttributes($fieldValue, true);
-			}
-			if($fieldValue !== null) {
-				if(!is_array($fieldValue)) {
-					$fieldValue = trim($fieldValue);
-				}
-				$recordModel->set($fieldName, $fieldValue);
-			}
-		}
-                $homePageComponents = $recordModel->getHomePageComponents();
-		$selectedHomePageComponents = $request->get('homepage_components', array());
-		foreach ($homePageComponents as $key => $value) {
-			if(in_array($key, $selectedHomePageComponents)) {
-				$request->setGlobal($key, $key);
-			} else {
-				$request->setGlobal($key, '');
-			}
-		}
-		if($request->has('tagcloudview')) {
-			// Tag cloud save
-			$tagCloud = $request->get('tagcloudview');
-			if($tagCloud == "on") {
-				$recordModel->set('tagcloud', 0);
-			} else {
-				$recordModel->set('tagcloud', 1);
+		if($fieldName == "is_owner" || $fieldName == "roleid") {
+			$recordId = $request->get('record');
+			$moduleName = $request->getModule();
+			if(!empty($recordId)) {
+				$existingRecordModel =  Vtiger_Record_Model::getInstanceById($recordId, $moduleName);
+				$recordModel->set($fieldName,$existingRecordModel->get($fieldName));
 			}
 		}
 		return $recordModel;
 	}
 
 
-        public function getOwnerRoleValue(Vtiger_Request $request, $fieldName) {
-            $recordId = $request->get('record');
-            $moduleName = $request->getModule();
-            if(!empty($recordId)) {
-                    $existingRecordModel =  Vtiger_Record_Model::getInstanceById($recordId, $moduleName);
-                    return $existingRecordModel->get($fieldName);
-            }
-        }
-        public function userExists(Vtiger_Request $request){
+	public function userExists(Vtiger_Request $request){
 		$module = $request->getModule();
 		$userName = $request->get('user_name');
 		$status = Users_Record_Model::isUserExists($userName);

@@ -17,26 +17,22 @@ class Calendar_ActivityReminder_Action extends Vtiger_Action_Controller{
 
 	public function requiresPermission(Vtiger_Request $request){
 		$permissions = parent::requiresPermission($request);
+		$mode = $request->getMode();
+		if(!empty($mode)) {
+			switch ($mode) {
+				case 'getReminders':
+					$permissions[] = array('module_parameter' => 'module', 'action' => 'DetailView');
+					break;
 
-        if (vtlib_isModuleActive($request->getModule())) {
-            $mode = $request->getMode();
-            if (!empty($mode)) {
-                switch ($mode) {
-                    case 'getReminders':
-                        $permissions[] = ['module_parameter' => 'module', 'action' => 'DetailView'];
-                        break;
+				case 'postpone':
+					$permissions[] = array('module_parameter' => 'module', 'action' => 'EditView', 'record_parameter' => 'record');
+					break;
 
-                    case 'postpone':
-                        $permissions[] = ['module_parameter' => 'module', 'action' => 'EditView', 'record_parameter' => 'record'];
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-        }
-
-        return $permissions;
+				default:
+					break;
+			}
+		}
+		return $permissions;
 	}
 
 	public function process(Vtiger_Request $request) {

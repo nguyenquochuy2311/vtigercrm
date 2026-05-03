@@ -4,11 +4,8 @@ class iCal {
 
     var $folders;
     
-    function __construct() {
-        $this->folders = 'cache/import/';
-    }
     function iCal() {
-        self::__construct();
+        $this->folders = 'cache/import/';
     }
     
     function iCalReader($filename,$root_directory='') {

@@ -207,13 +207,4 @@ class Calendar_SaveAjax_Action extends Vtiger_SaveAjax_Action {
 
 		return $recordModel;
 	}
-	
-	/**
-	 * Helper API. See #1301 on code.vtiger.com
-	**/
-	public function getFormattedDateTime($date, $time) {
-        return trim($date . ' ' . $time);
-    }
-
 }
-

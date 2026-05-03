@@ -8,10 +8,10 @@
  * All Rights Reserved.
  ************************************************************************************/
 $languageStrings = array(
-	'Asterisk'                     => 'Asterisco'                    , 
+	'Asterisk'                     => 'Asterisk'                    , 
 	'PBXManager'                   => 'Gestione chiamate'           , 
 	'SINGLE_PBXManager'            => 'Gestione chiamate'           , 
-	'LBL_CALL_INFORMATION'         => 'Dettagli chiamata'                , 
+	'LBL_CALL_INFORMATION'         => 'Call Details'                , 
 	'Call From'                    => 'Chiamata da'                 , 
 	'Call To'                      => 'Chiamata verso'              , 
 	'Time Of Call'                 => 'Durata chiamata'             , 

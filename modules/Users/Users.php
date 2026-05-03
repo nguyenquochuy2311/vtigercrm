@@ -112,7 +112,7 @@ class Users extends CRMEntity {
 	);
 
 	//Default Fields for Email Templates -- Pavani
-	var $emailTemplate_defaultFields = array('first_name','last_name','userlabel','title','department','phone_home','phone_mobile','signature','email1','email2','address_street','address_city','address_state','address_country','address_postalcode');
+	var $emailTemplate_defaultFields = array('first_name','last_name','title','department','phone_home','phone_mobile','signature','email1','email2','address_street','address_city','address_state','address_country','address_postalcode');
 
 	var $popup_fields = array('last_name');
 
@@ -132,23 +132,21 @@ class Users extends CRMEntity {
 	 instantiates the Logger class and PearDatabase Class
 	 *
 	 */
-        function __construct() {
-            $this->log = Logger::getLogger('user');
-            $this->log->debug("Entering Users() method ...");
-            $this->db = PearDatabase::getInstance();
-            $this->DEFAULT_PASSWORD_CRYPT_TYPE = (version_compare(PHP_VERSION, '5.3.0') >= 0)? 'PHP5.3MD5': 'MD5';
-            if (version_compare(PHP_VERSION, '5.5.0') >= 0) {
-                    $this->DEFAULT_PASSWORD_CRYPT_TYPE = 'PHASH';
-            }
-            $this->column_fields = getColumnFields('Users');
-            $this->column_fields['currency_name'] = '';
-            $this->column_fields['currency_code'] = '';
-            $this->column_fields['currency_symbol'] = '';
-            $this->column_fields['conv_rate'] = '';
-            $this->log->debug("Exiting Users() method ...");
-        }
+
 	function Users() {
-            self::__construct();
+		$this->log = LoggerManager::getLogger('user');
+		$this->log->debug("Entering Users() method ...");
+		$this->db = PearDatabase::getInstance();
+		$this->DEFAULT_PASSWORD_CRYPT_TYPE = (version_compare(PHP_VERSION, '5.3.0') >= 0)? 'PHP5.3MD5': 'MD5';
+		if (version_compare(PHP_VERSION, '5.5.0') >= 0) {
+			$this->DEFAULT_PASSWORD_CRYPT_TYPE = 'PHASH';
+		}
+		$this->column_fields = getColumnFields('Users');
+		$this->column_fields['currency_name'] = '';
+		$this->column_fields['currency_code'] = '';
+		$this->column_fields['currency_symbol'] = '';
+		$this->column_fields['conv_rate'] = '';
+		$this->log->debug("Exiting Users() method ...");
 	}
 
 	/**
@@ -621,14 +619,14 @@ class Users extends CRMEntity {
 	}
 
 	function fill_in_additional_detail_fields() {
-		$query = "SELECT u1.first_name, u1.last_name, u1.userlabel from vtiger_users u1, vtiger_users u2 where u1.id = u2.reports_to_id AND u2.id = ? and u1.deleted=0";
+		$query = "SELECT u1.first_name, u1.last_name from vtiger_users u1, vtiger_users u2 where u1.id = u2.reports_to_id AND u2.id = ? and u1.deleted=0";
 		$result =$this->db->pquery($query, array($this->id), true, "Error filling in additional detail vtiger_fields") ;
 
 		$row = $this->db->fetchByAssoc($result);
 		$this->log->debug("additional detail query results: $row");
 
 		if($row != null) {
-			$this->reports_to_name = stripslashes($row['userlabel']);
+			$this->reports_to_name = stripslashes(getFullNameFromArray('Users', $row));
 		}
 		else {
 			$this->reports_to_name = '';
@@ -768,20 +766,6 @@ class Users extends CRMEntity {
 		// We will set the crypt_type based on the insertion_mode
 		$crypt_type = '';
 
-		// userlabel is a field. So, setting to column_fields will take care for update and insert as well
-        if($table_name == 'vtiger_users') {
-			$entityFields = Vtiger_Functions::getEntityModuleInfo($module);
-			$entityFieldNames  = explode(',', $entityFields['fieldname']);
-
-			$userlabel = '';
-			foreach($entityFieldNames as $entityFieldName) {
-				$userlabel .= $this->column_fields[$entityFieldName]." ";
-			}
-			$userlabel = trim(decode_html($userlabel));
-			
-			$this->column_fields['userlabel'] = strip_tags($userlabel);
-		}
-
 		if($insertion_mode == 'edit') {
 			$update = '';
 			$update_params = array();
@@ -876,7 +860,7 @@ class Users extends CRMEntity {
 				if($current_user->id == $this->id) {
 					$_SESSION['vtiger_authenticated_user_theme'] = $fldvalue;
 				}
-			} elseif($uitype == 32 && $fieldname == 'language') {
+			} elseif($uitype == 32) {
 				$languageList = Vtiger_Language::getAll();
 				$languageList = array_keys($languageList);
 				if(!in_array($fldvalue, $languageList) || $fldvalue == '') {
@@ -1809,7 +1793,7 @@ class Users extends CRMEntity {
 						$reportsTo = null;
 						foreach($allUsers as $user) {
 							$userName = strtolower($user->get('user_name'));
-							$firstLastName = strtolower($user->get('userlabel'));
+							$firstLastName = strtolower($user->get('first_name')." ".$user->get('last_name'));
 							if(strtolower($fieldValue) == $userName || strtolower($fieldValue) == $firstLastName) {
 								$reportsTo = $user->getId();
 								break;

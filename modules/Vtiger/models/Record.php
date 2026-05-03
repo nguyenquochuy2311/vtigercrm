@@ -416,17 +416,14 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
             $url = \Vtiger_Functions::getFilePublicURL($imageId, $imageName);
 			//decode_html - added to handle UTF-8 characters in file names
 			$imageOriginalName = urlencode(decode_html($imageName));
-            if($url) {
-                $url = $site_URL.$url;
-            }
-            
+
 			if(!empty($imageName)){
 				$imageDetails[] = array(
 						'id' => $imageId,
 						'orgname' => $imageOriginalName,
 						'path' => $imagePath.$imageId,
 						'name' => $imageName,
-                                                'url'  => $url
+                        'url'  => $site_URL.$url
 				);
 			}
 		}
@@ -687,8 +684,7 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 	function getCommentEnabledRelatedEntityIds($modulename, $recordId) {
 		$user = Users_Record_Model::getCurrentUserModel();
 		$relatedModuleRecordIds = array();
-        //User fields are restricted types
-		$restrictedFieldUITypes = array(52, 53);
+		$restrictedFieldnames = array('modifiedby', 'created_user_id', 'assigned_user_id');
 		$recordModel = Vtiger_Record_Model::getInstanceById($recordId, $modulename);
 		$moduleInstance = Vtiger_Module_Model::getInstance($modulename);
 		$referenceFieldsModels = $moduleInstance->getFieldsByType('reference');
@@ -696,11 +692,10 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 		$directrelatedModuleRecordIds = array();
 
 		foreach ($referenceFieldsModels as $referenceFieldsModel) {
-            $relmoduleFieldUIType = $referenceFieldsModel->get('uitype');
 			$relmoduleFieldname = $referenceFieldsModel->get('name');
 			$relModuleFieldValue = $recordModel->get($relmoduleFieldname);
-            
-			if (!empty($relModuleFieldValue) && !in_array($relmoduleFieldUIType, $restrictedFieldUITypes) && isRecordExists($relModuleFieldValue)) {
+
+			if (!empty($relModuleFieldValue) && !in_array($relmoduleFieldname, $restrictedFieldnames) && isRecordExists($relModuleFieldValue)) {
 				$relModuleRecordModel = Vtiger_Record_Model::getInstanceById($relModuleFieldValue);
 				$relmodule = $relModuleRecordModel->getModuleName();
 
@@ -717,7 +712,7 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 				}
 			}
 		}
-        
+
 		$moduleModel = Vtiger_Module_Model::getInstance($modulename);
 		$relatedModuleModels = Vtiger_Relation_Model::getAllRelations($moduleModel, false);
 		$commentEnabledModules = array();
@@ -740,18 +735,6 @@ class Vtiger_Record_Model extends Vtiger_Base_Model {
 		$indirectrelatedModuleRecordIds = $moduleModel->getRelatedModuleRecordIds(new Vtiger_Request($commentEnabledModules), array($recordId), true);
 
 		return array_merge($relatedModuleRecordIds, $directrelatedModuleRecordIds, $indirectrelatedModuleRecordIds);
-	}
-        
-        function getDownloadFileURL($attachmentId = false) {
-            $fileDetails = $this->getFileDetails($attachmentId);
-            if (is_array($fileDetails[0])) {
-                $fileDetails = $fileDetails[0];
-            }
-            if (!empty($fileDetails)) {
-                    return 'index.php?module='. $this->getModuleName() .'&action=DownloadFile&record='. $this->getId() .'&fileid='. $fileDetails['attachmentsid'].'&name='. $fileDetails['name'];
-            } else {
-                    return $this->get('filename');
-            }
 	}
 
 }
