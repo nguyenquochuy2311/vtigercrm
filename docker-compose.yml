@@ -1,0 +1,57 @@
+services:
+  app:
+    build:
+      context: ./.docker
+    container_name: vtiger_app
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      APACHE_RUN_USER: www-data
+      APACHE_RUN_GROUP: www-data
+    restart: unless-stopped
+
+  db:
+    image: mariadb:10.6
+    container_name: vtiger_db
+    command: >
+      --sql-mode=""
+      --character-set-server=utf8
+      --collation-server=utf8_general_ci
+      --innodb-strict-mode=0
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: vtigercrm
+      MARIADB_USER: vtiger
+      MARIADB_PASSWORD: vtigerpass
+    volumes:
+      - vtiger_db_data:/var/lib/mysql
+    ports:
+      - "33306:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: vtiger_pma
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: rootpass
+      UPLOAD_LIMIT: 256M
+    depends_on:
+      - db
+    restart: unless-stopped
+
+volumes:
+  vtiger_db_data:
