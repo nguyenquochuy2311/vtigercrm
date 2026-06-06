@@ -66,7 +66,7 @@ $languageStrings = array(
 	'Lead Image' => "Hình ảnh chì",
 );
 $jsLanguageStrings = array(
-	'JS_SELECT_CONTACTS' => "Chọn Danh bạ để tiếp tục",
+	'JS_SELECT_CONTACTS' => "Chọn Khách hàng đã mua để tiếp tục",
 	'JS_SELECT_ORGANIZATION' => "Chọn Tổ chức để tiếp tục",
 	'JS_SELECT_ORGANIZATION_OR_CONTACT_TO_CONVERT_LEAD' => "Chuyển đổi yêu cầu lựa chọn Liên hệ hoặc Tổ chức"
 );

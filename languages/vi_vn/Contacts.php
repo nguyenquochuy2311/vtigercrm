@@ -9,7 +9,7 @@
  *************************************************************************************/
 $languageStrings = array(
 	// Basic Strings
-	'Contacts' => "Danh bạ",
+	'Contacts' => "Khách hàng đã mua",
 	'SINGLE_Contacts' => "Liên hệ",
 	'LBL_ADD_RECORD' => "Thêm liên hệ",
 	'LBL_RECORDS_LIST' => "Danh sách liên hệ",
