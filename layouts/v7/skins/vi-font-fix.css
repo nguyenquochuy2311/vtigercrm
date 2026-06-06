@@ -1,0 +1,46 @@
+/*
+ * Vietnamese font fix
+ * --------------------
+ * vtiger v7 bundles Latin-only custom fonts (OpenSans subset, ProximaNova,
+ * Oswald) that have no Vietnamese glyphs, so accented characters fall back to
+ * a different system font and look "wrong". We remap those family names to
+ * system fonts that DO include Vietnamese. Icon fonts ('FontAwesome',
+ * 'Vtiger-icons') use different family names and are intentionally untouched.
+ */
+
+/* --- Remap bundled text fonts to a Vietnamese-capable system stack --- */
+@font-face { font-family: 'OpenSans-Regular';
+  src: local('Segoe UI'), local('Roboto'), local('Helvetica Neue'), local('Arial'), local('Liberation Sans');
+  font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'OpenSans-Regular';
+  src: local('Segoe UI Semibold'), local('Roboto Medium'), local('Helvetica Neue'), local('Arial'), local('Liberation Sans');
+  font-weight: bold; font-style: normal; font-display: swap; }
+
+@font-face { font-family: 'OpenSans-Semibold';
+  src: local('Segoe UI Semibold'), local('Roboto Medium'), local('Helvetica Neue'), local('Arial'), local('Liberation Sans');
+  font-weight: normal; font-style: normal; font-display: swap; }
+
+@font-face { font-family: 'ProximaNova-Regular';
+  src: local('Segoe UI'), local('Roboto'), local('Helvetica Neue'), local('Arial'), local('Liberation Sans');
+  font-weight: normal; font-style: normal; font-display: swap; }
+
+@font-face { font-family: 'ProximaNova-Semibold';
+  src: local('Segoe UI Semibold'), local('Roboto Medium'), local('Helvetica Neue'), local('Arial'), local('Liberation Sans');
+  font-weight: normal; font-style: normal; font-display: swap; }
+
+@font-face { font-family: 'Oswald';
+  src: local('Segoe UI'), local('Roboto'), local('Helvetica Neue'), local('Arial'), local('Liberation Sans');
+  font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Oswald';
+  src: local('Segoe UI Semibold'), local('Roboto Medium'), local('Helvetica Neue'), local('Arial'), local('Liberation Sans');
+  font-weight: bold; font-style: normal; font-display: swap; }
+
+/* --- Safety net: base UI text uses a Vietnamese-capable stack.
+       Targets containers/inputs only, never icon <i>/<span> elements. --- */
+body,
+input, button, select, textarea,
+h1, h2, h3, h4, h5, h6,
+.modal-title, .panel-title, .blockHeader, .pageTitle, .breadcrumb,
+.fieldLabel, .fieldValue, .dashboardLeftPanel {
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif !important;
+}

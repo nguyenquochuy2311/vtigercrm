@@ -1,0 +1,77 @@
+services:
+  vtiger:
+    build:
+      context: ./.docker
+    container_name: vtiger-app
+    restart: unless-stopped
+    environment:
+      # UID/GID that Apache (www-data) runs as — match the host bind-mount owner
+      PUID: ${PUID:-33}
+      PGID: ${PGID:-33}
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - .:/var/www/html
+      - vtiger-storage:/var/www/html/storage
+      - vtiger-cache:/var/www/html/cache
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks: [vtiger-net]
+
+  mysql:
+    image: mysql:5.7
+    container_name: vtiger-mysql
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: vtigercrm
+      MYSQL_USER: vtiger
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --sql-mode=ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
+      --max_allowed_packet=64M
+      --innodb-buffer-pool-size=256M
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    networks: [vtiger-net]
+
+  cron:
+    build:
+      context: ./.docker
+    container_name: vtiger-cron
+    restart: unless-stopped
+    environment:
+      PUID: ${PUID:-33}
+      PGID: ${PGID:-33}
+    volumes:
+      - .:/var/www/html
+      - vtiger-storage:/var/www/html/storage
+      - vtiger-cache:/var/www/html/cache
+    command: >
+      bash -c "while true; do
+        cd /var/www/html/cron && php vtigercron.php || true;
+        sleep 300;
+      done"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      vtiger:
+        condition: service_started
+    networks: [vtiger-net]
+
+volumes:
+  vtiger-storage:
+  vtiger-cache:
+  mysql-data:
+
+networks:
+  vtiger-net:

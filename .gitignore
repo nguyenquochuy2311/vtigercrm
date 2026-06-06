@@ -1,0 +1,7 @@
+.env
+.docker/.env
+config.inc.php
+config.csrf-secret.php
+logs/
+cache/
+storage/

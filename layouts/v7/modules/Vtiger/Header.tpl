@@ -42,6 +42,9 @@
 			<link type="text/css" rel="{$cssModel->getRel()}" href="{vresource_url($cssModel->getHref())}" media="{$cssModel->getMedia()}" />
 		{/foreach}
 
+		{* Vietnamese font fix - must load last to win the cascade *}
+		<link type="text/css" rel="stylesheet" href="{vresource_url('layouts/v7/skins/vi-font-fix.css')}" media="screen" />
+
 		{* For making pages - print friendly *}
 		<style type="text/css">
             @media print {
