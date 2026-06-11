@@ -66,3 +66,46 @@ repository as an upstream remote (only need to do this bit once), then you can f
     git remote add upstream https://code.vtiger.com/vtiger/vtigercrm.git
     git fetch upstream
     git merge upstream/master
+
+Local development (Docker)
+--------------------------
+
+This repository ships with a Docker-based dev environment (`docker-compose.yml` + `.docker/`).
+Secrets are kept **out of git** — they live in `.env` (gitignored), never in committed files.
+
+### 1. Configure environment
+
+Copy the example env file and fill in real values:
+
+    cp .env.example .env
+
+`.env` holds:
+
+| Variable           | Used by       | Description                                          |
+|--------------------|---------------|------------------------------------------------------|
+| `DB_ROOT_PASSWORD` | mysql service | MySQL `root` password                                |
+| `DB_PASSWORD`      | mysql service | Password for the `vtiger` application DB user        |
+| `PUID` / `PGID`    | app / cron    | UID/GID Apache runs as (match the bind-mount owner)  |
+
+### 2. Start the stack
+
+    docker compose up -d --build
+
+- App:   http://127.0.0.1:8080
+- MySQL: 127.0.0.1:3307 (database `vtigercrm`)
+
+### 3. Application config (`config.inc.php`)
+
+`config.inc.php` is **gitignored** because it holds instance-specific secrets
+(DB credentials, `application_unique_key`, `site_URL`). On a fresh checkout it is
+empty and gets generated when you complete the vtiger web installer — or copy it
+from an existing instance. Its database block must match `.env`:
+
+    $dbconfig['db_server']   = 'mysql';
+    $dbconfig['db_port']     = ':3306';
+    $dbconfig['db_username'] = 'root';                       // app DB user
+    $dbconfig['db_password'] = '<DB_ROOT_PASSWORD from .env>';
+    $dbconfig['db_name']     = 'vtigercrm';
+
+> ⚠️ Never commit `.env`, a populated `config.inc.php`, or `user_privileges/*.php`
+> — they contain passwords, hashes and access keys.
