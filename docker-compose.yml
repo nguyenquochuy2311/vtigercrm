@@ -24,7 +24,9 @@ services:
     container_name: vtiger-mysql
     restart: unless-stopped
     ports:
-      - "127.0.0.1:3307:3306"
+      # Defaults to localhost-only. Set MYSQL_BIND_IP in .env to the host's
+      # Tailscale IP (100.x.x.x) to expose MySQL over the VPN only — never 0.0.0.0.
+      - "${MYSQL_BIND_IP:-127.0.0.1}:3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
       MYSQL_DATABASE: vtigercrm
