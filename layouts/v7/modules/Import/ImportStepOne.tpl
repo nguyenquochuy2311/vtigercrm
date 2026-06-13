@@ -36,7 +36,7 @@
                     <input type="hidden" name="is_scheduled" value="1" />
                     <div class="fileUploadBtn btn btn-primary">
                         <span><i class="fa fa-laptop"></i> {vtranslate('Select from My Computer', $MODULE)}</span>
-                        <input type="file" name="import_file" id="import_file" onchange="Vtiger_Import_Js.checkFileType(event)" data-file-formats="{if $FORMAT eq ''}csv{else}{$FORMAT}{/if}" />
+                        <input type="file" name="import_file" id="import_file" onchange="Vtiger_Import_Js.checkFileType(event)" data-file-formats="{if $FORMAT eq ''}csv{elseif $FORMAT eq 'xlsx' or $FORMAT eq 'xls'}xls|xlsx{else}{$FORMAT}{/if}" />
                     </div>
                     <div id="importFileDetails" class="padding10"></div>
                 </div>

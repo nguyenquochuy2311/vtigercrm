@@ -28,6 +28,14 @@
 						</div>
 					</div>
 				</div>
+				<div class="col-lg-3 col-md-3 col-sm-12 col-xs-12" id = "xlsImport">
+					<div class="menu-item app-item app-PROJECTS">
+						<span class="fa fa-file-excel-o"></span>
+						<div>
+							<h4>Excel (.xls, .xlsx)</h4>
+						</div>
+					</div>
+				</div>
 				{if $FOR_MODULE == 'Contacts'}
 					<div class="col-lg-3 col-md-3 col-sm-12 col-xs-12" id = "vcfImport">
 						<div class="menu-item app-item app-INVENTORY">

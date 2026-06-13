@@ -40,19 +40,32 @@
 					<div class="col-lg-3"></div>
 					<div class="col-lg-6">
 						<div class="well exportContents">
-							{if $SOURCE_MODULE eq 'Calendar'}
-								<br><div><b>{vtranslate('LBL_EXPORT_FORMAT',$MODULE)}</b></div><br>
-								<div style="margin-left: 50px;">
+							<br><div><b>{vtranslate('LBL_EXPORT_FORMAT',$MODULE)}</b></div><br>
+							<div style="margin-left: 50px;">
+								{if $SOURCE_MODULE eq 'Calendar'}
 									<div>
 										<input type="radio" name="type" value="csv" id="csv" onchange="Calendar_Edit_Js.handleFileTypeChange();" checked="checked" />
 										<label style="font-weight:normal" for="csv">&nbsp;&nbsp;{vtranslate('csv', $MODULE)}</label>
 									</div>
 									<div>
+										<input type="radio" name="type" value="xlsx" id="xlsx" onchange="Calendar_Edit_Js.handleFileTypeChange();" />
+										<label style="font-weight:normal" for="xlsx">&nbsp;&nbsp;Excel (.xlsx)</label>
+									</div>
+									<div>
 										<input type="radio" name="type" value="ics" id="ics" onchange="Calendar_Edit_Js.handleFileTypeChange();"/>
 										<label style="font-weight:normal" for="ics">&nbsp;&nbsp;{vtranslate('ics', $MODULE)}</label>
 									</div>
-								</div>
-							{/if}
+								{else}
+									<div>
+										<input type="radio" name="type" value="csv" id="csv" checked="checked" />
+										<label style="font-weight:normal" for="csv">&nbsp;&nbsp;CSV (.csv)</label>
+									</div>
+									<div>
+										<input type="radio" name="type" value="xlsx" id="xlsx" />
+										<label style="font-weight:normal" for="xlsx">&nbsp;&nbsp;Excel (.xlsx)</label>
+									</div>
+								{/if}
+							</div>
 
 							<br><div><b>{vtranslate('LBL_EXPORT_DATA',$MODULE)}</b></div><br>
 							<div style="margin-left: 50px;">

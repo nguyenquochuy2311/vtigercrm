@@ -16,6 +16,8 @@ class Import_Config_Model extends Vtiger_Base_Model {
 								'csv' => array('reader' => 'Import_CSVReader_Reader', 'classpath' => 'modules/Import/readers/CSVReader.php'),
 								'vcf' => array('reader' => 'Import_VCardReader_Reader', 'classpath' => 'modules/Import/readers/VCardReader.php'),
 								'ics' => array('reader' => 'Import_ICSReader_Reader', 'classpath' => 'modules/Import/readers/ICSReader.php'),
+								'xlsx' => array('reader' => 'Import_XLSReader_Reader', 'classpath' => 'modules/Import/readers/XLSReader.php'),
+								'xls' => array('reader' => 'Import_XLSReader_Reader', 'classpath' => 'modules/Import/readers/XLSReader.php'),
 								'default' => array('reader' => 'Import_FileReader_Reader', 'classpath' => 'modules/Import/readers/FileReader.php')
 							),
 

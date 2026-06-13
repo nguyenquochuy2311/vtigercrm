@@ -241,8 +241,16 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 	function output($request, $headers, $entries) {
 		$moduleName = $request->get('source_module');
 		$fileName = str_replace(' ','_',decode_html(vtranslate($moduleName, $moduleName)));
-		// for content disposition header comma should not be there in filename 
+		// for content disposition header comma should not be there in filename
 		$fileName = str_replace(',', '_', $fileName);
+
+		// Excel export (.xlsx / .xls) via PHPExcel
+		$fileFormat = $request->get('type');
+		if ($fileFormat == 'xlsx' || $fileFormat == 'xls') {
+			$this->outputExcel($fileName, $headers, $entries, $fileFormat);
+			return;
+		}
+
 		$exportType = $this->getExportContentType($request);
 
 		header("Content-Disposition:attachment;filename=$fileName.csv");
@@ -268,6 +276,46 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 			$line .= "\"\r\n";
 			echo $line;
 		}
+	}
+
+	/**
+	 * Xuất ra file Excel (.xlsx hoặc .xls) bằng PHPExcel.
+	 * @param String $fileName
+	 * @param <Array> $headers  - nhãn cột
+	 * @param <Array> $entries  - các dòng dữ liệu
+	 * @param String $format    - 'xlsx' hoặc 'xls'
+	 */
+	function outputExcel($fileName, $headers, $entries, $format) {
+		require_once 'libraries/PHPExcel/PHPExcel.php';
+		$workbook = new PHPExcel();
+		$sheet = $workbook->setActiveSheetIndex(0);
+
+		$colIndex = 0;
+		foreach ($headers as $headerValue) {
+			$sheet->setCellValueExplicitByColumnAndRow($colIndex++, 1, decode_html($headerValue), PHPExcel_Cell_DataType::TYPE_STRING);
+		}
+		$rowIndex = 2;
+		foreach ($entries as $row) {
+			$colIndex = 0;
+			foreach ($row as $value) {
+				// luôn lưu dạng chuỗi để giữ nguyên SĐT (0xxx), mã nền... không bị Excel tự đổi kiểu
+				$sheet->setCellValueExplicitByColumnAndRow($colIndex++, $rowIndex, decode_html($value), PHPExcel_Cell_DataType::TYPE_STRING);
+			}
+			$rowIndex++;
+		}
+
+		if ($format == 'xls') {
+			$writer = new PHPExcel_Writer_Excel5($workbook);
+			$ext = 'xls'; $contentType = 'application/vnd.ms-excel';
+		} else {
+			$writer = new PHPExcel_Writer_Excel2007($workbook);
+			$ext = 'xlsx'; $contentType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+		}
+		header("Content-Disposition:attachment;filename=\"$fileName.$ext\"");
+		header("Content-Type:$contentType;charset=UTF-8");
+		header("Expires: Mon, 31 Dec 2000 00:00:00 GMT");
+		header("Cache-Control: max-age=0");
+		$writer->save('php://output');
 	}
 
 	private $picklistValues;

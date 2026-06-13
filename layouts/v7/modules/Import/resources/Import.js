@@ -408,12 +408,15 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
             var fileType = jQuery('#type').val();
             var delimiterContainer = jQuery('#delimiter_container');
             var hasHeaderContainer = jQuery('#has_header_container');
-            if (fileType != 'csv') {
-                delimiterContainer.hide();
-                hasHeaderContainer.hide();
-            } else {
+            if (fileType == 'csv') {
                 delimiterContainer.show();
                 hasHeaderContainer.show();
+            } else if (fileType == 'xlsx' || fileType == 'xls') {
+                delimiterContainer.hide();
+                hasHeaderContainer.show();
+            } else {
+                delimiterContainer.hide();
+                hasHeaderContainer.hide();
             }
         },
         uploadFilter: function(elementId, allowedExtensions) {
@@ -502,6 +505,10 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
             var importContainer = jQuery('#landingPageDiv');
             importContainer.on('click', '#csvImport', function(e) {
                 Vtiger_Import_Js.showImportActionStepOne();
+            });
+
+            importContainer.on('click', '#xlsImport', function(e) {
+                Vtiger_Import_Js.showImportActionStepOne('xlsx');
             });
 
             importContainer.on('click', '#vcfImport', function(e) {
@@ -615,6 +622,8 @@ if (typeof (Vtiger_Import_Js) == 'undefined') {
             if (format == 'vcf') {
                 params['fileFormat'] = format;
             } else if (format == 'ics') {
+				params['fileFormat'] = format;
+			} else if (format == 'xlsx' || format == 'xls') {
 				params['fileFormat'] = format;
 			}
             app.helper.showProgress();
