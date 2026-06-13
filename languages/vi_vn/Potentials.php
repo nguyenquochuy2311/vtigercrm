@@ -57,7 +57,7 @@ $languageStrings = array(
 	'LBL_EXPECTED_CLOSE_DATE_ON' => "Dự kiến ​​đóng cửa vào",
 
 	//widgets headers
-	'LBL_RELATED_CONTACTS' => "Khách hàng cá nhân liên quan",
+	'LBL_RELATED_CONTACTS' => "Khách hàng đã giao dịch liên quan",
 	'LBL_RELATED_PRODUCTS' => "Sản phẩm liên quan",
     
     //Convert Potentials

@@ -9,10 +9,10 @@
  *************************************************************************************/
 $languageStrings = array(
 	// Basic Strings
-	'Leads' => "Tiềm năng",
-	'SINGLE_Leads' => "Tiềm năng",
-	'LBL_RECORDS_LIST' => "Danh sách KH Tiềm năng",
-	'LBL_ADD_RECORD' => "Thêm Tiềm năng",
+	'Leads' => "Khách hàng tiềm năng",
+	'SINGLE_Leads' => "Khách hàng tiềm năng",
+	'LBL_RECORDS_LIST' => "Danh sách Khách hàng tiềm năng",
+	'LBL_ADD_RECORD' => "Thêm Khách hàng tiềm năng",
 
 	// Blocks
 	'LBL_LEAD_INFORMATION' => "Chi tiết KH Tiềm năng",
@@ -69,7 +69,7 @@ $languageStrings = array(
 	'Lead Image' => "Hình ảnh chì",
 );
 $jsLanguageStrings = array(
-	'JS_SELECT_CONTACTS' => "Chọn Khách hàng cá nhân để tiếp tục",
+	'JS_SELECT_CONTACTS' => "Chọn Khách hàng đã giao dịch để tiếp tục",
 	'JS_SELECT_ORGANIZATION' => "Chọn Tổ chức để tiếp tục",
 	'JS_SELECT_ORGANIZATION_OR_CONTACT_TO_CONVERT_LEAD' => "Chuyển đổi yêu cầu lựa chọn Liên hệ hoặc Tổ chức"
 );

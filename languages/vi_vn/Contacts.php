@@ -9,10 +9,10 @@
  *************************************************************************************/
 $languageStrings = array(
 	// Basic Strings
-	'Contacts' => "Khách hàng cá nhân",
-	'SINGLE_Contacts' => "Khách hàng cá nhân",
-	'LBL_ADD_RECORD' => "Thêm Khách hàng cá nhân",
-	'LBL_RECORDS_LIST' => "Danh sách Khách hàng cá nhân",
+	'Contacts' => "Khách hàng đã giao dịch",
+	'SINGLE_Contacts' => "Khách hàng đã giao dịch",
+	'LBL_ADD_RECORD' => "Thêm Khách hàng đã giao dịch",
+	'LBL_RECORDS_LIST' => "Danh sách Khách hàng đã giao dịch",
 
 	// Blocks
 	'LBL_CONTACT_INFORMATION' => "Thông tin cơ bản",
