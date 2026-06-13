@@ -20,7 +20,7 @@ class Import_Utils_Helper {
 
 	static $supportedFileEncoding = array('UTF-8'=>'UTF-8', 'ISO-8859-1'=>'ISO-8859-1');
 	static $supportedDelimiters = array(','=>'comma', ';'=>'semicolon', '|'=> 'Pipe', '^'=>'Caret');
-	static $supportedFileExtensions = array('csv','vcf');
+	static $supportedFileExtensions = array('csv','vcf','xlsx','xls');
 
 	public function getSupportedFileExtensions() {
 		return self::$supportedFileExtensions;
