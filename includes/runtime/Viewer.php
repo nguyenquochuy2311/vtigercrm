@@ -217,7 +217,8 @@ function vtemplate_path($templateName, $moduleName='') {
 function vresource_url($url) {
     global $vtiger_current_version;
     if (stripos($url, '://') === false) {
-        $url = $url .'?v='.$vtiger_current_version;
+        // hậu tố cache-bust: tăng khi đổi JS/CSS để trình duyệt tải lại (giữ nguyên version thật)
+        $url = $url .'?v='.$vtiger_current_version.'.2';
     }
     return $url;
 }
