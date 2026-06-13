@@ -9,13 +9,15 @@
  *************************************************************************************/
 $languageStrings = array(
 	// Basic Strings
-	'Potentials' => "Những cơ hội",
-	'SINGLE_Potentials' => "Cơ hội",
-	'LBL_ADD_RECORD' => "Thêm cơ hội",
-	'LBL_RECORDS_LIST' => "Danh sách cơ hội",
+	'Potentials' => "Đặt cọc - Giữ chỗ",
+	'SINGLE_Potentials' => "Đặt cọc - Giữ chỗ",
+	'LBL_ADD_RECORD' => "Thêm Đặt cọc - Giữ chỗ",
+	'LBL_RECORDS_LIST' => "Danh sách Đặt cọc - Giữ chỗ",
 
 	// Blocks
-	'LBL_OPPORTUNITY_INFORMATION' => "Chi tiết Cơ hội",
+	'LBL_OPPORTUNITY_INFORMATION' => "Chi tiết",
+	'LBL_CUSTOM_INFORMATION' => "Tùy chỉnh thông tin",
+	'LBL_DESCRIPTION_INFORMATION' => "Mô tả chi tiết",
 
 	//Field Labels
 	'Potential No' => "Số cơ hội",
@@ -55,7 +57,7 @@ $languageStrings = array(
 	'LBL_EXPECTED_CLOSE_DATE_ON' => "Dự kiến ​​đóng cửa vào",
 
 	//widgets headers
-	'LBL_RELATED_CONTACTS' => "Khách hàng đã mua liên quan",
+	'LBL_RELATED_CONTACTS' => "Khách hàng cá nhân liên quan",
 	'LBL_RELATED_PRODUCTS' => "Sản phẩm liên quan",
     
     //Convert Potentials

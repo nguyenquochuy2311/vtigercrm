@@ -9,15 +9,18 @@
  *************************************************************************************/
 $languageStrings = array(
 	// Basic Strings
-	'Contacts' => "Khách hàng đã mua",
-	'SINGLE_Contacts' => "Liên hệ",
-	'LBL_ADD_RECORD' => "Thêm liên hệ",
-	'LBL_RECORDS_LIST' => "Danh sách liên hệ",
+	'Contacts' => "Khách hàng cá nhân",
+	'SINGLE_Contacts' => "Khách hàng cá nhân",
+	'LBL_ADD_RECORD' => "Thêm Khách hàng cá nhân",
+	'LBL_RECORDS_LIST' => "Danh sách Khách hàng cá nhân",
 
 	// Blocks
 	'LBL_CONTACT_INFORMATION' => "Thông tin cơ bản",
-	'LBL_CUSTOMER_PORTAL_INFORMATION' => "Chi tiết cổng thông tin khách hàng",
-	'LBL_IMAGE_INFORMATION' => "Ảnh hồ sơ",
+	'LBL_CUSTOM_INFORMATION' => "Tùy chỉnh thông tin",
+	'LBL_CUSTOMER_PORTAL_INFORMATION' => "Chi tiết thông tin Khách hàng",
+	'LBL_ADDRESS_INFORMATION' => "Địa chỉ chi tiết",
+	'LBL_DESCRIPTION_INFORMATION' => "Mô tả chi tiết",
+	'LBL_IMAGE_INFORMATION' => "Hình ảnh",
 	'LBL_COPY_OTHER_ADDRESS' => "Sao chép địa chỉ khác",
 	'LBL_COPY_MAILING_ADDRESS' => "Sao chép địa chỉ gửi thư",
 
