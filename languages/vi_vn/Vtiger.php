@@ -1223,6 +1223,7 @@ $jsLanguageStrings = array(
 	'JS_LIST_EXIST' => "Danh sách đã tồn tại",
 	'JS_FAILED_TO_SAVE' => "Không thể lưu thay đổi trên máy chủ",
 	'JS_IMPORT_FILE_CAN_NOT_BE_EMPTY' => "Tệp nhập không được để trống",
+	'JS_IMPORT_COMPLETED' => "Hoàn tất nhập dữ liệu",
 	'JS_PLEASE_SELECT_ONE_FIELD_FOR_MERGE' => "Chọn ít nhất một trường khớp",
 	'JS_MAP_NAME_CAN_NOT_BE_EMPTY' => "Tên ánh xạ không được để trống",
 	'JS_MAP_NAME_ALREADY_EXISTS' => "Tên ánh xạ đã tồn tại",

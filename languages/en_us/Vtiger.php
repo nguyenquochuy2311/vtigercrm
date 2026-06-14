@@ -1470,6 +1470,7 @@ $jsLanguageStrings = array(
 
 	//Import Translations
 	'JS_IMPORT_FILE_CAN_NOT_BE_EMPTY' => 'Import File cannot be Empty',
+	'JS_IMPORT_COMPLETED' => 'Import Completed.',
 	'JS_PLEASE_SELECT_ONE_FIELD_FOR_MERGE' => 'Select at least one matching field',
 	'JS_MAP_NAME_CAN_NOT_BE_EMPTY' => 'Map Name cannot be empty',
 	'JS_MAP_NAME_ALREADY_EXISTS' => 'Map Name already exists',
