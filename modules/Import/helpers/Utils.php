@@ -51,6 +51,10 @@ class Import_Utils_Helper {
 	public static function getImportDirectory() {
 		global $import_dir;
 		$importDir = dirname(__FILE__). '/../../../'.$import_dir;
+		// tự tạo thư mục import tạm nếu chưa có (tránh upload thất bại trên môi trường mới)
+		if (!is_dir($importDir)) {
+			@mkdir($importDir, 0777, true);
+		}
 		return $importDir;
 	}
 
