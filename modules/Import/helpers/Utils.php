@@ -200,7 +200,7 @@ class Import_Utils_Helper {
 			return false;
 		}
 
-		if ($request->get('type') == "ics" || $request->get('type') == "vcf") {
+		if ($request->get('type') == "ics" || $request->get('type') == "vcf" || $request->get('type') == "xlsx" || $request->get('type') == "xls") {
 			$fileCopied = move_uploaded_file($_FILES['import_file']['tmp_name'], $temporaryFileName);
 		}else{
 			$fileCopied = self::neutralizeAndMoveFile($_FILES['import_file']['tmp_name'], $temporaryFileName, $request->get('delimiter'));
