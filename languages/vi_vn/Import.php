@@ -101,5 +101,10 @@ $languageStrings = array(
 	'LBL_ENABLE_CRON' => "<b>Vui lòng bật công việc cron Nhập theo lịch trình từ bộ lập lịch cài đặt</b>",
 	'LBL_SCHEDULE_IMPORT_SUBJECT' => "vtiger CRM - Báo cáo nhập khẩu theo lịch trình cho",
 	'LBL_CHECK_IMPORT_STATUS' => "<br/><br/> Chúng tôi khuyên bạn nên đăng nhập vào CRM và kiểm tra một số bản ghi để xác nhận rằng quá trình nhập đã thành công.",
+	'Select from My Computer' => 'Chọn từ máy tính',
+	'comma' => 'Dấu phẩy',
+	'semicolon' => 'Chấm phẩy',
+	'Pipe' => 'Gạch đứng',
+	'Caret' => 'Dấu mũ',
 );
 
