@@ -55,7 +55,7 @@ $languageStrings = array(
 	'Warm'=>"Ấm",
 
 	// Mass Action
-	'LBL_CONVERT_LEAD' => "Chuyển đổi khách hàng tiềm năng",
+	'LBL_CONVERT_LEAD' => "Chuyển thành khách đã giao dịch",
 
 	//Convert Lead
 	'LBL_TRANSFER_RELATED_RECORD' => "Chuyển hồ sơ liên quan tới",
