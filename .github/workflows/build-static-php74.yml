@@ -24,7 +24,7 @@ jobs:
         run: |
           cat > craft.yml << 'EOF'
           php-version: 8.1
-          extensions: "bcmath,curl,gd,iconv,imap,ldap,mbstring,mysqli,opcache,pdo_mysql,soap,xml,zip,xsl,openssl,session,tokenizer,fileinfo,filter,ctype,dom,simplexml,phar,posix,sockets"
+          extensions: "bcmath,curl,gd,iconv,mbstring,mysqli,opcache,pdo_mysql,soap,xml,zip,xsl,openssl,session,tokenizer,fileinfo,filter,ctype,dom,simplexml,phar,posix,sockets,pdo,zlib"
           sapi:
             - cli
             - cgi
@@ -33,7 +33,7 @@ jobs:
           EOF
 
       - name: Build static PHP
-        run: ./spc craft -vvv
+        run: ./spc craft
 
       - name: Sanity check
         run: |
