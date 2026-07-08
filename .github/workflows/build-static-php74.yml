@@ -1,0 +1,61 @@
+name: Build static PHP 8.1 (throwaway spike)
+
+on:
+  push:
+    branches:
+      - chore/build-static-php74
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repo (for pushing result branch)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download spc binary
+        run: |
+          curl -fsSL -o spc https://dl.static-php.dev/v3/spc-bin/nightly/spc-linux-x86_64
+          chmod +x spc
+
+      - name: Write craft.yml
+        run: |
+          cat > craft.yml << 'EOF'
+          php-version: 8.1
+          extensions: "bcmath,curl,gd,iconv,imap,ldap,mbstring,mysqli,opcache,pdo_mysql,soap,xml,zip,xsl,openssl,session,tokenizer,fileinfo,filter,ctype,dom,simplexml,phar,posix,sockets"
+          sapi:
+            - cli
+            - cgi
+          download-options:
+            parallel: 10
+          EOF
+
+      - name: Build static PHP
+        run: ./spc craft -vvv
+
+      - name: Sanity check
+        run: |
+          ./buildroot/bin/php -v
+          ./buildroot/bin/php -m
+          ls -la buildroot/bin/
+
+      - name: Package binaries
+        run: |
+          mkdir -p /tmp/out
+          cp buildroot/bin/php /tmp/out/php81-cli-linux-x86_64
+          cp buildroot/bin/php-cgi /tmp/out/php81-cgi-linux-x86_64 || true
+          ./buildroot/bin/php -m > /tmp/out/extensions.txt
+
+      - name: Commit result binaries to results branch
+        run: |
+          git config --global user.name "static-php-build-bot"
+          git config --global user.email "bot@example.com"
+          cd "$GITHUB_WORKSPACE"
+          git checkout --orphan static-php81-result
+          git rm -rf . > /dev/null 2>&1 || true
+          cp /tmp/out/* .
+          git add -A
+          git commit -m "static PHP 8.1 build result"
+          git push -f origin static-php81-result
