@@ -51,14 +51,9 @@ jobs:
           cp buildroot/bin/php-cgi /tmp/out/php81-cgi-linux-x86_64 || true
           ./buildroot/bin/php -m > /tmp/out/extensions.txt
 
-      - name: Commit result binaries to results branch
-        run: |
-          git config --global user.name "static-php-build-bot"
-          git config --global user.email "bot@example.com"
-          cd "$GITHUB_WORKSPACE"
-          git checkout --orphan static-php81-result
-          git rm -rf . > /dev/null 2>&1 || true
-          cp /tmp/out/* .
-          git add -A
-          git commit -m "static PHP 8.1 build result"
-          git push -f origin static-php81-result
+      - name: Upload binaries as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-php81-binaries
+          path: /tmp/out/*
+          retention-days: 3
