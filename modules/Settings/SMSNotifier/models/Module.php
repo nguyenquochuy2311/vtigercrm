@@ -37,7 +37,7 @@ class Settings_SMSNotifier_Module_Model extends Settings_Vtiger_Module_Model {
 	 * @return <String> Url
 	 */
 	public static function getCreateRecordUrl() {
-		return 'javascript:Settings_SMSNotifier_List_Js.triggerEdit(event, "index.php?module='.$this->getName().'&parent='.$this->getParentName().'&view=Edit")';
+		return 'javascript:Settings_SMSNotifier_List_Js.triggerEdit(event, "index.php?module=SMSNotifier&parent=Settings&view=Edit")';
 	}
 
 	/**

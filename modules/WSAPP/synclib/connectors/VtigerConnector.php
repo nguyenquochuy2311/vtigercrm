@@ -89,7 +89,7 @@ class WSAPP_VtigerConnector extends WSAPP_BaseConnector {
 		return wsapp_register($this->getSyncTrackerHandlerName(), $this->getSynchronizeController()->getSyncType(), $this->user);
 	}
 
-	function updateSyncState(WSAPP_SyncStateModel $syncStateModel) {
+	function updateSyncState(WSAPP_SyncStateModel $syncStateModel = null) {
 		$encodedValues = Zend_Json::encode(array('synctrackerid' => $syncStateModel->getSyncTrackerId(), 'synctoken' => $syncStateModel->getSyncToken(), 'more' => $syncStateModel->get('more')));
 		$query = 'INSERT INTO vtiger_wsapp_sync_state(stateencodedvalues,name,userid) VALUES (?,?,?)';
 		$parameters = array($encodedValues, $this->getName(), $this->getSynchronizeController()->user->id);
@@ -121,7 +121,7 @@ class WSAPP_VtigerConnector extends WSAPP_BaseConnector {
 		return ($this->db->num_rows($result) > 0) ? true : false;
 	}
 
-	public function pull(WSAPP_SyncStateModel $syncStateModel) {
+	public function pull(WSAPP_SyncStateModel $syncStateModel = null) {
 		$syncTrackerId = $syncStateModel->getSyncTrackerId();
 		$prevSyncToken = $syncStateModel->getSyncToken();
 
@@ -166,7 +166,7 @@ class WSAPP_VtigerConnector extends WSAPP_BaseConnector {
 		return $recordModels;
 	}
 
-	public function push($recordList, $syncStateModel) {
+	public function push($recordList = false, $syncStateModel = null) {
 		$pushResult = wsapp_put($syncStateModel->getSyncTrackerId(), $this->convertToPushSyncTrackerFormat($recordList), $this->getSynchronizeController()->user);
 		$pushResponseRecordList = array();
 		$clientID2ServerIDMap = $pushResult['client2serverIdMap'];

@@ -251,7 +251,7 @@ Class Google_Contacts_Connector extends WSAPP_TargetConnector {
 	 * @param <object> $SyncState
 	 * @return <array> google Records
 	 */
-	public function pull($SyncState, $user = false) {
+	public function pull($SyncState = false, $user = false) {
 		return $this->getContacts($SyncState, $user);
 	}
 
@@ -763,7 +763,7 @@ Class Google_Contacts_Connector extends WSAPP_TargetConnector {
 	 * @param <array> $records vtiger records to be pushed to google
 	 * @return <array> pushed records
 	 */
-	public function push($records, $user = false) {
+	public function push($records = false, $user = false) {
 		if(!$user) $user = Users_Record_Model::getCurrentUserModel();
 
 		if(!isset($this->selectedGroup))

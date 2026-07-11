@@ -18,7 +18,7 @@ class Portal_DeleteAjax_Action extends Vtiger_DeleteAjax_Action {
     public function process(Vtiger_Request $request) {
         $recordId = $request->get('record');
         $module = $request->getModule();
-        Portal_Module_Model::deleteRecord($recordId);
+        (new Portal_Module_Model())->deleteRecord($recordId);
         
         $response = new Vtiger_Response();
 		$response->setResult(array('message'=>  vtranslate('LBL_RECORD_DELETED_SUCCESSFULLY', $module)));

@@ -272,7 +272,7 @@ class Settings_CustomerPortal_Module_Model extends Settings_Vtiger_Module_Model 
 	//Function to check if the field is editable on Portal depending on its
 	//module field name and wether it is editable in CRM or No.,
 
-	public function isFieldCustomerPortalEditable($crmStatus, $value, $module) {
+	public static function isFieldCustomerPortalEditable($crmStatus, $value, $module) {
 		$isFieldEditable = 0;
 		if ($crmStatus && $value->name !== 'assigned_user_id' && $value->name !== 'contact_id') {
 			$isFieldEditable = 1;

@@ -22,7 +22,7 @@ class Google_Vtiger_Connector extends WSAPP_VtigerConnector {
 	 * @param type $syncStateModel
 	 * @return type
 	 */
-	public function push($recordList, $syncStateModel) {
+	public function push($recordList = false, $syncStateModel = null) {
 		return parent::push($recordList, $syncStateModel);
 	}
 
@@ -31,7 +31,7 @@ class Google_Vtiger_Connector extends WSAPP_VtigerConnector {
 	 * @param type $syncStateModel
 	 * @return type
 	 */
-	public function pull($syncStateModel) {
+	public function pull($syncStateModel = null) {
 		$records = parent::pull($syncStateModel);
 		return $records;
 	}

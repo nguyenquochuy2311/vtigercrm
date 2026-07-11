@@ -110,7 +110,7 @@ Class Google_Calendar_Connector extends WSAPP_TargetConnector {
      * @param <object> $SyncState
      * @return <array> google Records
      */
-    public function pull($SyncState, $user = false) {
+    public function pull($SyncState = false, $user = false) {
         try {
             return $this->getCalendar($SyncState, $user);
         } catch (Exception $e) {
@@ -246,7 +246,7 @@ Class Google_Calendar_Connector extends WSAPP_TargetConnector {
      * @param <array> $records vtiger records to be pushed to google
      * @return <array> pushed records
      */
-    public function push($records,$user) {
+    public function push($records = false, $user = false) {
         //TODO : use batch requests        
         $calendarId = Google_Utils_Helper::getSelectedCalendarForUser($user);
         if(!isset($this->calendars)) {
@@ -304,7 +304,7 @@ Class Google_Calendar_Connector extends WSAPP_TargetConnector {
      * @param <array> $vtEvents 
      * @return <array> tranformed vtiger Records
      */
-    public function transformToTargetRecord($vtEvents, $user) {
+    public function transformToTargetRecord($vtEvents, $user = false) {
         $records = array();
         foreach ($vtEvents as $vtEvent) {
             $newEvent = new Google_Service_Calendar_Event();

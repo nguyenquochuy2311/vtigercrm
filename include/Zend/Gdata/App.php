@@ -745,7 +745,7 @@ class Zend_Gdata_App
             $requestData['method'], $requestData['url']);
 
         $feedContent = $response->getBody();
-        if (!$this->_useObjectMapping) {
+        if (!$app->_useObjectMapping) {
             return $feedContent;
         }
         $feed = self::importString($feedContent, $className);

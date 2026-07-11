@@ -174,7 +174,7 @@ class Settings_PickListDependency_Record_Model extends Settings_Vtiger_Record_Mo
 		return vtranslate($this->get('targetlabel'), $this->get('sourceModule'));
 	}
 
-	public static function getInstance($module, $sourceField, $targetField) {
+	public static function getInstance($module = false, $sourceField = false, $targetField = false) {
 		$self = new self();
 		$self->set('sourceModule', $module)
 			->set('sourcefield', $sourceField)
