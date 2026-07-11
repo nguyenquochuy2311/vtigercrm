@@ -377,6 +377,7 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 		$allLang = Vtiger_Language_Handler::getAllLanguages();
 		foreach ($allLang as $langKey => $langName) {
 			$langDir = 'languages/' . $langKey . '/custom/';
+			if (!is_dir('languages/' . $langKey)) { continue; }
 			if (!file_exists($langDir)) {
 				mkdir($langDir);
 				mkdir($langDir . '/Settings');
@@ -410,6 +411,7 @@ class Settings_Picklist_Module_Model extends Vtiger_Module_Model {
 
 			//Write file
 			$fp = fopen($fileName, "w");
+			if ($fp === false) { continue; }
 			if ($languageStrings) {
 				fwrite($fp, "<?php\n\$languageStrings = array(\n");
 				foreach ($languageStrings as $key => $value) {

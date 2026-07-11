@@ -21,7 +21,7 @@ class Settings_Currency_Module_Model extends Settings_Vtiger_Module_Model{
         return false;
     }
     
-    public function getCreateRecordUrl() {
+    public static function getCreateRecordUrl() {
         return "javascript:Settings_Currency_Js.triggerAdd(event)";
     }
     

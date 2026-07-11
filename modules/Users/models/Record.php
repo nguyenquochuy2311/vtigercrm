@@ -737,7 +737,7 @@ class Users_Record_Model extends Vtiger_Record_Model {
 		return false;
 	}
 	
-	public function getActiveAdminUsers() {
+	public static function getActiveAdminUsers() {
 		$db = PearDatabase::getInstance();
 
 		$sql = 'SELECT id FROM vtiger_users WHERE status=? AND is_admin=?';

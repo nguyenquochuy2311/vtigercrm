@@ -9,6 +9,7 @@
  * ***********************************************************************************/
 
 class Settings_ExtensionStore_Module_Model extends Vtiger_Module_Model {
+	public function getListFields() { return array(); }
 
 	public function getDefaultViewName() {
 		return 'ExtensionStore';

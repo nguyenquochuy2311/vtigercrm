@@ -17,7 +17,7 @@ class Settings_Tags_Module_Model extends Settings_Vtiger_Module_Model {
 	var $nameFields = array('tag');
 	var $name = 'Tags';
 
-	public function getCreateRecordUrl() {
+	public static function getCreateRecordUrl() {
 		return "javascript:Settings_Tags_List_Js.triggerAdd(event)";
 	}
 

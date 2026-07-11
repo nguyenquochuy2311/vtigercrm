@@ -20,7 +20,7 @@
                 <a {if stripos($RECORD_LINK_URL, 'javascript:')===0} onclick="{$RECORD_LINK_URL|substr:strlen("javascript:")};if(event.stopPropagation){ldelim}event.stopPropagation();{rdelim}else{ldelim}event.cancelBubble=true;{rdelim}" {else} href='{$RECORD_LINK_URL}' {/if}>
                     <i class="fa fa-pencil" title="{vtranslate($RECORD_LINK->getLabel(), $QUALIFIED_MODULE)}"></i>
                 </a>
-                {if !$RECORD_LINK@lastui-sortable}
+                {if !$RECORD_LINK@last}
                     &nbsp;&nbsp;
                 {/if}
             {/foreach}

@@ -533,11 +533,11 @@ class Vtiger_ListView_Model extends Vtiger_Base_Model {
 		$this->get('query_generator', $queryGenerator);
 	}
 
-	public function getSortParamsSession($key) {
-		return $_SESSION[$key];
+	public static function getSortParamsSession($key) {
+		return $_SESSION[$key] ?? null;
 			}
 
-	public function setSortParamsSession($key, $params) {
+	public static function setSortParamsSession($key, $params) {
 		$_SESSION[$key] = $params;
 	}
 

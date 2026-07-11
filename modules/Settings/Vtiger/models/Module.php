@@ -76,6 +76,13 @@ class Settings_Vtiger_Module_Model extends Vtiger_Base_Model {
 		return true;
 	}
 
+	public static function getCreateRecordUrl() {
+		$class = get_called_class();
+		$parts = explode('_', $class);
+		$m = count($parts) >= 2 ? $parts[1] : 'Vtiger';
+		return 'index.php?module='.$m.'&parent=Settings&view=Edit';
+	}
+
 	/**
 	 * Function to get all the Settings menus
 	 * @return <Array> - List of Settings_Vtiger_Menu_Model instances

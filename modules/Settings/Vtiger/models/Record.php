@@ -11,10 +11,10 @@
 /**
  * Roles Record Model Class
  */
-abstract class Settings_Vtiger_Record_Model extends Vtiger_Base_Model {
+class Settings_Vtiger_Record_Model extends Vtiger_Base_Model {
 
-	abstract function getId();
-	abstract function getName();
+	public function getId() { return $this->get("id"); }
+	public function getName() { return $this->get("name"); }
 
     /**
 	 * Function to get the instance of Settings module model

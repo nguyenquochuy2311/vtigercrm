@@ -44,7 +44,7 @@ class Settings_Profiles_Module_Model extends Settings_Vtiger_Module_Model {
 	 * Function to get the url for create view of the module
 	 * @return <string> - url
 	 */
-	public function getCreateRecordUrl() {
+	public static function getCreateRecordUrl() {
 		return 'index.php?module=Profiles&parent=Settings&view=Edit';
 	}
 

@@ -34,8 +34,8 @@ class Settings_Webforms_Module_Model extends Settings_Vtiger_Module_Model {
 	 * Function to get Create view url
 	 * @return <String> Url
 	 */
-	public function getCreateRecordUrl() {
-		return "index.php?module=".$this->getName()."&parent=".$this->getParentName()."&view=Edit";
+	public static function getCreateRecordUrl() {
+		return "index.php?module=Webforms&parent=Settings&view=Edit";
 	}
 
 	/**

@@ -25,7 +25,7 @@
                     <i class="fa fa-trash" ></i>
                     </a>
                 {/if}
-                {if !$RECORD_LINK@lastui-sortable}
+                {if !$RECORD_LINK@last}
                     &nbsp;&nbsp;
                 {/if}
                 </span>
