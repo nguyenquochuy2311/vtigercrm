@@ -48,8 +48,8 @@
 										<label style="font-weight:normal" for="csv">&nbsp;&nbsp;{vtranslate('csv', $MODULE)}</label>
 									</div>
 									<div>
-										<input type="radio" name="type" value="xlsx" id="xlsx" onchange="Calendar_Edit_Js.handleFileTypeChange();" />
-										<label style="font-weight:normal" for="xlsx">&nbsp;&nbsp;Excel (.xlsx)</label>
+										<input type="radio" name="type" value="xls" id="xlsx" onchange="Calendar_Edit_Js.handleFileTypeChange();" />
+										<label style="font-weight:normal" for="xlsx">&nbsp;&nbsp;Excel (.xls)</label>
 									</div>
 									<div>
 										<input type="radio" name="type" value="ics" id="ics" onchange="Calendar_Edit_Js.handleFileTypeChange();"/>
@@ -61,8 +61,8 @@
 										<label style="font-weight:normal" for="csv">&nbsp;&nbsp;CSV (.csv)</label>
 									</div>
 									<div>
-										<input type="radio" name="type" value="xlsx" id="xlsx" />
-										<label style="font-weight:normal" for="xlsx">&nbsp;&nbsp;Excel (.xlsx)</label>
+										<input type="radio" name="type" value="xls" id="xlsx" />
+										<label style="font-weight:normal" for="xlsx">&nbsp;&nbsp;Excel (.xls)</label>
 									</div>
 								{/if}
 							</div>

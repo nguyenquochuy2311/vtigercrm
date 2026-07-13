@@ -611,6 +611,10 @@ class Reports extends CRMEntity{
 	function getPriModuleColumnsList($module)
 	{
 		//$this->updateModuleList($module);
+		if (empty($this->module_list[$module]) || !is_array($this->module_list[$module])) { // PHP8: module tắt/không tồn tại -> module_list[module] null -> array_keys(null) fatal
+			$this->pri_module_columnslist = array();
+			return true;
+		}
 		$allColumnsListByBlocks =& $this->getColumnsListbyBlock($module, array_keys($this->module_list[$module]), true);
 		foreach($this->module_list[$module] as $key=>$value) {
 			$temp = $allColumnsListByBlocks[$key];

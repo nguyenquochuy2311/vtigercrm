@@ -18,9 +18,10 @@ class Reports_Chart_Model extends Vtiger_Base_Model {
 		if(!empty($data)) {
 			$decodeData = Zend_Json::decode(decode_html($data));
 			$self->setData($decodeData);
-			$self->setParent($reportModel);
-			$self->setId($reportModel->getId());
 		}
+		// luôn set parent/id (kể cả report chưa cấu hình chart) -> tránh get() on null trong setReportRunObject
+		$self->setParent($reportModel);
+		$self->setId($reportModel->getId());
 		return $self;
 	}
 
@@ -55,6 +56,10 @@ class Reports_Chart_Model extends Vtiger_Base_Model {
 	}
 
 	function getData() {
+		// report chưa cấu hình chart (không có group-by) -> không chạy query để tránh 'SELECT  FROM' rỗng gây syntax error
+		if (empty($this->getGroupByField())) {
+			return array();
+		}
 		$type = ucfirst($this->getChartType());
 		$chartModel = new $type($this);
 		return $chartModel->generateData();

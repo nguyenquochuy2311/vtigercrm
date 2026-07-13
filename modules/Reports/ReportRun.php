@@ -174,8 +174,10 @@ class ReportRunQueryPlanner {
 
 			$keyColumns = $tempTableInfo['keycolumns'];
 			foreach ($keyColumns as $keyColumn) {
+				if (trim($keyColumn) === '') continue; // PHP8: bỏ index rỗng -> tránh 'ADD INDEX ()' gây syntax error near ')'
 				$query2 = sprintf('ALTER TABLE %s ADD INDEX (%s)', $uniqueName, $keyColumn);
-				$adb->pquery($query2, array());
+				// index phụ để tối ưu; dieOnError=false vốn cho phép lỗi -> PHP8 mysqli ném exception nên phải bắt để không vỡ report
+				try { $adb->pquery($query2, array()); } catch (\Throwable $e) { /* bỏ qua: index phụ không bắt buộc */ }
 			}
 		}
 
@@ -3691,8 +3693,9 @@ class ReportRun extends CRMEntity {
 					}
 					$header .= '<th>' . $headerName . '</th>';
 				}
+				$groupByFieldNames = array(); // PHP8: khởi tạo trước -> tránh count(null) khi report không có nhóm
 				$groupslist = $this->getGroupingList($this->reportid);
-				foreach ($groupslist as $reportFieldName => $reportFieldValue) {
+				if (is_array($groupslist)) foreach ($groupslist as $reportFieldName => $reportFieldValue) {
 					$nameParts = explode(":", $reportFieldName);
 					list($groupFieldModuleName, $groupFieldName) = split("_", $nameParts[2], 2);
 					$groupByFieldNames[] = vtranslate(str_replace('_', ' ', $groupFieldName), $groupFieldModuleName);

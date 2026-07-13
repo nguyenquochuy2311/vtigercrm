@@ -120,6 +120,7 @@ class Calendar_TaskManagement_View extends Vtiger_Index_View {
 	}
 
 	protected function setFiltersInSession($filters) {
+		if (!is_array($filters)) { $filters = array(); }
 		if (!isset($filters['status'])) {
 			$filters['status'] = array();
 		}
@@ -130,7 +131,7 @@ class Calendar_TaskManagement_View extends Vtiger_Index_View {
 	}
 
 	protected function getFiltersFromSession() {
-		$filters = $_SESSION['task_filters'];
+		$filters = isset($_SESSION['task_filters']) ? $_SESSION['task_filters'] : null;
 		if (!isset($filters)) {
 			$filters = array('status' => array(), 'date' => 'all', 'assigned_user_id' => array());
 		}
@@ -141,6 +142,7 @@ class Calendar_TaskManagement_View extends Vtiger_Index_View {
 		$moduleName = $request->getModule();
 		$moduleModel = Vtiger_Module_Model::getInstance($moduleName);
 		$filters = $request->get('filters');
+		if (!is_array($filters)) { $filters = array(); } // PHP8: get('filters') có thể trả '' khi không truyền filter
 		$this->setFiltersInSession($filters);
 		$conditions = array();
 		foreach ($filters as $name => $value) {

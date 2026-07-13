@@ -839,7 +839,7 @@ class Calendar_Module_Model extends Vtiger_Module_Model {
 			}
 		}
 
-		if(count($tasks[$priority]) > $pageLimit){
+		if(isset($tasks[$priority]) && count($tasks[$priority]) > $pageLimit){ // PHP8: $tasks[$priority] có thể chưa set khi priority không có task
 			array_pop($tasks[$priority]);
 			$pagingModel->set('nextPageExists', true);
 		}else{

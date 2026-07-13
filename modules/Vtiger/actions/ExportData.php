@@ -304,7 +304,9 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 			$rowIndex++;
 		}
 
-		if ($format == 'xls') {
+		// Excel2007 (.xlsx) cần extension xmlwriter; nếu môi trường thiếu (vd static PHP binary)
+		// thì tự hạ về Excel5 (.xls) — vẫn mở tốt trong Excel/LibreOffice, giữ nguyên tiếng Việt.
+		if ($format == 'xls' || !class_exists('XMLWriter')) {
 			$writer = new PHPExcel_Writer_Excel5($workbook);
 			$ext = 'xls'; $contentType = 'application/vnd.ms-excel';
 		} else {
