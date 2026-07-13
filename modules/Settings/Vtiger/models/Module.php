@@ -194,7 +194,8 @@ class Settings_Vtiger_Module_Model extends Vtiger_Base_Model {
 			} else {
 				$moduleModel = Settings_Vtiger_Module_Model::getInstance($qualifiedModuleName);
 			}
-			$finalResult = $moduleModel->getSettingsActiveBlock($view);
+			// vài Settings module (vd ExtensionStore) extends Vtiger_Module_Model nên không có method này -> tránh fatal
+			$finalResult = method_exists($moduleModel, 'getSettingsActiveBlock') ? $moduleModel->getSettingsActiveBlock($view) : false;
 		}
 		return $finalResult;
 	}
