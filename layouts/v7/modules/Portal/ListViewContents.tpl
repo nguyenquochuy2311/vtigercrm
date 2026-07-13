@@ -122,7 +122,7 @@
 					{/foreach}
 					{if $PAGING_INFO['recordCount'] eq '0'}
 						<tr class="emptyRecordsDiv">
-							{assign var=COLSPAN_WIDTH value={count($LISTVIEW_HEADERS)}+1}
+							{assign var=COLSPAN_WIDTH value=4}{* PHP8: LISTVIEW_HEADERS không được view gán -> count(null) fatal; Portal list có 3 cột nên colspan 4 *}
 							<td colspan="{$COLSPAN_WIDTH}">
 								<div class="emptyRecordsContent">
 									{assign var=SINGLE_MODULE value="SINGLE_$MODULE"}

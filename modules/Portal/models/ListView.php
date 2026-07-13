@@ -34,7 +34,8 @@ class Portal_ListView_Model extends Vtiger_ListView_Model {
 		$listResult = $db->pquery($listQuery, array());
 
 		$listViewEntries = array();
-        
+		$listViewRecordModels = array(); // PHP8: init trước -> tránh count(null) khi vtiger_portal rỗng
+
         for($i = 0; $i < $db->num_rows($listResult); $i++) {
             $row = $db->fetch_row($listResult, $i);
             $listViewEntries[$row['portalid']] = array();
