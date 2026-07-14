@@ -48,8 +48,8 @@ $languageStrings = array(
 	'Perception Analysis'=>"Phân tích nhận thức",
 	'Proposal/Price Quote'=>"Đề xuất/Báo giá",
 	'Negotiation/Review'=>"Đàm phán/Đánh giá",
-	'Closed Won'=>"Đã đóng thắng",
-	'Closed Lost'=>"Đã đóng Bị mất",
+	'Closed Won'=>"Đã chuyển cọc",
+	'Closed Lost'=>"Đã bỏ cọc",
 
 	'--None--'=>"--Không có--",
 	'Existing Business'=>"Doanh nghiệp hiện tại",

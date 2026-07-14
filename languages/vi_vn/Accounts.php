@@ -21,7 +21,7 @@ $languageStrings = array(
 	'LBL_SHOW_ACCOUNT_HIERARCHY' => "Hệ thống phân cấp tổ chức",
 
 	//Field Labels
-	'industry' => "Ngành công nghiệp",
+	'industry' => "Ngành nghề",
 	'Account Name' => "Tên tổ chức",
 	'Account No' => "Mã số tổ chức",
 	'Website' => "Trang web",
