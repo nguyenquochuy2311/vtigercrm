@@ -59,8 +59,9 @@
  */
 class RecognitionException extends Exception {
 
-	public $line=0;
-
+	// Khong khai bao lai $line: Exception da co san (protected).
+	// PHP 8.1 doi phai co kieu int, PHP 7.4 doi khong duoc co kieu -> mau thuan.
+	// Bo han thi chay duoc ca hai; getLine() van tra dung gia tri gan o duoi.
 
 	public function __construct($input) {
 		/** What input stream did the error occur in? */
