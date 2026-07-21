@@ -64,11 +64,12 @@
 						</div>
 						{if $MODULE_MODEL->isFilterColumnEnabled()}
 							<div id="listColumnFilterContainer">
-								<div class="listColumnFilter {if $CURRENT_CV_MODEL and !($CURRENT_CV_MODEL->isCvEditable())}disabled{/if}"  
+								<div class="listColumnFilter {if $CURRENT_CV_MODEL and !($CURRENT_CV_MODEL->isCvEditable())}disabled{/if}"
+									 {if $CURRENT_CV_MODEL}
 									 {if $CURRENT_CV_MODEL->isCvEditable()}
 										 title="{vtranslate('LBL_CLICK_HERE_TO_MANAGE_LIST_COLUMNS',$MODULE)}"
 									 {else}
-										 {if $CURRENT_CV_MODEL->get('viewname') eq 'All' and !$CURRENT_USER_MODEL->isAdminUser()} 
+										 {if $CURRENT_CV_MODEL->get('viewname') eq 'All' and !$CURRENT_USER_MODEL->isAdminUser()}
 											 title="{vtranslate('LBL_SHARED_LIST_NON_ADMIN_MESSAGE',$MODULE)}"
 										 {elseif !$CURRENT_CV_MODEL->isMine()}
 											 {assign var=CURRENT_CV_USER_ID value=$CURRENT_CV_MODEL->get('userid')}
@@ -77,6 +78,7 @@
 											 {/if}
 											 title="{vtranslate('LBL_SHARED_LIST_OWNER_MESSAGE',$MODULE, getUserFullName($CURRENT_CV_USER_ID))}"
 										 {/if}
+									 {/if}
 									 {/if}
 									 {if $MODULE eq 'Documents'}style="width: 10%;"{/if}
 									 data-toggle="tooltip" data-placement="bottom" data-container="body">

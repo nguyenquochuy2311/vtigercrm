@@ -509,7 +509,9 @@ class Vtiger_Detail_View extends Vtiger_Index_View {
 
 		$modCommentsModel = Vtiger_Module_Model::getInstance('ModComments');
 		$fileNameFieldModel = Vtiger_Field::getInstance("filename", $modCommentsModel);
-		$fileFieldModel = Vtiger_Field_Model::getInstanceFromFieldObject($fileNameFieldModel);
+		// Field 'filename' cua ModComments la metadata 7.4-only; neu thieu (migrate cu)
+		// thi getInstance tra false -> guard tranh fatal, chi mat nut dinh kem file vao comment.
+		$fileFieldModel = $fileNameFieldModel ? Vtiger_Field_Model::getInstanceFromFieldObject($fileNameFieldModel) : false;
 
 		$viewer = $this->getViewer($request);
 		$viewer->assign('COMMENTS', $recentComments);
