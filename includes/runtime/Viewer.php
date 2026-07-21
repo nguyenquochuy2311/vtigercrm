@@ -223,6 +223,114 @@ function vresource_url($url) {
     return $url;
 }
 
+/**
+ * Gộp nhiều file JS local thành 1 file cache (giữ NGUYÊN thứ tự truyền vào).
+ * Cache key = md5(path + mtime từng file + version) → đổi file JS tự sinh cache mới.
+ * Trả URL file combined (versioned) để router static phục vụ kèm cache+gzip.
+ * $files: mảng path tương đối docroot (ĐÃ theo đúng thứ tự nạp).
+ */
+function vcombine_js($files) {
+    global $vtiger_current_version;
+    $root = rtrim(getcwd(), '/');
+    $paths = array(); $sig = '';
+    foreach ($files as $f) {
+        $f = ltrim(trim($f), '/');
+        if ($f === '') continue;
+        $full = $root . '/' . $f;
+        if (is_file($full)) { $paths[] = $full; $sig .= $f . '|' . filemtime($full) . ';'; }
+    }
+    if (empty($paths)) return '';
+    $key = md5($sig . $vtiger_current_version);
+    $cacheDir = $root . '/cache/jscombine';
+    $cacheFile = $cacheDir . '/' . $key . '.js';
+    if (!is_file($cacheFile)) {
+        if (!is_dir($cacheDir)) @mkdir($cacheDir, 0755, true);
+        $buf = '';
+        foreach ($paths as $p) {
+            // ";\n" giữa các file: chặn ASI dính dòng cuối/đầu (cách các minifier hay dùng)
+            $buf .= "\n;/* " . basename($p) . " */\n" . file_get_contents($p) . "\n";
+        }
+        @file_put_contents($cacheFile . '.tmp', $buf);
+        @rename($cacheFile . '.tmp', $cacheFile); // atomic, tránh phục vụ file dở
+    }
+    return 'cache/jscombine/' . $key . '.js?v=' . $vtiger_current_version . '.6';
+}
+
+/**
+ * Render toàn bộ script tags của JSResources dưới dạng 1 file gộp.
+ * 43 file lib/base hardcoded (chung mọi trang) + $SCRIPTS (module-specific) +
+ * 2 file cuối — gộp theo ĐÚNG thứ tự gốc. File external (http/https/CDN) giữ tag riêng.
+ */
+function vrender_combined_js($scripts) {
+    $head = array(
+        'layouts/v7/lib/jquery/purl.js',
+        'layouts/v7/lib/jquery/select2/select2.min.js',
+        'layouts/v7/lib/jquery/jquery.class.min.js',
+        'layouts/v7/lib/jquery/jquery-ui-1.12.0.custom/jquery-ui.js',
+        'layouts/v7/lib/todc/js/popper.min.js',
+        'layouts/v7/lib/todc/js/bootstrap.min.js',
+        'libraries/jquery/jstorage.min.js',
+        'layouts/v7/lib/jquery/jquery-validation/jquery.validate.min.js',
+        'layouts/v7/lib/jquery/jquery.slimscroll.min.js',
+        'libraries/jquery/jquery.ba-outside-events.min.js',
+        'libraries/jquery/defunkt-jquery-pjax/jquery.pjax.js',
+        'libraries/jquery/multiplefileupload/jquery_MultiFile.js',
+        'resources/jquery.additions.js',
+        'layouts/v7/lib/bootstrap-notify/bootstrap-notify.min.js',
+        'layouts/v7/lib/jquery/websockets/reconnecting-websocket.js',
+        'layouts/v7/lib/jquery/jquery-play-sound/jquery.playSound.js',
+        'layouts/v7/lib/jquery/malihu-custom-scrollbar/jquery.mousewheel.min.js',
+        'layouts/v7/lib/jquery/malihu-custom-scrollbar/jquery.mCustomScrollbar.js',
+        'layouts/v7/lib/jquery/autoComplete/jquery.textcomplete.js',
+        'layouts/v7/lib/jquery/jquery.qtip.custom/jquery.qtip.js',
+        'libraries/jquery/jquery-visibility.min.js',
+        'layouts/v7/lib/momentjs/moment.js',
+        'layouts/v7/lib/jquery/daterangepicker/moment.min.js',
+        'layouts/v7/lib/jquery/daterangepicker/jquery.daterangepicker.js',
+        'layouts/v7/lib/jquery/jquery.timeago.js',
+        'libraries/jquery/ckeditor/ckeditor.js',
+        'libraries/jquery/ckeditor/adapters/jquery.js',
+        'layouts/v7/lib/anchorme_js/anchorme.min.js',
+        'layouts/v7/modules/Vtiger/resources/Class.js',
+        'layouts/v7/resources/helper.js',
+        'layouts/v7/resources/application.js',
+        'layouts/v7/modules/Vtiger/resources/Utils.js',
+        'layouts/v7/modules/Vtiger/resources/validation.js',
+        'layouts/v7/lib/bootbox/bootbox.js',
+        'layouts/v7/modules/Vtiger/resources/Base.js',
+        'layouts/v7/modules/Vtiger/resources/Vtiger.js',
+        'layouts/v7/modules/Calendar/resources/TaskManagement.js',
+        'layouts/v7/modules/Import/resources/Import.js',
+        'layouts/v7/modules/Emails/resources/EmailPreview.js',
+        'layouts/v7/modules/Vtiger/resources/Base.js',
+        'layouts/v7/modules/Google/resources/Settings.js',
+        'layouts/v7/modules/Vtiger/resources/CkEditor.js',
+        'layouts/v7/modules/Documents/resources/Documents.js',
+    );
+    $tail = array(
+        'layouts/v7/resources/v7_client_compat.js',
+        'libraries/bootstrap/js/less.min.js',
+    );
+    $local = $head; $externalTags = array();
+    if (is_array($scripts)) {
+        foreach ($scripts as $js) {
+            $src = is_object($js) ? $js->getSrc() : (string)$js;
+            if ($src === '') continue;
+            if (preg_match('#^(https?:)?//#i', $src)) {
+                $externalTags[] = '<script type="text/javascript" src="' . htmlspecialchars($src, ENT_QUOTES) . '"></script>';
+            } else {
+                $local[] = $src;
+            }
+        }
+    }
+    $local = array_merge($local, $tail);
+    $url = vcombine_js($local);
+    $out = '';
+    if ($externalTags) $out .= implode("\n", $externalTags) . "\n"; // external giữ tag riêng (thường rỗng)
+    if ($url !== '') $out .= '<script type="text/javascript" src="' . $url . '"></script>';
+    return $out;
+}
+
 function getPurifiedSmartyParameters($param){
     return htmlentities($_REQUEST[$param]);
 }
