@@ -30,6 +30,10 @@ $languageStrings = array(
 	'Related To' => "Tên tổ chức",
 	'Contact Name' => "Tên liên hệ",
         'Type' => "Kiểu",
+	'Potential Name' => "Tên/ mã Bk/ đặt cọc",
+	'Last Name' => "Họ tên",
+	'Mailing Street' => "Phố gửi thư",
+	'Mailing City' => "Thành phố gửi thư",
 	
 	//Dashboard widgets
 	'Funnel' => "Kênh bán hàng",
