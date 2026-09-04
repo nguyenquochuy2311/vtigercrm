@@ -35,7 +35,8 @@ class ModComments_InRelation_View extends Vtiger_RelatedList_View {
 
 		// To get field model of filename
 		$fileNameFieldModel = Vtiger_Field::getInstance("filename", $modCommentsModel);
-		$fileFieldModel = Vtiger_Field_Model::getInstanceFromFieldObject($fileNameFieldModel);
+		// Guard: field 'filename' 7.4-only co the thieu sau migrate -> getInstance tra false.
+		$fileFieldModel = $fileNameFieldModel ? Vtiger_Field_Model::getInstanceFromFieldObject($fileNameFieldModel) : false;
 		$viewer = $this->getViewer($request);
 		$viewer->assign('CURRENTUSER', $currentUserModel);
 		$viewer->assign('COMMENTS_MODULE_MODEL', $modCommentsModel);
@@ -51,7 +52,9 @@ class ModComments_InRelation_View extends Vtiger_RelatedList_View {
 		$viewer->assign('ROLLUPID', $rollupid);
 		$viewer->assign('STARTINDEX', $startindex);
 
-		return $viewer->view('ShowAllComments.tpl', $moduleName, 'true');
+		// view(...,'true') tra ve string; WebUI::process goi ->emit() tren gia tri process() tra ve
+		// => phai ECHO string (giong Detail::process dong 199) chu KHONG return, neu khong emit() tren string = fatal.
+		echo $viewer->view('ShowAllComments.tpl', $moduleName, 'true');
 	}
 
 }

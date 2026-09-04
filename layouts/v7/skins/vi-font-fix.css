@@ -44,3 +44,49 @@ h1, h2, h3, h4, h5, h6,
 .fieldLabel, .fieldValue, .dashboardLeftPanel {
   font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', 'Liberation Sans', sans-serif !important;
 }
+
+/* --- Fix menu Tao nhanh (Quick Create): ten module dai bi wrap/lech.
+       Nguyen nhan goc: .quick-create-module thieu white-space:nowrap nen
+       text-overflow:ellipsis khong kich hoat + width:80% inline-block canh
+       icon lam ten dai xuong dong. Chuyen sang flex 1 dong + cat bang "...". --- */
+#quickCreateModules .quickCreateModule,
+#quickCreateModules .quickCreateModuleSubmenu {
+  display: flex !important;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+#quickCreateModules .quick-create-module {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: auto;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+#quickCreateModules .quickCreateModule > .custom-module,
+#quickCreateModules .quickCreateModule > [class^="vicon-"],
+#quickCreateModules .quickCreateModule > [class*=" vicon-"],
+#quickCreateModules .quickCreateModuleSubmenu > .custom-module,
+#quickCreateModules .quickCreateModuleSubmenu > [class^="vicon-"] {
+  flex: 0 0 auto;
+}
+
+/* --- Fix app menu / mega menu (module switcher): icon + ten module luon 1 dong.
+       Loi goc vtiger: link <a> la display:block, ten module .module-name du nowrap
+       van bi ca khoi xuong dong duoi icon khi ten dai (Khach hang da giao dich...).
+       Dung flex (qua :has) de icon + ten cung 1 hang, ten dai cat bang "...". --- */
+a:has(> .module-icon) {
+  display: flex !important;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+a:has(> .module-icon) > .module-icon {
+  flex: 0 0 auto;
+}
+a:has(> .module-icon) > .module-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

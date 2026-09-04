@@ -13,7 +13,7 @@
     <div class="modal-footer">
         <div class="row-fluid">
             <div class="col-xs-6">
-                {if $FIELD_MODEL->getProfileReadWritePermission()}
+                {if $FIELD_MODEL and $FIELD_MODEL->getProfileReadWritePermission()}
                     {include file=vtemplate_path($FIELD_MODEL->getUITypeModel()->getTemplateName(),$MODULE_NAME)}
                 {/if}
             </div>

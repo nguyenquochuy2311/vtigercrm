@@ -9,21 +9,21 @@
  *************************************************************************************/
 $languageStrings = array(
 	// Basic Strings
-	'Accounts' => "Tổ chức",
-	'SINGLE_Accounts' => "Tổ chức",
-	'LBL_ADD_RECORD' => "Thêm tổ chức",
-	'LBL_RECORDS_LIST' => "Danh sách tổ chức",
+	'Accounts' => "Chủ Đầu Tư",
+	'SINGLE_Accounts' => "Chủ Đầu Tư",
+	'LBL_ADD_RECORD' => "Thêm Chủ Đầu Tư",
+	'LBL_RECORDS_LIST' => "Danh sách Chủ Đầu Tư",
 
 	// Blocks
-	'LBL_ACCOUNT_INFORMATION' => "Chi tiết tổ chức",
+	'LBL_ACCOUNT_INFORMATION' => "Chi tiết Chủ Đầu Tư",
 
 	// Mass Action
-	'LBL_SHOW_ACCOUNT_HIERARCHY' => "Hệ thống phân cấp tổ chức",
+	'LBL_SHOW_ACCOUNT_HIERARCHY' => "Hệ thống phân cấp Chủ Đầu Tư",
 
 	//Field Labels
 	'industry' => "Ngành nghề",
-	'Account Name' => "Tên tổ chức",
-	'Account No' => "Mã số tổ chức",
+	'Account Name' => "Tên Chủ Đầu Tư",
+	'Account No' => "Mã số Chủ Đầu Tư",
 	'Website' => "Trang web",
 	'Ticker Symbol' => "Mã cổ phiếu",
 	'Member Of' => "Thành viên của",
@@ -49,16 +49,16 @@ $languageStrings = array(
 	'LBL_END_DATE' => "Ngày kết thúc",
 
 	//Duplication error message
-	'LBL_DUPLICATES_EXIST' => "Tên tổ chức đã tồn tại",
+	'LBL_DUPLICATES_EXIST' => "Tên Chủ Đầu Tư đã tồn tại",
 	'LBL_COPY_SHIPPING_ADDRESS' => "Sao chép địa chỉ giao hàng",
 	'LBL_COPY_BILLING_ADDRESS' => "Sao chép địa chỉ thanh toán",
 	'LBL_IMAGE_INFORMATION' => "Ảnh hồ sơ",
-	'Organization Image' => "Hình ảnh tổ chức",
+	'Organization Image' => "Hình ảnh Chủ Đầu Tư",
 );
 
 $jsLanguageStrings = array(
 	'LBL_RELATED_RECORD_DELETE_CONFIRMATION' => "Bạn có chắc chắn muốn xóa không?",
-	'LBL_DELETE_CONFIRMATION' => "Xóa Tổ chức này sẽ xóa Cơ hội & Báo giá liên quan của nó. Bạn có chắc chắn muốn xóa Tổ chức này không?",
-	'LBL_MASS_DELETE_CONFIRMATION' => "Việc xóa (các) Tổ chức này sẽ xóa Cơ hội & Báo giá liên quan của tổ chức đó. Bạn có chắc chắn muốn xóa các bản ghi đã chọn không?",
-	'JS_DUPLICATE_CREATION_CONFIRMATION' => "Tên tổ chức đã tồn tại. Bạn có muốn tạo bản ghi trùng lặp không?"
+	'LBL_DELETE_CONFIRMATION' => "Xóa Chủ Đầu Tư này sẽ xóa Cơ hội & Báo giá liên quan của nó. Bạn có chắc chắn muốn xóa Chủ Đầu Tư này không?",
+	'LBL_MASS_DELETE_CONFIRMATION' => "Việc xóa (các) Chủ Đầu Tư này sẽ xóa Cơ hội & Báo giá liên quan của Chủ Đầu Tư đó. Bạn có chắc chắn muốn xóa các bản ghi đã chọn không?",
+	'JS_DUPLICATE_CREATION_CONFIRMATION' => "Tên Chủ Đầu Tư đã tồn tại. Bạn có muốn tạo bản ghi trùng lặp không?"
 );

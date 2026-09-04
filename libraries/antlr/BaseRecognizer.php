@@ -276,7 +276,7 @@ abstract class BaseRecognizer{
 
 	/** What is the error header, normally line/character position information? */
 	public function getErrorHeader($e) {
-		return "line ".$e->line.":".$e->charPositionInLine;
+		return "line ".$e->getLine().":".$e->charPositionInLine;
 	}
 	
 	
