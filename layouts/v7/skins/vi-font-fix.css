@@ -90,3 +90,25 @@ a:has(> .module-icon) > .module-name {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* --- Mobile (<=767px) list view fix: khi co qua nhieu filter/custom view, panel
+       #sidebar-essentials render full-width cao (700px+) day bang xuong duoi, VA
+       #table-content la vung cuon long (overflow fixed-height + perfect-scrollbar)
+       nen tren mobile "khong scroll toi bang / rat kho scroll".
+       Fix: cap sidebar 40vh (cuon rieng) + bo cuon DOC long cua bang de trang cuon
+       tu nhien (giu cuon NGANG vi bang rong hon man hinh). --- */
+@media (max-width: 767px) {
+  #sidebar-essentials {
+    max-height: 40vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+    border-bottom: 2px solid #e5e5e5;
+  }
+  #table-content {
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+    overflow-x: auto !important;
+  }
+  #table-content .floatThead-wrapper { height: auto !important; }
+}
