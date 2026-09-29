@@ -295,6 +295,43 @@
     openSheet('sort');
   }
 
+  /* vtiger puts perfect-scrollbar on the list container. On a phone the list is a plain column of cards that the page itself scrolls, so
+     the plugin only gets in the way: its touch handler cancels native scrolling (preventDefault) whenever the container's scroll height
+     differs from its height by even a pixel, and it measures layout on every touch event. Release it on phones; if the desktop layout
+     comes back (rotating to landscape) reload the page so vtiger builds it again. */
+  var listScrollerReleased = false;
+  function releaseListScroller() {
+    var $j = w.jQuery;
+    if (!$j || !$j.fn || !$j.fn.perfectScrollbar) return;
+    try {
+      var box = $j('#table-content.ps-container');
+      if (box.length) { box.perfectScrollbar('destroy'); listScrollerReleased = true; }
+    } catch (err) { /* keep vtiger working */ }
+  }
+
+  /* vtiger's own window "resize" handler destroys and rebuilds the custom scrollbar of the app menu every time it fires (7 ms on a fast
+     laptop, 50+ ms on a mid-range phone). Phone browsers fire "resize" over and over while the address bar slides in and out during a
+     scroll, so the page stutters. Make that handler run only when the width really changed. */
+  function guardVtigerResize() {
+    var $j = w.jQuery;
+    if (!$j || !$j._data) return;
+    var list;
+    try { list = ($j._data(w, 'events') || {}).resize || []; } catch (err) { return; }
+    list.forEach(function (h) {
+      if (h.tsmGuarded || typeof h.handler !== 'function') return;
+      var src = '';
+      try { src = Function.prototype.toString.call(h.handler); } catch (err) { return; }
+      if (src.indexOf('app-modules-dropdown') < 0) return;
+      var orig = h.handler, seen = w.innerWidth;
+      h.handler = function () {
+        if (isOn() && w.innerWidth === seen) return;
+        seen = w.innerWidth;
+        return orig.apply(this, arguments);
+      };
+      h.tsmGuarded = true;
+    });
+  }
+
   var lastTable = null;
   function enhanceList() {
     var table = $('#listViewContent table#listview-table') || $('#listViewContent table.listview-table:not(.floatThead-table)');
@@ -309,6 +346,7 @@
     ensureToolbar();
     ensureFab();
     ensurePager();
+    releaseListScroller();
   }
 
   /* ---------------- detail view ---------------- */
@@ -358,8 +396,9 @@
   /* ---------------- main loop ---------------- */
   function enhance() {
     var on = isOn();
+    guardVtigerResize();
     root.classList.toggle('tsm', on);
-    if (!on) { closeSheets(); root.classList.remove('tsm-list', 'tsm-mod'); return; }
+    if (!on) { closeSheets(); root.classList.remove('tsm-list', 'tsm-mod'); if (listScrollerReleased) { listScrollerReleased = false; w.location.reload(); } return; }
     syncHeader();
     var mod = !!MODULES[currentModule()];
     root.classList.toggle('tsm-mod', mod);
@@ -415,7 +454,14 @@
   });
 
   if (mq.addEventListener) mq.addEventListener('change', schedule); else if (mq.addListener) mq.addListener(schedule);
-  w.addEventListener('resize', schedule);
+  // Phone browsers fire "resize" over and over while the address bar slides in and out during a scroll. enhance() measures layout and
+  // walks the list, so running it for those events makes scrolling stutter. Only a change of width (rotation, split screen) matters.
+  var lastWidth = w.innerWidth;
+  w.addEventListener('resize', function () {
+    if (w.innerWidth === lastWidth) return;
+    lastWidth = w.innerWidth;
+    schedule();
+  });
   w.addEventListener('orientationchange', schedule);
 
   function start() {
