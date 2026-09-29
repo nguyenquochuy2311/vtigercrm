@@ -45,6 +45,9 @@
 		{* Vietnamese font fix - must load last to win the cascade *}
 		<link type="text/css" rel="stylesheet" href="{vresource_url('layouts/v7/skins/vi-font-fix.css')}" media="screen" />
 
+		{* Giao diện điện thoại cho Tiếp thị / Bán hàng (chỉ áp dụng màn hình <= 767px) *}
+		<link type="text/css" rel="stylesheet" href="{vresource_url('layouts/v7/skins/ts-mobile.css')}" media="screen" />
+
 		{* For making pages - print friendly *}
 		<style type="text/css">
             @media print {
