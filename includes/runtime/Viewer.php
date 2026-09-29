@@ -218,7 +218,7 @@ function vresource_url($url) {
     global $vtiger_current_version;
     if (stripos($url, '://') === false) {
         // hậu tố cache-bust: tăng khi đổi JS/CSS để trình duyệt tải lại (giữ nguyên version thật)
-        $url = $url .'?v='.$vtiger_current_version.'.6';
+        $url = $url .'?v='.$vtiger_current_version.'.7';
     }
     return $url;
 }
@@ -253,7 +253,7 @@ function vcombine_js($files) {
         @file_put_contents($cacheFile . '.tmp', $buf);
         @rename($cacheFile . '.tmp', $cacheFile); // atomic, tránh phục vụ file dở
     }
-    return 'cache/jscombine/' . $key . '.js?v=' . $vtiger_current_version . '.6';
+    return 'cache/jscombine/' . $key . '.js?v=' . $vtiger_current_version . '.7';
 }
 
 /**
@@ -310,6 +310,8 @@ function vrender_combined_js($scripts) {
     $tail = array(
         'layouts/v7/resources/v7_client_compat.js',
         'libraries/bootstrap/js/less.min.js',
+        // giao diện điện thoại Tiếp thị / Bán hàng (chỉ chạy khi màn hình <= 767px)
+        'layouts/v7/resources/ts-mobile.js',
     );
     $local = $head; $externalTags = array();
     if (is_array($scripts)) {

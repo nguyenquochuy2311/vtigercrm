@@ -1,0 +1,438 @@
+/*!
+ * TS Mobile UX – mobile layout for vtiger CRM 7.x (Dai Truong Son CRM)
+ * Applies only to screens <= 767px wide, and only after ts-mobile.js adds the
+ * "tsm" class to <html>. The desktop layout is not touched.
+ * Loaded by layouts/v7/modules/Vtiger/Header.tpl (after vi-font-fix.css).
+ * After editing this file, bump the cache-bust suffix in vresource_url()
+ * (includes/runtime/Viewer.php) so browsers fetch the new version.
+ */
+@media (max-width: 767px) {
+
+  /* ============ Base ============ */
+  html.tsm {
+    --tsm-accent: #2f6fb3;
+    --tsm-text: #1f2937;
+    --tsm-muted: #6b7280;
+    --tsm-line: #e5e7eb;
+    --tsm-bg: #f2f4f7;
+    --tsm-radius: 12px;
+    --tsm-hh: 85px;              /* fixed header height, updated by JS */
+    -webkit-text-size-adjust: 100%;
+  }
+  html.tsm body { -webkit-tap-highlight-color: rgba(0, 0, 0, .06); }
+  html.tsm #page { padding-top: var(--tsm-hh) !important; }
+  html.tsm button, html.tsm .btn, html.tsm a { touch-action: manipulation; }
+  html.tsm .btn { font-weight: 500; }
+  html.tsm .fieldLabel label, html.tsm td.fieldLabel .muted { font-weight: 400 !important; }
+  html.tsm .select2-container .select2-choice { font-weight: 400 !important; }
+  /* inputs of 16px or more stop iOS from zooming in on focus */
+  html.tsm input[type="text"], html.tsm input[type="email"], html.tsm input[type="tel"],
+  html.tsm input[type="number"], html.tsm input[type="search"], html.tsm input[type="password"],
+  html.tsm input:not([type]), html.tsm textarea, html.tsm select { font-size: 16px !important; }
+
+  /* ============ Header: module title only, no uppercase ============ */
+  html.tsm .module-breadcrumb-List p,
+  html.tsm .module-breadcrumb-Detail p,
+  html.tsm .module-breadcrumb-Edit p { display: none !important; }
+  html.tsm .module-breadcrumb-List, html.tsm .module-breadcrumb-Detail, html.tsm .module-breadcrumb-Edit {
+    display: flex !important; align-items: center; height: 42px; overflow: hidden;
+  }
+  html.tsm .module-breadcrumb > a { flex: 1 1 auto; min-width: 0; width: auto !important; max-width: none !important; overflow: hidden; }
+  html.tsm .module-breadcrumb .module-title {
+    float: none !important; display: block; width: auto !important; max-width: none !important; margin: 0 !important; padding-left: 10px;
+    text-transform: none !important; font-size: 17px !important; font-weight: 600 !important;
+    line-height: 42px !important; color: var(--tsm-text) !important;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* ============ List view ============ */
+  html.tsm.tsm-list .main-container { background: var(--tsm-bg); min-height: calc(100vh - var(--tsm-hh)); }
+  html.tsm.tsm-list #listViewContent > .col-sm-12 { padding: 0 !important; float: none; }
+  html.tsm.tsm-list .essentials-toggle,
+  html.tsm.tsm-list #scroller_wrapper,
+  html.tsm.tsm-list .listview-actions-container { display: none !important; }
+
+  /* --- sticky toolbar: list picker, sort, filter --- */
+  html.tsm .tsm-toolbar { display: none; }
+  html.tsm.tsm-list .tsm-toolbar {
+    position: sticky; top: var(--tsm-hh); z-index: 1000;
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; background: var(--tsm-bg);
+    border-bottom: 1px solid var(--tsm-line);
+  }
+  html.tsm .tsm-toolbar button { -webkit-appearance: none; appearance: none; margin: 0; font-family: inherit; }
+  html.tsm .tsm-chip {
+    flex: 1 1 auto; min-width: 0; height: 40px; padding: 0 12px;
+    display: flex; align-items: center; gap: 8px;
+    border: 1px solid var(--tsm-line); border-radius: 10px; background: #fff;
+    color: var(--tsm-text); font-size: 15px; font-weight: 600; text-align: left;
+  }
+  html.tsm .tsm-chip .tsm-chip-text { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html.tsm .tsm-chip .fa { color: var(--tsm-muted); font-size: 15px; }
+  html.tsm .tsm-tbtn {
+    flex: 0 0 auto; position: relative; height: 40px; min-width: 42px; padding: 0 12px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    border: 1px solid var(--tsm-line); border-radius: 10px; background: #fff;
+    color: var(--tsm-text); font-size: 14px; font-weight: 600;
+  }
+  html.tsm .tsm-tbtn .fa { font-size: 15px; color: var(--tsm-muted); }
+  html.tsm .tsm-tbtn.tsm-active { border-color: var(--tsm-accent); color: var(--tsm-accent); }
+  html.tsm .tsm-tbtn.tsm-active .fa { color: var(--tsm-accent); }
+  html.tsm .tsm-badge {
+    min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+    background: var(--tsm-accent); color: #fff; font-size: 11px; line-height: 18px; text-align: center;
+  }
+  html.tsm .tsm-toolbar [hidden], html.tsm .tsm-badge[hidden] { display: none !important; }
+
+  /* --- records as cards --- */
+  html.tsm .tsm-cards-on .floatThead-wrapper { position: static !important; }
+  html.tsm .tsm-cards-on .floatThead-container {
+    position: static !important; top: auto !important; left: auto !important;
+    width: auto !important; height: 0 !important; margin: 0 !important; padding: 0 !important;
+    overflow: visible !important; z-index: auto !important; border: 0 !important; box-shadow: none !important;
+  }
+  html.tsm .tsm-cards-on .floatThead-table { display: block !important; width: auto !important; height: 0 !important; margin: 0 !important; border: 0 !important; }
+  html.tsm .tsm-cards-on .floatThead-table > colgroup,
+  html.tsm .tsm-cards-on .floatThead-table tr.listViewContentHeader { display: none !important; }
+  html.tsm .tsm-cards-on #table-content {
+    height: auto !important; overflow: visible !important; margin: 0 !important;
+    border: 0 !important; background: transparent !important; box-shadow: none !important;
+  }
+  html.tsm .tsm-cards-on #table-content > .ps-scrollbar-x-rail,
+  html.tsm .tsm-cards-on #table-content > .ps-scrollbar-y-rail { display: none !important; }
+  html.tsm table.tsm-cards:not(.floatThead-table) {
+    display: block !important; width: auto !important; min-width: 0 !important; max-width: none !important;
+    margin: 0 !important; border: 0 !important; background: transparent !important; table-layout: auto !important;
+  }
+  html.tsm table.tsm-cards:not(.floatThead-table) > colgroup,
+  html.tsm table.tsm-cards:not(.floatThead-table) > thead,
+  html.tsm table.tsm-cards:not(.floatThead-table) > fthfoot { display: none !important; }
+  html.tsm table.tsm-cards:not(.floatThead-table) > tbody { display: block !important; padding: 10px 12px 0 !important; }
+  html.tsm table.tsm-cards tr.listViewEntries {
+    display: grid !important; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 14px;
+    position: relative; margin: 0 0 10px; padding: 12px 14px;
+    background: #fff !important; border: 1px solid var(--tsm-line); border-radius: var(--tsm-radius);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .05); cursor: pointer;
+  }
+  html.tsm table.tsm-cards tr.listViewEntries:active { background: #f8fafc !important; }
+  html.tsm table.tsm-cards td {
+    display: block !important; position: static; width: auto !important; min-width: 0 !important; max-width: none !important;
+    height: auto !important; padding: 0 !important; border: 0 !important; background: transparent !important;
+    white-space: normal !important; text-align: left !important; vertical-align: top;
+  }
+  html.tsm table.tsm-cards td.listViewEntryValue::before {
+    content: attr(data-tsm-label); display: block; margin-bottom: 2px;
+    font-size: 11.5px; line-height: 1.3; color: var(--tsm-muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  html.tsm table.tsm-cards td .fieldValue, html.tsm table.tsm-cards td .value {
+    display: block; font-size: 14px; line-height: 1.35; color: var(--tsm-text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  html.tsm table.tsm-cards td .value a { color: var(--tsm-text); }
+  html.tsm table.tsm-cards td.tsm-title { grid-column: 1 / -1; order: -10; padding-right: 34px !important; }
+  html.tsm table.tsm-cards td.tsm-title::before { display: none; }
+  html.tsm table.tsm-cards td.tsm-title .fieldValue, html.tsm table.tsm-cards td.tsm-title .value { white-space: normal; }
+  html.tsm table.tsm-cards td.tsm-title a { font-size: 16px; font-weight: 600; line-height: 1.3; color: var(--tsm-text) !important; }
+  html.tsm table.tsm-cards td.tsm-phone { position: relative; padding-right: 42px !important; }
+  html.tsm table.tsm-cards td.tsm-wide { grid-column: 1 / -1; }
+  html.tsm table.tsm-cards td.tsm-text .fieldValue, html.tsm table.tsm-cards td.tsm-text .value {
+    white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; color: #4b5563;
+  }
+  html.tsm table.tsm-cards td.tsm-text .value { font-size: 13px; }
+  html.tsm table.tsm-cards td.tsm-status .fieldValue, html.tsm table.tsm-cards td.tsm-status .value {
+    white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  }
+  html.tsm table.tsm-cards td.tsm-meta { grid-column: 1 / -1; }
+  html.tsm table.tsm-cards td.tsm-meta::before { display: inline; margin: 0 4px 0 0; }
+  html.tsm table.tsm-cards td.tsm-meta .fieldValue, html.tsm table.tsm-cards td.tsm-meta .value { display: inline; font-size: 12.5px; color: var(--tsm-muted); }
+  html.tsm table.tsm-cards td.tsm-hide, html.tsm table.tsm-cards td.tsm-empty, html.tsm table.tsm-cards td.tsm-more { display: none !important; }
+  html.tsm table.tsm-cards .picklist-color {
+    display: inline-block; max-width: 100%; padding: 1px 8px; border-radius: 10px;
+    font-size: 12.5px; line-height: 1.6; overflow: hidden; text-overflow: ellipsis; vertical-align: middle;
+  }
+  html.tsm table.tsm-cards td .edit, html.tsm table.tsm-cards td .inline-save { display: none !important; }
+  /* call button */
+  html.tsm .tsm-call {
+    position: absolute; right: 0; top: 50%; margin-top: -18px; width: 36px; height: 36px; border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    background: #e8f7ee; color: #15803d !important; font-size: 16px; text-decoration: none !important;
+  }
+  /* row actions: only the ⋮ menu */
+  html.tsm table.tsm-cards td.listViewRecordActions { position: absolute !important; top: 4px; right: 2px; width: 44px !important; }
+  html.tsm table.tsm-cards td.listViewRecordActions .table-actions { display: block; width: auto; }
+  html.tsm table.tsm-cards td.listViewRecordActions .table-actions > * { display: none !important; }
+  html.tsm table.tsm-cards td.listViewRecordActions .table-actions > .more { display: block !important; }
+  html.tsm table.tsm-cards td.listViewRecordActions .more .dropdown-toggle {
+    display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; color: var(--tsm-muted);
+  }
+  html.tsm table.tsm-cards td.listViewRecordActions .more .dropdown-toggle .fa { font-size: 18px; }
+  html.tsm table.tsm-cards td.listViewRecordActions .dropdown-menu { left: auto !important; right: 4px; min-width: 180px; border-radius: 10px; padding: 6px 0; }
+  html.tsm table.tsm-cards td.listViewRecordActions .dropdown-menu > li > a { padding: 11px 16px; font-size: 15px; }
+  /* vtiger re-attaches the row menu to #page at the icon's left edge; keep it on screen */
+  html.tsm.tsm-list #page > .dropdown-menu {
+    left: auto !important; right: 12px !important; min-width: 190px; padding: 6px 0; border-radius: 10px; z-index: 1050;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+  }
+  html.tsm.tsm-list #page > .dropdown-menu > li > a { padding: 11px 16px !important; font-size: 15px; }
+  /* empty list */
+  html.tsm table.tsm-cards tr.emptyRecordsDiv, html.tsm table.tsm-cards tr.emptyRecordsDiv > td {
+    display: block !important; width: auto !important; border: 0 !important; background: transparent !important;
+  }
+  html.tsm table.tsm-cards tr.emptyRecordsDiv { padding: 40px 20px; text-align: center; color: var(--tsm-muted); }
+  html.tsm table.tsm-cards tr.emptyRecordsDiv * { position: static !important; width: auto !important; max-width: none !important; margin: 0 auto !important; text-align: center !important; font-size: 15px; line-height: 1.5; }
+
+  /* --- bottom pager --- */
+  html.tsm .tsm-pager { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 12px 104px; }
+  html.tsm .tsm-pager button {
+    -webkit-appearance: none; appearance: none; height: 40px; padding: 0 14px; border-radius: 10px;
+    border: 1px solid var(--tsm-line); background: #fff; color: var(--tsm-text); font-size: 14px; font-weight: 600;
+  }
+  html.tsm .tsm-pager button[disabled] { opacity: .35; }
+  html.tsm .tsm-pager .tsm-range { flex: 1 1 auto; text-align: center; font-size: 13px; color: var(--tsm-muted); }
+  html.tsm .tsm-pager .tsm-total { color: var(--tsm-accent); font-weight: 600; text-decoration: underline; cursor: pointer; }
+
+  /* --- add button (FAB) --- */
+  html.tsm .tsm-fab { display: none; }
+  html.tsm.tsm-list .tsm-fab {
+    position: fixed; right: 16px; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 1040;
+    display: flex; align-items: center; justify-content: center;
+    width: 56px; height: 56px; border: 0; border-radius: 28px; padding: 0;
+    background: var(--tsm-accent); color: #fff; font-size: 22px; box-shadow: 0 6px 18px rgba(0, 0, 0, .25);
+  }
+  html.tsm.tsm-list .tsm-fab[hidden] { display: none; }
+
+  /* ============ Bottom sheets ============ */
+  html.tsm .tsm-backdrop {
+    position: fixed; left: 0; top: 0; right: 0; bottom: 0; z-index: 1105;
+    background: rgba(15, 23, 42, .45); opacity: 0; pointer-events: none; transition: opacity .2s ease;
+  }
+  html.tsm.tsm-sheet-open .tsm-backdrop { opacity: 1; pointer-events: auto; }
+  html.tsm.tsm-sheet-open body { overflow: hidden !important; }
+  html.tsm .tsm-sheet-x {
+    position: absolute; top: 6px; right: 6px; z-index: 3; width: 42px; height: 42px; border: 0; border-radius: 21px;
+    background: transparent; color: var(--tsm-muted); font-size: 18px; display: flex; align-items: center; justify-content: center;
+  }
+  html.tsm .tsm-grab { display: block; width: 40px; height: 4px; margin: 8px auto 0; border-radius: 2px; background: #d1d5db; }
+
+  /* shared sheet box: Danh sach panel, search row, sort list */
+  html.tsm.tsm-list #sidebar-essentials,
+  html.tsm.tsm-list tr.searchRow,
+  html.tsm .tsm-sheet {
+    position: fixed !important; left: 0 !important; right: 0 !important; bottom: 0 !important; top: auto !important;
+    z-index: 1110 !important; width: auto !important; height: auto !important; max-height: 85vh !important; margin: 0 !important;
+    background: #fff !important; border-radius: 16px 16px 0 0; box-shadow: 0 -10px 30px rgba(0, 0, 0, .18);
+    overflow-x: hidden !important; overflow-y: auto !important; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    transform: translateY(105%); visibility: hidden; transition: transform .25s ease, visibility 0s linear .25s;
+  }
+  html.tsm.tsm-open-lists.tsm-list #sidebar-essentials,
+  html.tsm.tsm-open-search.tsm-list tr.searchRow,
+  html.tsm.tsm-open-sort .tsm-sort-sheet { transform: none; visibility: visible; transition: transform .25s ease, visibility 0s; }
+
+  /* --- sheet 1: Danh sach (vtiger sidebar) --- */
+  html.tsm.tsm-list #sidebar-essentials { display: block !important; padding: 0 0 calc(16px + env(safe-area-inset-bottom)) !important; }
+  html.tsm.tsm-list #sidebar-essentials .sidebar-menu,
+  html.tsm.tsm-list #sidebar-essentials .menu-scroller,
+  html.tsm.tsm-list #sidebar-essentials .list-menu-content { height: auto !important; max-height: none !important; overflow: visible !important; }
+  html.tsm.tsm-list #sidebar-essentials .ps-scrollbar-x-rail,
+  html.tsm.tsm-list #sidebar-essentials .ps-scrollbar-y-rail { display: none !important; }
+  html.tsm.tsm-list #sidebar-essentials .sidebar-container { padding: 0 16px !important; }
+  html.tsm.tsm-list #sidebar-essentials .sidebar-header { padding: 6px 44px 4px 0 !important; }
+  html.tsm.tsm-list #sidebar-essentials .sidebar-header h5,
+  html.tsm.tsm-list #sidebar-essentials h5.lists-header { font-size: 17px !important; font-weight: 700 !important; text-transform: none !important; color: var(--tsm-text); }
+  html.tsm.tsm-list #sidebar-essentials h6.lists-header { margin: 14px 0 6px !important; font-size: 12px !important; letter-spacing: .04em; color: var(--tsm-muted) !important; }
+  html.tsm.tsm-list #sidebar-essentials hr { margin: 8px 0 !important; }
+  html.tsm.tsm-list #sidebar-essentials input.search-list {
+    width: 100% !important; height: 42px !important; padding: 0 12px !important; border-radius: 10px !important; border: 1px solid var(--tsm-line) !important;
+  }
+  html.tsm.tsm-list #sidebar-essentials .lists-menu > li {
+    position: relative; margin: 0 !important; padding: 0 !important; border-radius: 8px; font-size: 15px !important;
+  }
+  html.tsm.tsm-list #sidebar-essentials .lists-menu > li > a.filterName {
+    display: block !important; max-width: none !important; padding: 11px 44px 11px 12px !important; color: var(--tsm-text) !important;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  html.tsm.tsm-list #sidebar-essentials .lists-menu > li.active { background: #eef2f7 !important; box-shadow: inset 3px 0 0 var(--tsm-accent); }
+  html.tsm.tsm-list #sidebar-essentials .lists-menu > li.active > a.filterName { font-weight: 600; }
+  html.tsm.tsm-list #sidebar-essentials .lists-menu > li > .pull-right { position: absolute; right: 0; top: 0; height: 100%; display: flex; align-items: center; padding: 0 12px; }
+  html.tsm.tsm-list #sidebar-essentials .toggleFilterSize { display: inline-block; padding: 8px 12px; font-size: 14px; }
+  html.tsm.tsm-list #sidebar-essentials .tag { font-size: 14px; }
+  html.tsm .popover { z-index: 1120 !important; }
+
+  /* --- sheet 2: column search (vtiger search row) --- */
+  html.tsm.tsm-list tr.searchRow { display: flex !important; flex-direction: column; }
+  html.tsm .tsm-sheet-head { display: none; }
+  html.tsm.tsm-list tr.searchRow > th {
+    display: block !important; position: static; flex: 0 0 auto; width: auto !important; min-width: 0 !important; max-width: none !important;
+    height: auto !important; padding: 8px 16px !important; border: 0 !important; background: #fff !important; text-align: left !important;
+  }
+  html.tsm.tsm-list tr.searchRow > th::before {
+    content: attr(data-tsm-label); display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: var(--tsm-text);
+  }
+  html.tsm.tsm-list tr.searchRow > th.tsm-empty { display: none !important; }
+  html.tsm.tsm-list tr.searchRow > th.tsm-sheet-head {
+    display: block !important; position: sticky; top: 0; z-index: 2; order: -1;
+    padding: 16px 56px 12px 16px !important; border-bottom: 1px solid var(--tsm-line) !important;
+    font-size: 17px; font-weight: 700; color: var(--tsm-text);
+  }
+  html.tsm.tsm-list tr.searchRow > th.tsm-sheet-head::before,
+  html.tsm.tsm-list tr.searchRow > th.tsm-search-actions::before { display: none; }
+  html.tsm.tsm-list tr.searchRow > th.tsm-search-actions {
+    order: 99; position: sticky; bottom: 0; z-index: 2;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom)) !important; border-top: 1px solid var(--tsm-line) !important;
+  }
+  html.tsm.tsm-list tr.searchRow > th.tsm-search-actions .table-actions { display: flex; gap: 10px; width: 100%; }
+  html.tsm.tsm-list tr.searchRow > th.tsm-search-actions button { flex: 1 1 0; height: 44px; margin: 0 !important; font-size: 16px !important; border-radius: 10px; }
+  html.tsm.tsm-list tr.searchRow > th.tsm-search-actions button.hide { display: none !important; }
+  html.tsm.tsm-list tr.searchRow input.inputElement,
+  html.tsm.tsm-list tr.searchRow input.listSearchContributor {
+    width: 100% !important; max-width: none !important; height: 42px !important; padding: 0 12px !important; border-radius: 10px !important;
+  }
+  html.tsm.tsm-list tr.searchRow .select2-container { width: 100% !important; max-width: none !important; }
+  html.tsm.tsm-list tr.searchRow .select2-container-multi .select2-choices { min-height: 42px !important; padding: 4px 6px !important; border-radius: 10px !important; }
+  html.tsm.tsm-list tr.searchRow .select2-search-field input { height: 32px !important; }
+  html.tsm .select2-drop, html.tsm .datepicker, html.tsm .daterangepicker { z-index: 1130 !important; }
+  /* date-range picker of the search sheet: two months side by side do not fit, stack them */
+  html.tsm.tsm-list .date-picker-wrapper {
+    left: 8px !important; right: auto !important; width: calc(100vw - 16px) !important; max-width: 420px; box-sizing: border-box; z-index: 2000 !important;
+  }
+  html.tsm.tsm-list .date-picker-wrapper .month-wrapper { width: auto !important; }
+  html.tsm.tsm-list .date-picker-wrapper .month-wrapper table { float: none !important; width: 100% !important; margin: 0 0 8px !important; }
+  html.tsm.tsm-list .date-picker-wrapper .month-wrapper table td, html.tsm.tsm-list .date-picker-wrapper .month-wrapper table th { height: 30px; font-size: 13px; }
+  html.tsm.tsm-list .date-picker-wrapper .month-wrapper .gap { display: none !important; }
+
+  /* --- sheet 3: sort --- */
+  html.tsm .tsm-sheet { padding: 0 0 calc(12px + env(safe-area-inset-bottom)); }
+  html.tsm .tsm-sheet .tsm-sheet-head {
+    display: block; position: sticky; top: 0; z-index: 2; background: #fff;
+    padding: 16px 56px 12px 16px; border-bottom: 1px solid var(--tsm-line); font-size: 17px; font-weight: 700; color: var(--tsm-text);
+  }
+  html.tsm .tsm-sort-item {
+    -webkit-appearance: none; appearance: none; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    width: 100%; min-height: 48px; padding: 10px 16px; border: 0; border-bottom: 1px solid #f1f2f4; background: #fff;
+    color: var(--tsm-text); font-size: 15px; text-align: left;
+  }
+  html.tsm .tsm-sort-item.tsm-on { color: var(--tsm-accent); font-weight: 600; }
+
+  /* ============ Detail view ============ */
+  html.tsm.tsm-mod .detailViewContainer .content-area { padding: 0 !important; }
+  html.tsm.tsm-mod .detailview-header-block { margin: 0 0 10px !important; padding: 14px !important; border: 0 !important; border-radius: 0 !important; }
+  html.tsm.tsm-mod .detailview-header > .row { margin: 0 !important; }
+  html.tsm.tsm-mod .detailview-header > .row > [class*="col-"] { padding: 0 !important; float: none !important; width: auto !important; }
+  html.tsm.tsm-mod .detailview-header .record-header { min-height: 52px !important; }
+  html.tsm.tsm-mod .detailview-header .recordImage {
+    display: table !important; position: absolute; width: 52px !important; height: 52px !important; margin: 0 !important; border-radius: 12px; overflow: hidden;
+  }
+  html.tsm.tsm-mod .detailview-header .recordImage .name, html.tsm.tsm-mod .detailview-header .recordImage .name * { font-size: 19px !important; line-height: 1 !important; }
+  html.tsm.tsm-mod .detailview-header .recordImage img { width: 52px !important; height: 52px !important; object-fit: cover; }
+  html.tsm.tsm-mod .detailview-header .recordBasicInfo { padding-left: 64px !important; min-height: 52px; }
+  html.tsm.tsm-mod .detailview-header .recordLabel { font-size: 19px; font-weight: 600; white-space: normal; line-height: 1.3; }
+  html.tsm.tsm-mod .detailViewButtoncontainer { float: none !important; width: 100% !important; height: auto !important; padding: 0 !important; }
+  html.tsm.tsm-mod .detailViewButtoncontainer > .btn-toolbar {
+    float: none !important; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0 !important;
+  }
+  html.tsm.tsm-mod .detailViewButtoncontainer .btn-group { float: none !important; display: flex; flex-wrap: wrap; gap: 8px; margin: 0 !important; }
+  html.tsm.tsm-mod .detailViewButtoncontainer .btn-group > .btn {
+    float: none !important; height: 36px; margin: 0 !important; padding: 0 11px; border-radius: 8px !important; font-size: 13.5px;
+    background: #fff !important; border: 1px solid #d1d5db !important; color: var(--tsm-text) !important; font-weight: 500 !important;
+  }
+  html.tsm.tsm-mod .detailViewButtoncontainer .btn-group.pull-right { margin-left: auto !important; }
+  html.tsm.tsm-mod .detailview-content { padding: 0 !important; }
+  /* tabs: always visible as wrapped pills (no hidden "..." menu) */
+  html.tsm.tsm-mod .related-tabs { margin: 0 0 10px !important; padding: 0 12px !important; background: transparent !important; }
+  html.tsm.tsm-mod .related-tabs .navbar { min-height: 0; border: 0; background: transparent; }
+  html.tsm.tsm-mod .related-tabs .navbar-header { display: none !important; }
+  html.tsm.tsm-mod .related-tabs .navbar-collapse {
+    display: block !important; visibility: visible !important; height: auto !important; padding: 0 !important;
+    border: 0 !important; overflow: visible !important; box-shadow: none;
+  }
+  html.tsm.tsm-mod .related-tabs .nav-tabs {
+    display: flex !important; flex-wrap: nowrap !important; gap: 6px; float: none !important; margin: 0 !important; padding: 2px 0 6px !important;
+    border: 0 !important; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  html.tsm.tsm-mod .related-tabs .nav-tabs::-webkit-scrollbar { display: none; }
+  html.tsm.tsm-mod .related-tabs .nav-tabs > li { flex: 0 0 auto; float: none !important; display: block !important; width: auto !important; height: auto !important; margin: 0 !important; }
+  html.tsm.tsm-mod .related-tabs .nav-tabs > li > a {
+    display: inline-flex !important; align-items: center; gap: 6px; height: 34px; max-width: none !important; overflow: visible !important;
+    margin: 0 !important; padding: 0 12px !important; border: 1px solid var(--tsm-line) !important; border-radius: 17px !important;
+    background: #fff !important; color: var(--tsm-text) !important; font-size: 13.5px; line-height: 1; white-space: nowrap;
+  }
+  html.tsm.tsm-mod .related-tabs .nav-tabs > li > a .tab-label, html.tsm.tsm-mod .related-tabs .nav-tabs > li > a strong { font-weight: 500 !important; font-size: 13.5px; }
+  html.tsm.tsm-mod .related-tabs .tab-icon { display: none !important; }
+  html.tsm.tsm-mod .related-tabs .numberCircle {
+    display: inline-block; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; margin: 0 !important;
+    background: #eef2f7; color: var(--tsm-text); font-size: 11px; line-height: 18px; text-align: center;
+  }
+  html.tsm.tsm-mod .related-tabs .numberCircle.hide { display: none !important; }
+  html.tsm.tsm-mod .related-tabs .nav-tabs > li.active > a { background: var(--tsm-accent) !important; border-color: var(--tsm-accent) !important; color: #fff !important; }
+  html.tsm.tsm-mod .related-tabs .nav-tabs > li.active > a * { color: #fff !important; }
+  html.tsm.tsm-mod .details { margin: 0 !important; }
+  html.tsm.tsm-mod .details .block h4, html.tsm.tsm-mod .summaryView h4 { max-width: none !important; white-space: normal !important; font-size: 16px; }
+  html.tsm.tsm-mod .resizable-summary-view, html.tsm.tsm-mod .left-block, html.tsm.tsm-mod .middle-block { float: none !important; width: auto !important; padding: 0 !important; }
+  html.tsm.tsm-mod .summaryView, html.tsm.tsm-mod .summaryWidgetContainer, html.tsm.tsm-mod .details .block {
+    margin: 0 12px 10px !important; padding: 12px 14px !important; border: 1px solid var(--tsm-line) !important; border-radius: var(--tsm-radius) !important;
+    background: #fff !important; box-shadow: none !important;
+  }
+  html.tsm.tsm-mod .summaryWidgetContainer .summaryWidgetContainer { margin: 0 !important; padding: 0 !important; border: 0 !important; }
+  html.tsm.tsm-mod .left-block .summaryWidgetContainer { padding: 0 !important; border: 0 !important; background: transparent !important; }
+  html.tsm.tsm-mod .left-block .summaryWidgetContainer > div { padding: 12px 14px; border: 1px solid var(--tsm-line); border-radius: var(--tsm-radius); background: #fff; }
+  html.tsm.tsm-mod table.summary-table, html.tsm.tsm-mod table.summary-table > tbody { display: block !important; width: auto !important; }
+  html.tsm.tsm-mod table.summary-table tr {
+    display: grid !important; grid-template-columns: minmax(0, 40%) minmax(0, 1fr); gap: 10px;
+    padding: 9px 0; border-bottom: 1px solid #f1f2f4;
+  }
+  html.tsm.tsm-mod table.summary-table tr:last-child { border-bottom: 0; }
+  html.tsm.tsm-mod table.summary-table td { display: block !important; width: auto !important; height: auto !important; padding: 0 !important; border: 0 !important; }
+  html.tsm.tsm-mod table.summary-table td.fieldLabel, html.tsm.tsm-mod table.summary-table td.fieldLabel * { font-size: 13px !important; color: var(--tsm-muted) !important; white-space: normal !important; }
+  html.tsm.tsm-mod table.summary-table td.fieldValue { font-size: 14.5px; color: var(--tsm-text); word-break: break-word; }
+  html.tsm.tsm-mod table.summary-table td, html.tsm.tsm-mod table.summary-table td *,
+  html.tsm.tsm-mod table.detailview-table td, html.tsm.tsm-mod table.detailview-table td * { line-height: 1.4 !important; }
+  html.tsm.tsm-mod table.summary-table td.fieldLabel label, html.tsm.tsm-mod table.detailview-table td.fieldLabel label { display: block; margin: 0 !important; }
+  html.tsm.tsm-mod table.summary-table td.fieldValue .value, html.tsm.tsm-mod table.detailview-table td.fieldValue .value { display: inline; white-space: normal !important; }
+  html.tsm.tsm-mod table.detailview-table, html.tsm.tsm-mod table.detailview-table > tbody { display: block !important; width: auto !important; }
+  html.tsm.tsm-mod table.detailview-table tr { display: grid !important; grid-template-columns: minmax(0, 40%) minmax(0, 1fr); gap: 4px 10px; border: 0 !important; }
+  html.tsm.tsm-mod table.detailview-table td {
+    display: block !important; width: auto !important; height: auto !important; min-height: 0 !important;
+    padding: 9px 0 !important; border: 0 !important; border-bottom: 1px solid #f1f2f4 !important;
+  }
+  html.tsm.tsm-mod table.detailview-table td.fieldLabel, html.tsm.tsm-mod table.detailview-table td.fieldLabel * { font-size: 13px !important; color: var(--tsm-muted) !important; text-align: left !important; white-space: normal !important; }
+  html.tsm.tsm-mod table.detailview-table td.fieldValue { font-size: 14.5px; word-break: break-word; }
+  html.tsm.tsm-mod .tsm-call-inline {
+    display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; padding: 3px 10px; border-radius: 14px; vertical-align: middle;
+    background: #e8f7ee; color: #15803d !important; font-size: 13px; font-weight: 600; text-decoration: none !important;
+  }
+
+  /* ============ Edit / create form ============ */
+  html.tsm.tsm-mod .editViewPageDiv .content-area { padding: 0 !important; }
+  html.tsm.tsm-mod .recordEditView { padding: 0 0 90px !important; }
+  html.tsm.tsm-mod .recordEditView .editViewHeader { padding: 14px 14px 4px !important; margin: 0 !important; }
+  html.tsm.tsm-mod .recordEditView .editViewHeader .row { margin: 0 !important; }
+  html.tsm.tsm-mod .recordEditView .editHeader { font-size: 18px !important; font-weight: 600; margin: 0 !important; }
+  html.tsm.tsm-mod .recordEditView .fieldBlockContainer {
+    margin: 10px 12px !important; padding: 12px 14px !important; border: 1px solid var(--tsm-line) !important; border-radius: var(--tsm-radius) !important; background: #fff !important;
+  }
+  html.tsm.tsm-mod .recordEditView .fieldBlockHeader { margin: 0 !important; font-size: 16px !important; font-weight: 700; }
+  html.tsm.tsm-mod .recordEditView .fieldBlockContainer > hr { margin: 10px 0 4px !important; }
+  html.tsm.tsm-mod .recordEditView table.table-borderless, html.tsm.tsm-mod .recordEditView table.table-borderless > tbody,
+  html.tsm.tsm-mod .recordEditView table.table-borderless tr { display: block !important; width: auto !important; margin: 0 !important; }
+  html.tsm.tsm-mod .recordEditView table.table-borderless td { display: block !important; width: auto !important; height: auto !important; min-height: 0 !important; border: 0 !important; }
+  html.tsm.tsm-mod .recordEditView table.table-borderless td.fieldLabel {
+    padding: 12px 0 5px !important; text-align: left !important; font-size: 13.5px; font-weight: 600; color: var(--tsm-text);
+  }
+  html.tsm.tsm-mod .recordEditView table.table-borderless td.fieldValue { padding: 0 !important; }
+  html.tsm.tsm-mod .recordEditView table.table-borderless td.fieldLabel:empty, html.tsm.tsm-mod .recordEditView table.table-borderless td.fieldValue:empty { display: none !important; }
+  html.tsm.tsm-mod .recordEditView td.fieldValue > input.inputElement,
+  html.tsm.tsm-mod .recordEditView td.fieldValue > textarea.inputElement,
+  html.tsm.tsm-mod .recordEditView td.fieldValue > .inputElement:not(.select2-container) { width: 100% !important; max-width: none !important; }
+  html.tsm.tsm-mod .recordEditView input.inputElement, html.tsm.tsm-mod .recordEditView .input-group input { height: 42px; border-radius: 8px; }
+  html.tsm.tsm-mod .recordEditView .select2-container { display: block !important; width: 100% !important; max-width: none !important; height: auto !important; }
+  html.tsm.tsm-mod .recordEditView .select2-container .select2-choice { height: 42px !important; line-height: 40px !important; border-radius: 8px !important; font-size: 16px; }
+  html.tsm.tsm-mod .recordEditView .select2-container .select2-choice .select2-arrow b { background-position: 0 8px; }
+  html.tsm.tsm-mod .modal-overlay-footer { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)) !important; }
+  html.tsm.tsm-mod .modal-overlay-footer .btn { min-width: 110px; height: 44px; font-size: 16px; border-radius: 10px; }
+}
+
+/* Outside the phone layout the helper elements stay hidden */
+@media (min-width: 768px) {
+  .tsm-toolbar, .tsm-fab, .tsm-pager, .tsm-backdrop, .tsm-sheet, .tsm-sheet-bar, .tsm-sheet-head, .tsm-call, .tsm-call-inline, .tsm-tab-text { display: none !important; }
+}
