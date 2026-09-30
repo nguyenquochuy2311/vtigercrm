@@ -381,7 +381,15 @@ class Vtiger_ExportData_Action extends Vtiger_Mass_Action {
 					$value = '';
 				}
 			} elseif($uitype == 52 || $type == 'owner') {
-				$value = Vtiger_Util_Helper::getOwnerName($value);
+				// KIROS: xuất HỌ TÊN đầy đủ của user (hoặc tên nhóm) như hiển thị trên app, thay vì tên đăng nhập
+				// (user_name) cho các cột Người được giao / Tạo bởi / Sửa lần cuối bởi. Import
+				// (modules/Import/actions/Data.php::resolveOwnerId) nhận lại được họ tên này.
+				$ownerLabel = '';
+				if (trim($value) !== '') {
+					$ownerLabel = Vtiger_Functions::getOwnerRecordLabel($value);
+					if ($ownerLabel === null || trim($ownerLabel) === '') $ownerLabel = Vtiger_Util_Helper::getOwnerName($value);
+				}
+				$value = trim(decode_html((string)$ownerLabel));
 			}elseif($type == 'reference'){
 				$value = trim($value);
 				if(!empty($value)) {

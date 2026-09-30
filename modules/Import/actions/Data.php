@@ -273,7 +273,7 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 						$fieldInstance = $moduleFields[$mergeFieldName];
 						$fieldDataType = $fieldInstance->getFieldDataType();
 						switch ($fieldDataType) {
-							case 'owner'	:	$userId = getUserId_Ol($comparisonValue);
+							case 'owner'	:	$userId = self::resolveOwnerId($comparisonValue); // KIROS: nhận cả họ tên
 												$comparisonValue = getUserFullName($userId);
 												break;
 							case 'reference':	if (strpos($comparisonValue, '::::') > 0) {
@@ -475,6 +475,32 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 		return true;
 	}
 
+	/**
+	 * KIROS: resolve owner (Người được giao) từ giá trị trong file import. Nhận: tên đăng nhập (user_name), tên nhóm,
+	 * HỌ TÊN đầy đủ (file export của app giờ ghi họ tên như hiển thị trên bảng) và dạng "Họ tên (user_name)" để phân biệt
+	 * khi 2 user trùng họ tên. Họ tên so khớp chính xác có dấu (utf8_bin); trùng tên → ưu tiên user Active rồi id nhỏ nhất.
+	 * @return int user id / group id, 0 nếu không tìm thấy
+	 */
+	public static function resolveOwnerId($value) {
+		$value = trim(decode_html((string)$value));
+		if ($value === '') return 0;
+		$ownerId = getUserId_Ol($value);
+		if (empty($ownerId) && preg_match('/^(.*)\(([^()]+)\)\s*$/u', $value, $m)) {
+			$ownerId = getUserId_Ol(trim($m[2]));
+			if (empty($ownerId)) $value = trim($m[1]);
+		}
+		if (empty($ownerId)) $ownerId = getGrpId($value);
+		if (empty($ownerId)) {
+			$db = PearDatabase::getInstance();
+			$html = to_html($value);
+			$result = $db->pquery("SELECT id FROM vtiger_users WHERE deleted=0 AND (userlabel COLLATE utf8_bin IN (?,?)
+				OR TRIM(CONCAT(IFNULL(first_name,''),' ',IFNULL(last_name,''))) COLLATE utf8_bin IN (?,?))
+				ORDER BY (status='Active') DESC, id ASC LIMIT 1", array($value, $html, $value, $html));
+			if ($result && $db->num_rows($result) > 0) $ownerId = (int)$db->query_result($result, 0, 'id');
+		}
+		return $ownerId ? $ownerId : 0;
+	}
+
 	public function transformForImport($fieldData, $moduleMeta, $fillDefault = true, $checkMandatoryFieldValues = true) {
 		global $current_user;
 		$moduleImportableFields = array();
@@ -515,10 +541,8 @@ class Import_Data_Action extends Vtiger_Action_Controller {
 			$fieldInstance = $moduleFields[$fieldName];
 			$fieldDataType = $fieldInstance->getFieldDataType();
 			if ($fieldDataType == 'owner') {
-				$ownerId = getUserId_Ol(trim($fieldValue));
-				if (empty($ownerId)) {
-					$ownerId = getGrpId($fieldValue);
-				}
+				// KIROS: nhận cả họ tên đầy đủ / "Họ tên (user_name)" (xem resolveOwnerId)
+				$ownerId = self::resolveOwnerId($fieldValue);
 				if (empty($ownerId) && isset($defaultFieldValues[$fieldName])) {
 					$ownerId = $defaultFieldValues[$fieldName];
 				}
