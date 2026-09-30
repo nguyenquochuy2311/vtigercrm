@@ -218,7 +218,7 @@ function vresource_url($url) {
     global $vtiger_current_version;
     if (stripos($url, '://') === false) {
         // hậu tố cache-bust: tăng khi đổi JS/CSS để trình duyệt tải lại (giữ nguyên version thật)
-        $url = $url .'?v='.$vtiger_current_version.'.7';
+        $url = $url .'?v='.$vtiger_current_version.'.8';
     }
     return $url;
 }
@@ -237,6 +237,9 @@ function vcombine_js($files) {
         $f = ltrim(trim($f), '/');
         if ($f === '') continue;
         $full = $root . '/' . $f;
+        // KIROS: dùng bản .min.js cùng thư mục (cùng phiên bản thư viện) khi có — jquery-ui/qtip đang nạp bản
+        // chưa minify (~325KB thừa) → bớt thời gian parse JS trên điện thoại.
+        if (substr($f, -7) !== '.min.js') { $min = substr($full, 0, -3) . '.min.js'; if (is_file($min)) $full = $min; }
         if (is_file($full)) { $paths[] = $full; $sig .= $f . '|' . filemtime($full) . ';'; }
     }
     if (empty($paths)) return '';
@@ -253,7 +256,7 @@ function vcombine_js($files) {
         @file_put_contents($cacheFile . '.tmp', $buf);
         @rename($cacheFile . '.tmp', $cacheFile); // atomic, tránh phục vụ file dở
     }
-    return 'cache/jscombine/' . $key . '.js?v=' . $vtiger_current_version . '.7';
+    return 'cache/jscombine/' . $key . '.js?v=' . $vtiger_current_version . '.8';
 }
 
 /**

@@ -32,5 +32,14 @@
 		<div id="sidebar-essentials" class="sidebar-essentials {if $LEFTPANELHIDE eq '1'} hide {/if}">
 			{include file="partials/SidebarEssentials.tpl"|vtemplate_path:$MODULE}
 		</div>
-		<div class="listViewPageDiv content-area {if $LEFTPANELHIDE eq '1'} full-width {/if}" id="listViewContent">
+		{* KIROS mobile: thanh cong cu (Danh sach / Sap xep / Loc) render san tu server de trang mobile
+		   dung layout ngay tu dau (ts-mobile.js chi cap nhat trang thai). Desktop an bang CSS. *}
+		{assign var=TSM_CVNAME value=''}
+		{foreach key=TSM_GROUP_LABEL item=TSM_GROUP from=$CUSTOM_VIEWS}{foreach item=TSM_CV from=$TSM_GROUP}{if $VIEWID eq $TSM_CV->getId()}{assign var=TSM_CVNAME value={vtranslate($TSM_CV->get('viewname'), $MODULE)}}{/if}{/foreach}{/foreach}
+		<div class="tsm-toolbar">
+			<button type="button" class="tsm-chip" data-tsm-open="lists"><i class="fa fa-list-ul"></i><span class="tsm-chip-text">{$TSM_CVNAME|@escape:'html'}</span><i class="fa fa-angle-down"></i></button>
+			<button type="button" class="tsm-tbtn tsm-sort-btn" data-tsm-open="sort" title="Sắp xếp" aria-label="Sắp xếp"><i class="fa fa-sort-amount-asc"></i></button>
+			<button type="button" class="tsm-tbtn tsm-filter-btn" data-tsm-open="search"><i class="fa fa-filter"></i><span>Lọc</span><span class="tsm-badge" hidden></span></button>
+		</div>
+		<div class="listViewPageDiv content-area {if $LEFTPANELHIDE eq '1'} full-width {/if} tsm-cards-on" id="listViewContent">
 

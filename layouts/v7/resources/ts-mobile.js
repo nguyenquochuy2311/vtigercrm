@@ -126,7 +126,8 @@
         var name = td.getAttribute('data-name') || '';
         var type = td.getAttribute('data-field-type') || '';
         var val = cellValue(td);
-        td.setAttribute('data-tsm-label', labels[i] || '');
+        // the template already renders data-tsm-label; only fill it in when missing (older templates)
+        if (!td.getAttribute('data-tsm-label') && labels[i]) td.setAttribute('data-tsm-label', labels[i]);
         if (!val) { td.classList.add('tsm-empty'); return; }
         if (!title && id && $('a[href*="record=' + id + '"]', td)) { title = td; td.classList.add('tsm-title'); return; }
         if (HIDE_ON_CARD[name]) { td.classList.add('tsm-hide'); return; }
@@ -137,11 +138,8 @@
         candidates.push({ td: td, i: i, s: fieldScore(name, type) });
       });
       if (!title && candidates.length) { title = candidates.shift().td; title.classList.add('tsm-title'); }
-      candidates.sort(function (a, b) { return b.s - a.s || a.i - b.i; });
-      candidates.forEach(function (c, rank) {
-        if (rank < MAX_CARD_FIELDS) c.td.style.order = rank;
-        else c.td.classList.add('tsm-more');
-      });
+      // Field order is now pure CSS (ts-mobile.css, by data-field-type) and the template already renders the
+      // card classes/labels, so nothing is re-ordered or hidden here after the page has painted.
       tr.setAttribute('data-tsm', '1');
     });
   }
@@ -185,7 +183,10 @@
   function ensureToolbar() {
     var content = $('#listViewContent');
     if (!content) return;
-    if (!toolbar || !d.body.contains(toolbar)) {
+    // ListViewPreProcess.tpl renders the toolbar shell on the server (so the page lays out right on first paint);
+    // build it only for pages that do not have it.
+    if (!toolbar || !d.body.contains(toolbar)) toolbar = $('.tsm-toolbar');
+    if (!toolbar) {
       toolbar = el('div', 'tsm-toolbar');
       toolbar.innerHTML =
         '<button type="button" class="tsm-chip" data-tsm-open="lists"><i class="fa fa-list-ul"></i><span class="tsm-chip-text"></span><i class="fa fa-angle-down"></i></button>' +
@@ -306,6 +307,8 @@
     try {
       var box = $j('#table-content.ps-container');
       if (box.length) { box.perfectScrollbar('destroy'); listScrollerReleased = true; }
+      // NOTE: do not floatThead('destroy') here — with vtiger's setup the plugin drops the real <thead>
+      // (header row + search row + sort links vanish). Its scroll/resize handlers cost < 1 ms, so it stays.
     } catch (err) { /* keep vtiger working */ }
   }
 

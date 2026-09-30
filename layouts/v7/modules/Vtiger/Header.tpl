@@ -69,6 +69,12 @@
                           'currencyGroupingPattern' : "{$CURRENT_USER_MODEL->get('currency_grouping_pattern')}", 'truncateTrailingZeros' : "{$CURRENT_USER_MODEL->get('truncate_trailing_zeros')}",'userlabel':"{decode_html($CURRENT_USER_MODEL->get('userlabel'))}",};
             {/if}
 		</script>
+		{* KIROS mobile: gan class tsm / tsm-mod / tsm-list cho <html> NGAY trong <head> (truoc khi ve trang)
+		   de CSS ts-mobile.css ap dung tu frame dau tien. Truoc day class nay chi duoc ts-mobile.js gan sau khi
+		   bundle JS (~800KB gzip) tai + chay xong => nguoi dung thay layout desktop roi moi doi sang mobile. *}
+		<script type="text/javascript">{literal}
+		(function(){try{if(!(window.matchMedia&&window.matchMedia('(max-width: 767px)').matches))return;var c=document.documentElement.classList,m=window._META||{};c.add('tsm');var M={Leads:1,Potentials:1,Contacts:1,Accounts:1,Campaigns:1};if(M[m.module]&&m.parent!=='Settings'){c.add('tsm-mod');if(m.view==='List')c.add('tsm-list');}}catch(e){}})();
+		{/literal}</script>
 	</head>
 	 {assign var=CURRENT_USER_MODEL value=Users_Record_Model::getCurrentUserModel()}
 	<body data-skinpath="{Vtiger_Theme::getBaseThemePath()}" data-language="{$LANGUAGE}" data-user-decimalseparator="{$CURRENT_USER_MODEL->get('currency_decimal_separator')}" data-user-dateformat="{$CURRENT_USER_MODEL->get('date_format')}"

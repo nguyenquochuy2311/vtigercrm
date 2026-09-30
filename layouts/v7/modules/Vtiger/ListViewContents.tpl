@@ -51,7 +51,7 @@
 
 	<div id="table-content" class="table-container">
 		<form name='list' id='listedit' action='' onsubmit="return false;">
-			<table id="listview-table" class="table {if $LISTVIEW_ENTRIES_COUNT eq '0'}listview-table-norecords {/if} listview-table ">
+			<table id="listview-table" class="table {if $LISTVIEW_ENTRIES_COUNT eq '0'}listview-table-norecords {/if} listview-table tsm-cards">
 				<thead>
 					<tr class="listViewContentHeader">
 						<th>
@@ -149,6 +149,7 @@
 							<td class = "listViewRecordActions">
 								{include file="ListViewRecordActions.tpl"|vtemplate_path:$MODULE}
 							</td>
+							{assign var=TSM_TITLE_DONE value=0}
 							{if ($LISTVIEW_ENTRY->get('document_source') eq 'Google Drive' && $IS_GOOGLE_DRIVE_ENABLED) || ($LISTVIEW_ENTRY->get('document_source') eq 'Dropbox' && $IS_DROPBOX_ENABLED)}
 						<input type="hidden" name="document_source_type" value="{$LISTVIEW_ENTRY->get('document_source')}">
 					{/if}
@@ -159,7 +160,26 @@
 							{assign var=LISTVIEW_ENTRY_RAWVALUE value=$LISTVIEW_ENTRY->getTitle($LISTVIEW_HEADER)}
 						{/if}
 						{assign var=LISTVIEW_ENTRY_VALUE value=$LISTVIEW_ENTRY->get($LISTVIEW_HEADERNAME)}
-						<td class="listViewEntryValue" data-name="{$LISTVIEW_HEADER->get('name')}" title="{$LISTVIEW_ENTRY->getTitle($LISTVIEW_HEADER)}" data-rawvalue="{$LISTVIEW_ENTRY_RAWVALUE}" data-field-type="{$LISTVIEW_HEADER->getFieldDataType()}">
+						{* KIROS mobile: class + nhan cot cho the (card) render tu server -> CSS ts-mobile.css hien dung ngay,
+							   khong cho ts-mobile.js. Desktop khong bi anh huong (rule chi ap khi html.tsm). *}
+							{assign var=TSM_TYPE value=$LISTVIEW_HEADER->getFieldDataType()}
+							{assign var=TSM_CLS value=''}
+							{if $LISTVIEW_ENTRY_VALUE === '' || $LISTVIEW_ENTRY_VALUE === null}
+								{assign var=TSM_CLS value='tsm-empty'}
+							{elseif $TSM_TITLE_DONE eq 0 && ($LISTVIEW_HEADER->isNameField() eq true || $LISTVIEW_HEADER->get('uitype') eq '4') && $MODULE_MODEL->isListViewNameFieldNavigationEnabled() eq true}
+								{assign var=TSM_CLS value='tsm-title'}{assign var=TSM_TITLE_DONE value=1}
+							{elseif $LISTVIEW_HEADERNAME eq 'modifiedtime' || $LISTVIEW_HEADERNAME eq 'modifiedby'}
+								{assign var=TSM_CLS value='tsm-hide'}
+							{elseif $LISTVIEW_HEADERNAME eq 'createdtime'}
+								{assign var=TSM_CLS value='tsm-meta'}
+							{elseif $TSM_TYPE eq 'text'}
+								{assign var=TSM_CLS value='tsm-text tsm-wide'}
+							{elseif $TSM_TYPE eq 'phone'}
+								{assign var=TSM_CLS value='tsm-phone'}
+							{elseif $LISTVIEW_HEADERNAME eq 'leadstatus' || $LISTVIEW_HEADERNAME eq 'sales_stage'}
+								{assign var=TSM_CLS value='tsm-status'}
+							{/if}
+							<td class="listViewEntryValue {$TSM_CLS}" data-name="{$LISTVIEW_HEADER->get('name')}" title="{$LISTVIEW_ENTRY->getTitle($LISTVIEW_HEADER)}" data-rawvalue="{$LISTVIEW_ENTRY_RAWVALUE}" data-field-type="{$TSM_TYPE}" data-tsm-label="{vtranslate($LISTVIEW_HEADER->get('label'), $LISTVIEW_HEADER->getModuleName())}">
 							<span class="fieldValue">
 								<span class="value">
 									{if ($LISTVIEW_HEADER->isNameField() eq true or $LISTVIEW_HEADER->get('uitype') eq '4') and $MODULE_MODEL->isListViewNameFieldNavigationEnabled() eq true }

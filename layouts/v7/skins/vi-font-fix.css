@@ -112,3 +112,34 @@ a:has(> .module-icon) > .module-name {
   }
   #table-content .floatThead-wrapper { height: auto !important; }
 }
+
+/* --- Chu ro hon (desktop + mobile) ---------------------------------------------
+   Skin vtiger dat font-weight 100 / "lighter" cho nut, select2, nhan field... va
+   .fieldLabel opacity 0.8, placeholder #999. Sau khi map sang font he thong
+   (Segoe UI / Helvetica Neue / Roboto deu co ban Thin/Light) chu thanh net mang,
+   xam mo. Dua ve weight 400-600, mau dam hon (>= 4.5:1 tren nen trang). --- */
+.btn, .btn *, button.btn, .t-btn-sm { font-weight: 500 !important; }
+.btn.btn-success, .btn.btn-primary, .btn.btn-danger, .btn-success *, .btn-primary *, .btn-danger * { font-weight: 600 !important; }
+.btn-sm, .btn-group-sm > .btn, .t-btn-sm { font-size: 13px; }
+.select2-container .select2-choice,
+.select2-container .select2-choice .select2-chosen,
+.select2-container-multi .select2-choices .select2-search-choice { font-weight: 400 !important; color: #1f2937; }
+.select2-default .select2-chosen, .select2-container .select2-default .select2-chosen { color: #6b7280 !important; }
+.fieldLabel { opacity: 1 !important; color: #3d4b5c; }
+.fieldLabel label, td.fieldLabel label, .fieldLabel .muted { font-weight: 500 !important; }
+.importMappingTable thead tr th { font-weight: 600 !important; }
+input::placeholder, textarea::placeholder { color: #6b7280 !important; opacity: 1 !important; }
+input::-webkit-input-placeholder, textarea::-webkit-input-placeholder { color: #6b7280 !important; opacity: 1 !important; }
+.muted, .text-muted, small.muted, .mute { color: #4b5563 !important; }
+/* tieu de cot danh sach + phan trang */
+.listview-table tr.listViewContentHeader th,
+.listview-table tr.listViewContentHeader th a.listViewContentHeaderValues,
+.listview-table tr.listViewContentHeader th a.noSorting,
+.listViewHeaders, .relatedListHeaderValues, .relatedListHeader th { color: #1f2937 !important; font-weight: 600 !important; }
+.listview-table .listViewEntryValue .fieldValue, .listViewEntries .listViewEntryValue .value { color: #1f2937; }
+.pageNumbersText, .listview-pagination .pageNumbersText, .totalNumberOfRecords { color: #374151; font-weight: 500; }
+.toggleFilterSize { font-size: 12px; }
+/* header chi tiet / ten record */
+.recordLabel, .detailview-header .recordLabel { color: #111827; }
+.blockHeader, .fieldBlockHeader, .related-tabs .nav-tabs > li > a { font-weight: 600 !important; }
+
