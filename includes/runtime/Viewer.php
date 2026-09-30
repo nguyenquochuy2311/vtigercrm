@@ -218,7 +218,7 @@ function vresource_url($url) {
     global $vtiger_current_version;
     if (stripos($url, '://') === false) {
         // hậu tố cache-bust: tăng khi đổi JS/CSS để trình duyệt tải lại (giữ nguyên version thật)
-        $url = $url .'?v='.$vtiger_current_version.'.8';
+        $url = $url .'?v='.$vtiger_current_version.'.9';
     }
     return $url;
 }
@@ -256,7 +256,7 @@ function vcombine_js($files) {
         @file_put_contents($cacheFile . '.tmp', $buf);
         @rename($cacheFile . '.tmp', $cacheFile); // atomic, tránh phục vụ file dở
     }
-    return 'cache/jscombine/' . $key . '.js?v=' . $vtiger_current_version . '.8';
+    return 'cache/jscombine/' . $key . '.js?v=' . $vtiger_current_version . '.9';
 }
 
 /**

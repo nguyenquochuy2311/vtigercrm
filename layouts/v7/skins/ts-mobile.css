@@ -41,6 +41,12 @@
     display: flex !important; align-items: center; height: 42px; overflow: hidden;
   }
   html.tsm .module-breadcrumb > a { flex: 1 1 auto; min-width: 0; width: auto !important; max-width: none !important; overflow: hidden; }
+  /* The link around the title also holds two &nbsp; (desktop spacing after the title). Once the title is a block they drop onto a
+     line of their own: the link becomes ~60px tall and, centred in the 42px row, lifts the title ~9px above the icon square and the
+     menu button. Collapse them and pin the link to the row height so the title sits on the row's centre line. */
+  html.tsm .module-breadcrumb-List > a, html.tsm .module-breadcrumb-Detail > a, html.tsm .module-breadcrumb-Edit > a {
+    display: block; float: none !important; height: 42px; font-size: 0 !important; line-height: 0 !important;
+  }
   html.tsm .module-breadcrumb .module-title {
     float: none !important; display: block; width: auto !important; max-width: none !important; margin: 0 !important; padding-left: 10px;
     text-transform: none !important; font-size: 17px !important; font-weight: 600 !important;
