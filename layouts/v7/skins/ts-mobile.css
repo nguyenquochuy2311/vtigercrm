@@ -134,19 +134,20 @@
     font-size: 12.5px; line-height: 1.3; color: #4b5563; font-weight: 500;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  /* Field order on a card, from the attributes vtiger already renders (no JS needed):
-     phone, status, money, links, picklists, dates, owner, email, the rest; long text and "created" last */
-  html.tsm table.tsm-cards td.listViewEntryValue { order: 8; }
-  html.tsm table.tsm-cards td[data-field-type="email"] { order: 7; }
-  html.tsm table.tsm-cards td[data-field-type="owner"] { order: 6; }
-  html.tsm table.tsm-cards td[data-field-type="date"], html.tsm table.tsm-cards td[data-field-type="datetime"] { order: 5; }
-  html.tsm table.tsm-cards td[data-field-type="picklist"], html.tsm table.tsm-cards td[data-field-type="multipicklist"] { order: 4; }
-  html.tsm table.tsm-cards td[data-field-type="reference"], html.tsm table.tsm-cards td[data-field-type="multireference"] { order: 3; }
-  html.tsm table.tsm-cards td[data-field-type="currency"] { order: 2; }
-  html.tsm table.tsm-cards td.tsm-status { order: 1; }
+  /* Field order on a card = what staff look at first: customer name (title), time entered, phone, assignee, project, status, the rest.
+     Pure CSS from attributes vtiger already renders (data-name / data-field-type); no JS re-ordering after paint. */
+  html.tsm table.tsm-cards td.listViewEntryValue { order: 9; }
+  html.tsm table.tsm-cards td[data-field-type="email"] { order: 8; }
+  html.tsm table.tsm-cards td[data-field-type="date"], html.tsm table.tsm-cards td[data-field-type="datetime"] { order: 7; }
+  html.tsm table.tsm-cards td[data-field-type="picklist"], html.tsm table.tsm-cards td[data-field-type="multipicklist"] { order: 6; }
+  html.tsm table.tsm-cards td[data-field-type="reference"], html.tsm table.tsm-cards td[data-field-type="multireference"] { order: 5; }
+  html.tsm table.tsm-cards td[data-field-type="currency"] { order: 4; }
+  html.tsm table.tsm-cards td.tsm-status { order: 3; }
+  html.tsm table.tsm-cards td[data-name="cf_771"], html.tsm table.tsm-cards td[data-name="cf_775"], html.tsm table.tsm-cards td[data-name="cf_769"] { order: 2; }
+  html.tsm table.tsm-cards td[data-field-type="owner"] { order: 1; }
   html.tsm table.tsm-cards td[data-field-type="phone"] { order: 0; }
+  html.tsm table.tsm-cards td.tsm-meta { order: -5; }
   html.tsm table.tsm-cards td.tsm-text { order: 50; }
-  html.tsm table.tsm-cards td.tsm-meta { order: 60; }
   html.tsm table.tsm-cards td .fieldValue, html.tsm table.tsm-cards td .value {
     display: block; font-size: 14px; line-height: 1.35; color: var(--tsm-text);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;

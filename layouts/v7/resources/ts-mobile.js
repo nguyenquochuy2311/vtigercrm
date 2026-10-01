@@ -131,8 +131,8 @@
         if (!val) { td.classList.add('tsm-empty'); return; }
         if (!title && id && $('a[href*="record=' + id + '"]', td)) { title = td; td.classList.add('tsm-title'); return; }
         if (HIDE_ON_CARD[name]) { td.classList.add('tsm-hide'); return; }
-        if (META_FIELDS[name]) { td.classList.add('tsm-meta'); td.style.order = 60; return; }
-        if (type === 'text') { td.classList.add('tsm-text', 'tsm-wide'); td.style.order = 50; return; }
+        if (META_FIELDS[name]) { td.classList.add('tsm-meta'); return; }
+        if (type === 'text') { td.classList.add('tsm-text', 'tsm-wide'); return; }
         if (type === 'phone') { td.classList.add('tsm-phone'); addCall(td, val); }
         if (STATUS_FIELDS[name]) td.classList.add('tsm-status');
         candidates.push({ td: td, i: i, s: fieldScore(name, type) });
