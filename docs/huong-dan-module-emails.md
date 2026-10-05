@@ -2,7 +2,7 @@
 
 > **Phạm vi:** hướng dẫn này viết sau khi test module Emails ngày 05/10/2026 trên **bản local** (dữ liệu mẫu, SMTP giả — không có email nào gửi ra ngoài). Ảnh chụp từ bản local. Mục 9 liệt kê các lỗi phát hiện khi test; **đọc mục này trước khi cho nhân viên dùng thật**.
 >
-> **Cập nhật cùng ngày:** hai lỗi nặng nhất (#1 không có ô soạn nội dung, #2 gửi hàng loạt chỉ tới người cuối) đã được sửa trong code và kiểm tra lại trên bản local; **production cần triển khai bản sửa**.
+> **Cập nhật cùng ngày:** hai lỗi nặng nhất (#1 không có ô soạn nội dung, #2 gửi hàng loạt chỉ tới người cuối) đã được sửa trong code, kiểm tra lại trên bản local và **đã triển khai lên production (bản 7.4) ngày 05/10/2026**. Riêng gửi hàng loạt chưa thử được trên production vì production chưa cấu hình máy chủ gửi (mục 2).
 
 ## 1. Module Emails là gì?
 
@@ -97,7 +97,7 @@ Trong danh sách (vd. Khách hàng tiềm năng): tick các khách → bấm **T
 
 CRM gửi **một thư riêng cho từng người nhận**: mỗi người chỉ thấy địa chỉ của chính mình, và biến mẫu (`$leads-lastname$`…) trong chủ đề lẫn nội dung được thay theo đúng người đó. Cc/Bcc (nếu có) được gắn vào **mỗi** thư.
 
-> ✅ Đã sửa lỗi #2 ở mục 9 (trước đây chỉ người cuối danh sách nhận được thư). **Cần triển khai bản sửa lên production** mới có hiệu lực ở đó.
+> ✅ Đã sửa lỗi #2 ở mục 9 (trước đây chỉ người cuối danh sách nhận được thư) và đã triển khai lên production ngày 05/10/2026. Cần cấu hình máy chủ gửi (mục 2) thì mới gửi được.
 
 ### Khách "Từ chối nhận email"
 
@@ -132,8 +132,8 @@ Báo cáo → thư mục **Email Reports** có 4 báo cáo mẫu: Contacts / Lea
 
 | # | Mức độ | Hiện tượng | Nguyên nhân | Đề xuất |
 |---|---|---|---|---|
-| 1 | ✅ Đã sửa | **Không có ô soạn nội dung email** (khung soạn trống; cũng không sửa được nội dung mẫu email) | Từ khi gộp JS thành 1 file (commit `c56d04af`), trình soạn thảo CKEditor không còn tìm được thư mục của nó (`CKEDITOR.basePath` thành `/`). Đã xác nhận: khai báo `CKEDITOR_BASEPATH` thì editor hiện bình thường. Production dùng cùng cơ chế gộp JS và không khai báo → **rất có thể lỗi y hệt** (chưa đăng nhập production để xem trực tiếp) | **Đã sửa:** khai báo `window.CKEDITOR_BASEPATH` trong [Header.tpl](../layouts/v7/modules/Vtiger/Header.tpl) trước bundle. Đã kiểm tra lại: editor `ready` ở hộp soạn email và trang sửa mẫu. Chờ triển khai production |
-| 2 | ✅ Đã sửa | Gửi hàng loạt: CRM ghi "đã gửi cho N người", nhưng SMTP chỉ nhận **1 thư (người cuối)** | [Record.php:84-104](../modules/Emails/models/Record.php): biến `$emails` bị gán lại rỗng mỗi vòng lặp → chỉ giữ người nhận cuối. Là **lỗi có sẵn trong mã gốc vtiger 7.4.0** (file chỉ khác bản gốc 1 chữ `static`) | **Đã sửa:** `send()` trong [Record.php](../modules/Emails/models/Record.php) gửi một thư riêng cho từng người. Kiểm tra lại: chọn 3 khách → 3 thư riêng, mỗi thư chỉ gửi cho 1 người, chủ đề/nội dung mang đúng tên người đó. Chờ triển khai production |
+| 1 | ✅ Đã sửa | **Không có ô soạn nội dung email** (khung soạn trống; cũng không sửa được nội dung mẫu email) | Từ khi gộp JS thành 1 file (commit `c56d04af`), trình soạn thảo CKEditor không còn tìm được thư mục của nó (`CKEDITOR.basePath` thành `/`). Đã xác nhận: khai báo `CKEDITOR_BASEPATH` thì editor hiện bình thường. Production dùng cùng cơ chế gộp JS và không khai báo nên cũng bị lỗi y hệt | **Đã sửa:** khai báo `window.CKEDITOR_BASEPATH` trong [Header.tpl](../layouts/v7/modules/Vtiger/Header.tpl) trước bundle. Đã kiểm tra lại trên bản local: editor `ready` ở hộp soạn email và trang sửa mẫu. **Đã triển khai production 05/10/2026** (trang đăng nhập bản 7.4 đã có khai báo; chưa mở hộp soạn trên production để xem trực tiếp) |
+| 2 | ✅ Đã sửa | Gửi hàng loạt: CRM ghi "đã gửi cho N người", nhưng SMTP chỉ nhận **1 thư (người cuối)** | Trong `send()` của [Record.php](../modules/Emails/models/Record.php) (trước khi sửa): biến `$emails` bị gán lại rỗng mỗi vòng lặp → chỉ giữ người nhận cuối. Là **lỗi có sẵn trong mã gốc vtiger 7.4.0** (file chỉ khác bản gốc 1 chữ `static`) | **Đã sửa:** `send()` trong [Record.php](../modules/Emails/models/Record.php) gửi một thư riêng cho từng người. Kiểm tra lại: chọn 3 khách → 3 thư riêng, mỗi thư chỉ gửi cho 1 người, chủ đề/nội dung mang đúng tên người đó. **Đã triển khai production 05/10/2026**; chưa thử gửi thật trên production vì chưa có máy chủ gửi |
 | 3 | 🟠 TB | Báo cáo Email Reports luôn 0 dòng | Cần bật theo dõi email (`$email_tracking = 'Yes'` trong `config.inc.php`), màn *Trình chỉnh sửa cấu hình* của bản này **không có** tuỳ chọn này. Ngoài ra link theo dõi dạng `domain//shorturl.php` (2 dấu `/`) bị server PHP tích hợp trả về **trang đăng nhập** (đã thử trên production: `//shorturl.php` → trang đăng nhập 15 KB, `/shorturl.php` → đúng handler) → bật theo dõi thì **link trong email cũng hỏng** | **Đừng bật theo dõi** cho đến khi sửa đường dẫn `shorturl.php` |
 | 4 | 🟠 TB | Production **chưa cấu hình máy chủ gửi** | Bảng cấu hình trống ở cả bản cũ và mới | Admin cấu hình theo mục 2 |
 | 5 | 🟡 Thấp | Phần **văn bản thuần** (text/plain) của email bị mất dấu, vd. "Nguya>>n VAn An" | Hàm `convertToAscii` của vtiger cố ý chuyển sang ASCII. Phần HTML (cái hầu hết khách xem) **vẫn đúng tiếng Việt** | Giữ UTF-8 cho phần văn bản thuần |
