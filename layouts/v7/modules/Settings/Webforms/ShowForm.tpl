@@ -122,7 +122,7 @@
 						<input type="hidden" id="captchaUrl" value="{$CAPTCHA_PATH}">
 						<input type="hidden" id="recaptcha_validation_value" >
 					{/if}
-					<input type="submit" value="Submit" ></input>
+					<input type="submit" value="{vtranslate('LBL_WEBFORM_SUBMIT', $QUALIFIED_MODULE)}" ></input>
 				</form>
 				</pre>
 			</code>
