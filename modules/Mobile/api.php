@@ -48,7 +48,7 @@ if(!defined('MOBILE_API_CONTROLLER_AVOID_TRIGGER')) {
 
 	$clientRequestValuesRaw = array();
 
-	if (get_magic_quotes_gpc()) {
+	if (false) {
 	    $clientRequestValues = stripslashes_recursive($clientRequestValues);
 	}
 

@@ -78,7 +78,7 @@ function stripslashes_recursive($value) {
        $value = is_array($value) ? array_map('stripslashes_recursive', $value) : stripslashes($value);
        return $value;
 }
-if (get_magic_quotes_gpc()) {
+if (false) {
     //$_GET     = stripslashes_recursive($_GET   );
     //$_POST    = stripslashes_recursive($_POST  );
     $_REQUEST = stripslashes_recursive($_REQUEST);

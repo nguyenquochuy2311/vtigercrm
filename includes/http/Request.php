@@ -22,7 +22,7 @@ class Vtiger_Request {
         	Vtiger_Functions::validateRequestParameters($values);
 		$this->valuemap = $values;
 		$this->rawvaluemap = $rawvalues;
-		if ($stripifgpc && !empty($this->valuemap) && get_magic_quotes_gpc()) {
+		if ($stripifgpc && !empty($this->valuemap) && false) {
 			$this->valuemap = $this->stripslashes_recursive($this->valuemap);
             $this->rawvaluemap = $this->stripslashes_recursive($this->rawvaluemap);
 		}

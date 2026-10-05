@@ -86,7 +86,7 @@ function stripslashes_recursive($value) {
 }
 
 $clientRequestValues = $_POST;
-if (get_magic_quotes_gpc()) {
+if (false) {
 	$clientRequestValues = stripslashes_recursive($clientRequestValues);
 }
 
