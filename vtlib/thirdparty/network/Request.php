@@ -798,7 +798,7 @@ class HTTP_Request
                 $this->_url = new Net_URL($redirect);
                 $this->addHeader('Host', $this->_generateHostHeader());
             // Absolute path
-            } elseif ($redirect{0} == '/') {
+            } elseif ($redirect[0] == '/') {
                 $this->_url->path = $redirect;
 
             // Relative path
@@ -966,7 +966,7 @@ class HTTP_Request
             // "normal" POST request
             if (!isset($boundary)) {
                 $postdata = implode('&', array_map(
-                    create_function('$a', 'return $a[0] . \'=\' . $a[1];'),
+                    function($a) { return $a[0] . '=' . $a[1]; },
                     $this->_flattenArray('', $this->_postData)
                 ));
 
