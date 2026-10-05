@@ -849,7 +849,7 @@ if (!defined('_ADODB_LAYER')) {
 	 * Requested by "Karsten Dambekalns" <k.dambekalns@fishfarm.de>
 	 */
 	function QMagic($s) {
-		return $this->qstr($s,get_magic_quotes_gpc());
+		return $this->qstr($s,false);
 	}
 
 	function q(&$s) {
@@ -1164,7 +1164,7 @@ if (!defined('_ADODB_LAYER')) {
 				foreach($inputarr as $arr) {
 					$sql = ''; $i = 0;
 					//Use each() instead of foreach to reduce memory usage -mikefedyk
-					while(list(, $v) = each($arr)) {
+					foreach($arr as $v) {
 						$sql .= $sqlarr[$i];
 						// from Ron Baldwin <ron.baldwin#sourceprose.com>
 						// Only quote string types
@@ -2956,7 +2956,7 @@ http://www.stanford.edu/dept/itss/docs/oracle/10g/server.101/b10759/statements_1
 	 * An example is  $db->qstr("Don't bother",magic_quotes_runtime());
 	 *
 	 * @param s			the string to quote
-	 * @param [magic_quotes]	if $s is GET/POST var, set to get_magic_quotes_gpc().
+	 * @param [magic_quotes]	if $s is GET/POST var, set to false.
 	 *				This undoes the stupidity of magic quotes for GPC.
 	 *
 	 * @return  quoted string to be sent back to database
