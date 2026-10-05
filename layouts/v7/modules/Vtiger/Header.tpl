@@ -57,6 +57,10 @@
 		<script type="text/javascript">var __pageCreationTime = (new Date()).getTime();</script>
 		<script src="{vresource_url('layouts/v7/lib/jquery/jquery.min.js')}"></script>
 		<script src="{vresource_url('layouts/v7/lib/jquery/jquery-migrate-1.4.1.js')}"></script>
+		{* CKEditor nam trong bundle JS gop (cache/jscombine/*.js) nen khong tu suy ra duoc thu muc cua no: basePath thanh "/"
+		   => editor khong khoi tao (status "unloaded"), khung soan email / sua mau email bi trong. Khai bao ro thu muc
+		   (duong dan tuong doi so voi trang index.php) truoc khi bundle chay. *}
+		<script type="text/javascript">window.CKEDITOR_BASEPATH = "libraries/jquery/ckeditor/";</script>
 		<script type="text/javascript">
 			var _META = { 'module': "{$MODULE}", view: "{$VIEW}", 'parent': "{$PARENT_MODULE}", 'notifier':"{$NOTIFIER_URL}", 'app':"{$SELECTED_MENU_CATEGORY}" };
             {if $EXTENSION_MODULE}
