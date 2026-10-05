@@ -79,33 +79,32 @@ class Emails_Record_Model extends Vtiger_Record_Model {
 		// Merge Users module merge tags based on current user.
 		$mergedDescription = getMergedDescription($this->get('description'), $currentUserModel->getId(), 'Users');
 		$mergedSubject = getMergedDescription($this->get('subject'),$currentUserModel->getId(), 'Users');
-                $selectedIds = array();
-        
-        // push all emails to one single array
-		foreach($toEmailInfo as $selectedId => $selectedEmails) {
-            
-            // Pushing all ids to one single array
-            if($selectedId){
-                array_push($selectedIds,$selectedId);
-            }
-            
-            // If selected emails is not an array, then make it as array
-            if(!is_array($selectedEmails)){
-                $selectedEmails = array($selectedEmails);
-            }
-            
-            // For selectedEmails check and push to emails array
-            foreach($selectedEmails as $selectedEmail){
-                $emails=array();
-                if(trim($selectedEmail)){
-                    array_push($emails, $selectedEmail);
-                }
-            }
-        }
-        
-			$inReplyToMessageId = ''; 
+		$sendStatus = true;
+
+		// Gửi MỘT thư riêng cho từng bản ghi được chọn (và từng địa chỉ nhập tay).
+		// Bản gốc vtiger 7.4.0 gán lại $emails = array() ở mỗi vòng lặp nên chỉ người cuối nhận được thư,
+		// đồng thời biến mẫu ($leads-lastname$...) và link theo dõi lấy theo $id của người cuối cho tất cả.
+		foreach($toEmailInfo as $id => $selectedEmails) {
+			// If selected emails is not an array, then make it as array
+			if(!is_array($selectedEmails)){
+				$selectedEmails = array($selectedEmails);
+			}
+
+			$emails = array();
+			foreach($selectedEmails as $selectedEmail){
+				if(trim($selectedEmail)){
+					array_push($emails, $selectedEmail);
+				}
+			}
+			if(empty($emails)){
+				continue;
+			}
+
+			$logo = false;
+			$inReplyToMessageId = '';
 			$generatedMessageId = '';
 			$mailer->reinitialize();
+			$mailer->MessageID = '';
 			$mailer->ConfigSenderInfo($fromEmail, $userName, $replyTo);
 			$old_mod_strings = vglobal('mod_strings');
 			$description = $this->get('description');
@@ -243,7 +242,13 @@ class Emails_Record_Model extends Vtiger_Record_Model {
 					imap_append($connector->mBox, $connector->mBoxUrl.$folderName, $message, "\\Seen");
 				}
 			}
-		return $status;
+
+			// Giữ lại lỗi đầu tiên nhưng vẫn tiếp tục gửi cho những người còn lại
+			if($status !== true && $sendStatus === true) {
+				$sendStatus = $status;
+			}
+		}
+		return $sendStatus;
 	}
 
 	/**
