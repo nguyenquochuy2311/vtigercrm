@@ -49,9 +49,10 @@
 		{include file="ListViewActions.tpl"|vtemplate_path:$MODULE}
 	{/if}
 
+	{assign var=TSM_ON value=0}{if $MODULE eq 'Leads' || $MODULE eq 'Potentials' || $MODULE eq 'Contacts' || $MODULE eq 'Accounts' || $MODULE eq 'Campaigns'}{assign var=TSM_ON value=1}{/if}
 	<div id="table-content" class="table-container">
 		<form name='list' id='listedit' action='' onsubmit="return false;">
-			<table id="listview-table" class="table {if $LISTVIEW_ENTRIES_COUNT eq '0'}listview-table-norecords {/if} listview-table tsm-cards">
+			<table id="listview-table" class="table {if $LISTVIEW_ENTRIES_COUNT eq '0'}listview-table-norecords {/if} listview-table{if $MODULE eq 'Leads' || $MODULE eq 'Potentials' || $MODULE eq 'Contacts' || $MODULE eq 'Accounts' || $MODULE eq 'Campaigns'} tsm-cards{/if}">
 				<thead>
 					<tr class="listViewContentHeader">
 						<th>
@@ -164,6 +165,7 @@
 							   khong cho ts-mobile.js. Desktop khong bi anh huong (rule chi ap khi html.tsm). *}
 							{assign var=TSM_TYPE value=$LISTVIEW_HEADER->getFieldDataType()}
 							{assign var=TSM_CLS value=''}
+							{if $TSM_ON eq 1}
 							{if $LISTVIEW_ENTRY_VALUE === '' || $LISTVIEW_ENTRY_VALUE === null}
 								{assign var=TSM_CLS value='tsm-empty'}
 							{elseif $TSM_TITLE_DONE eq 0 && ($LISTVIEW_HEADER->isNameField() eq true || $LISTVIEW_HEADER->get('uitype') eq '4') && $MODULE_MODEL->isListViewNameFieldNavigationEnabled() eq true}
@@ -179,7 +181,8 @@
 							{elseif $LISTVIEW_HEADERNAME eq 'leadstatus' || $LISTVIEW_HEADERNAME eq 'sales_stage'}
 								{assign var=TSM_CLS value='tsm-status'}
 							{/if}
-							<td class="listViewEntryValue {$TSM_CLS}" data-name="{$LISTVIEW_HEADER->get('name')}" title="{$LISTVIEW_ENTRY->getTitle($LISTVIEW_HEADER)}" data-rawvalue="{$LISTVIEW_ENTRY_RAWVALUE}" data-field-type="{$TSM_TYPE}" data-tsm-label="{vtranslate($LISTVIEW_HEADER->get('label'), $LISTVIEW_HEADER->getModuleName())}">
+							{/if}
+							<td class="listViewEntryValue {$TSM_CLS}" data-name="{$LISTVIEW_HEADER->get('name')}" title="{$LISTVIEW_ENTRY->getTitle($LISTVIEW_HEADER)}" data-rawvalue="{$LISTVIEW_ENTRY_RAWVALUE}" data-field-type="{$TSM_TYPE}" {if $TSM_ON eq 1} data-tsm-label="{vtranslate($LISTVIEW_HEADER->get('label'), $LISTVIEW_HEADER->getModuleName())}"{/if}>
 							<span class="fieldValue">
 								<span class="value">
 									{if ($LISTVIEW_HEADER->isNameField() eq true or $LISTVIEW_HEADER->get('uitype') eq '4') and $MODULE_MODEL->isListViewNameFieldNavigationEnabled() eq true }

@@ -147,6 +147,8 @@
   html.tsm table.tsm-cards td[data-field-type="owner"] { order: 1; }
   html.tsm table.tsm-cards td[data-field-type="phone"] { order: 0; }
   html.tsm table.tsm-cards td.tsm-meta { order: -5; }
+  /* Dat coc - Giu cho: ten khach (Ten lien he) ngay duoi tieu de, nhu "ten khach" cua Khach hang tiem nang */
+  html.tsm table.tsm-cards td[data-name="contact_id"] { order: -4; grid-column: 1 / -1; }
   html.tsm table.tsm-cards td.tsm-text { order: 50; }
   html.tsm table.tsm-cards td .fieldValue, html.tsm table.tsm-cards td .value {
     display: block; font-size: 14px; line-height: 1.35; color: var(--tsm-text);
