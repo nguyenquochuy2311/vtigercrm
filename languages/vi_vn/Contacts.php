@@ -25,7 +25,7 @@ $languageStrings = array(
 	'LBL_COPY_MAILING_ADDRESS' => "Sao chép địa chỉ gửi thư",
 
 	//Field Labels
-	'Office Phone' => "Điện thoại văn phòng",
+	'Office Phone' => "Điện thoại chính",
 	'Home Phone' => "Điện thoại nhà",
 	'Title' => "Tiêu đề",
 	'Department' => "Phòng",
