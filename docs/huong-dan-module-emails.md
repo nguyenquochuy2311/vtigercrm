@@ -1,147 +1,248 @@
-# Hướng dẫn module Emails (gửi email trong CRM)
+# Hướng dẫn sử dụng module Emails
 
-> **Phạm vi:** hướng dẫn này viết sau khi test module Emails ngày 05/10/2026 trên **bản local** (dữ liệu mẫu, SMTP giả — không có email nào gửi ra ngoài). Ảnh chụp từ bản local. Mục 9 liệt kê các lỗi phát hiện khi test; **đọc mục này trước khi cho nhân viên dùng thật**.
->
-> **Cập nhật cùng ngày:** hai lỗi nặng nhất (#1 không có ô soạn nội dung, #2 gửi hàng loạt chỉ tới người cuối) đã được sửa trong code, kiểm tra lại trên bản local và **đã triển khai lên production (bản 7.4) ngày 05/10/2026**. Riêng gửi hàng loạt chưa thử được trên production vì production chưa cấu hình máy chủ gửi (mục 2).
+Tài liệu mô tả **chức năng chính** của module Emails trong CRM và cách dùng từng chức năng. Ảnh chụp từ lần **chạy thật** ngày 05/10/2026 trên bản 7.4 (code đã có các bản sửa mới nhất), dùng dữ liệu mẫu và một máy chủ SMTP thử nghiệm — **không có email nào gửi tới khách thật**. Cách thao tác trên production giống hệt, nhưng production cần được cấu hình máy chủ gửi trước (mục 3).
+
+**Mục lục:** 1. Module Emails là gì · 2. Chức năng chính · 3. Chuẩn bị (admin) · 4. Tìm chức năng ở đâu · 5. Mẫu email · 6. Gửi email cho một khách · 7. Xem lịch sử email · 8. Gửi hàng loạt · 9. Khách từ chối nhận email · 10. Bản nháp · 11. Báo cáo Email Reports · 12. Trình quản lý thư · 13. Quyền sử dụng · 14. Lưu ý và hạn chế đã biết
+
+---
 
 ## 1. Module Emails là gì?
 
-Emails **không phải hộp thư**. Đây là công cụ **gửi email từ chính hồ sơ khách hàng** và **lưu lại lịch sử** vào hồ sơ đó:
+Module Emails giúp nhân viên **gửi email cho khách ngay từ hồ sơ khách trong CRM** và **tự lưu lại mọi email đã gửi** vào hồ sơ đó. Nhờ vậy cả nhóm biết khách đã được gửi gì, lúc nào, bởi ai — không phải tìm trong hộp thư cá nhân của từng người.
 
 ```
-Mở hồ sơ khách (KH tiềm năng / KH đã giao dịch …)
-   → bấm "Gửi Email" → soạn (hoặc chọn mẫu) → Gửi
+Hồ sơ khách (KH tiềm năng / KH đã giao dịch …)
+   → bấm "Gửi Email" → soạn thư (hoặc chọn mẫu có sẵn) → Gửi
    → CRM gửi qua máy chủ SMTP của công ty
-   → email được lưu ở tab "Email" của hồ sơ + dùng cho báo cáo
+   → thư được lưu ở tab "Email" của hồ sơ khách
 ```
 
-Gồm các chức năng:
+Module này **không phải hộp thư** để đọc thư đến. Việc đọc thư đến do *Trình quản lý thư* đảm nhiệm (mục 12). Các email **tự động** (ví dụ chúc mừng sinh nhật) do *Quy trình làm việc (workflow)* gửi, cũng được ghi nhận vào module này.
 
-| Chức năng | Dùng để |
-|---|---|
-| Gửi email từ hồ sơ | Gửi 1 email cho 1 khách, có lưu lịch sử |
-| Mẫu email (Email Templates) | Soạn sẵn nội dung, tự điền tên/SĐT khách |
-| Gửi hàng loạt | Chọn nhiều khách trong danh sách rồi gửi một lượt |
-| Từ chối nhận email | Đánh dấu khách không muốn nhận → CRM tự bỏ qua |
-| Bản nháp | Lưu email chưa gửi |
-| Báo cáo Email Reports | Thống kê khách đã **mở** email (cần bật theo dõi) |
+## 2. Chức năng chính
 
-**Không nhầm với:** *Trình quản lý thư (MailManager)* — đọc hộp thư đến qua IMAP (server production hiện không hỗ trợ IMAP nên chưa dùng được); và các email **workflow** tự động (vd. chúc mừng sinh nhật).
+| # | Chức năng | Dùng để | Mục |
+|---|---|---|---|
+| 1 | **Gửi email từ hồ sơ khách** | Gửi 1 email cho 1 khách, có Cc/Bcc, đính kèm, chữ ký | 6 |
+| 2 | **Mẫu email** | Soạn sẵn nội dung có biến tự điền tên, số điện thoại khách | 5 |
+| 3 | **Lịch sử email** | Xem lại mọi email đã gửi/nháp ngay trong hồ sơ khách; Trả lời / Chuyển tiếp / In | 7 |
+| 4 | **Gửi hàng loạt** | Chọn nhiều khách trong danh sách rồi gửi một lượt, mỗi người một thư riêng | 8 |
+| 5 | **Từ chối nhận email** | Đánh dấu khách không muốn nhận → CRM tự bỏ qua khi gửi hàng loạt | 9 |
+| 6 | **Bản nháp** | Lưu email chưa gửi để làm tiếp sau | 10 |
+| 7 | **Báo cáo Email Reports** | Thống kê khách đã mở email (cần bật theo dõi) | 11 |
+| 8 | **Trình quản lý thư** | Đọc thư đến, tạo công việc/phiếu từ thư (cần IMAP) | 12 |
 
-> Ngày 05/10/2026 module Emails đã được **bật lại** trên production (trước đó bị tắt từ bản cũ nên báo cáo Email Reports báo "Bị từ chối quyền").
+---
 
-## 2. Việc cần làm trước khi dùng: cấu hình máy chủ gửi (admin)
+## 3. Chuẩn bị: cấu hình máy chủ gửi (admin, làm một lần)
 
-> ⚠️ **Production chưa cấu hình máy chủ gửi** (bảng cấu hình trống, bản cũ cũng vậy). Chưa cấu hình thì CRM **không gửi được email**.
+> ⚠️ **Production hiện chưa cấu hình máy chủ gửi** (cả bản cũ và mới đều chưa từng cấu hình). Chưa cấu hình thì CRM **không gửi được email**.
 
 Cài đặt (⚙) → **Cấu hình** → **Máy chủ gửi**:
 
-![Máy chủ gửi](images/emails-01-may-chu-gui.png)
+![Cài đặt máy chủ gửi](images/emails-01-may-chu-gui.png)
 
 | Ô | Điền gì |
 |---|---|
-| Tên máy chủ | Địa chỉ SMTP (vd. `smtp.gmail.com`, kèm cổng nếu cần). Có thể chọn nhanh Gmail/Yahoo/Office365 ở ô *Loại máy chủ* |
-| Tên người dùng / Mật khẩu | Tài khoản SMTP, bật **Yêu cầu xác thực** nếu máy chủ đòi |
-| Email người gửi | Địa chỉ hiện ở "From". Để trống thì dùng email của người đang gửi |
+| Loại máy chủ | Chọn nhanh Gmail / Yahoo / Office365, hoặc để trống nếu dùng máy chủ riêng |
+| Tên máy chủ | Địa chỉ SMTP, kèm cổng nếu cần (vd. `smtp.congty.vn:587`) |
+| Tên người dùng, Mật khẩu | Tài khoản SMTP; bật **Yêu cầu xác thực** nếu máy chủ đòi |
+| Email người gửi | Địa chỉ hiện ở dòng "Từ" của thư khách nhận. Để trống thì dùng email của người đang gửi |
 
-Khi bấm **Lưu**, CRM **tự gửi một thư kiểm tra** tới email của bạn ("Test mail about the mail server configuration") — nhận được thư là cấu hình đúng.
+Bấm **Lưu**: CRM **tự gửi một thư kiểm tra** tới email của bạn ("Test mail about the mail server configuration"). Nhận được thư là cấu hình đúng.
 
-## 3. Gửi email cho một khách
+## 4. Tìm chức năng ở đâu?
 
-1. Mở hồ sơ khách (vd. *Khách hàng tiềm năng* → bấm tên khách). Khách phải có **Email chính**.
-2. Bấm **Gửi Email**.
+- **Nút "Gửi Email"**: trong trang chi tiết của khách, và trong menu **Thêm** ở trang danh sách (khi đã tick khách).
+- **Mẫu email**: bấm biểu tượng ☰ (góc trên trái) → **CÔNG CỤ** → **Mẫu email**.
+- **Trình quản lý thư**: cũng trong menu ☰, ngay dưới các nhóm chức năng.
+- **Lịch sử email**: tab có biểu tượng phong bì ✉ trong hồ sơ khách.
+- **Báo cáo email**: **Báo cáo** → thư mục **Báo cáo email**.
 
-![Chi tiết khách hàng](images/emails-02-chi-tiet-khach-hang.png)
+![Menu Công cụ có Mẫu email](images/emails-02-menu-cong-cu.png)
 
-3. Hộp **Soạn email** mở ra, ô **ĐẾN** tự điền email khách. Nhập **Chủ thể** và nội dung. Có thể **Thêm Cc / Thêm Bcc**, **đính kèm tệp** (từ máy hoặc *Duyệt qua CRM*), tick/bỏ **Bao gồm chữ ký**.
+---
 
-![Soạn email](images/emails-03-soan-email.png)
+## 5. Mẫu email
 
-4. Bấm **Gửi Email**. Hộp thoại **"Đã gửi thư thành công"** hiện ra.
+Mẫu email là nội dung soạn sẵn dùng đi dùng lại. Điểm hay nhất là **biến**: CRM tự thay bằng thông tin của từng khách khi gửi.
 
-![Kết quả gửi](images/emails-04-ket-qua-gui.png)
+**Xem các mẫu:** ☰ → CÔNG CỤ → **Mẫu email**. CRM có sẵn các mẫu của vtiger (đều bằng **tiếng Anh**); nên tạo mẫu tiếng Việt riêng.
 
-5. Email được lưu ở tab **Email** (biểu tượng phong bì, kèm số lượng) của hồ sơ, trạng thái **Đã gửi**:
+![Danh sách mẫu email](images/emails-03-danh-sach-mau-email.png)
 
-![Tab Email](images/emails-05-tab-email.png)
+**Tạo mẫu mới:** bấm **Thêm mẫu email**.
 
-Ghi chú:
+![Soạn mẫu email](images/emails-04-soan-mau-email.png)
+
+| Ô | Ý nghĩa |
+|---|---|
+| Tên mẫu (*) | Tên để nhân viên chọn khi gửi |
+| Sự miêu tả | Ghi chú về mục đích mẫu |
+| Chọn Mô-đun & Trường | Chọn mô-đun mẫu áp dụng (vd. Khách hàng tiềm năng) và danh sách trường để lấy biến |
+| Chủ thể (*) | Tiêu đề thư — cũng dùng được biến |
+| Khung soạn thảo | Nội dung thư; có thanh định dạng (đậm, nghiêng, màu, bảng, ảnh, liên kết, mã HTML…) |
+
+**Biến** có dạng `$mô-đun-trường$`, ví dụ:
+
+| Biến | Thay bằng |
+|---|---|
+| `$leads-lastname$` | Tên khách hàng tiềm năng |
+| `$leads-phone$` | Số điện thoại khách hàng tiềm năng |
+| `$contacts-lastname$` | Tên khách hàng đã giao dịch |
+
+> **Quan trọng:** biến phải đúng mô-đun. Mẫu dùng `$leads-…$` thì chỉ gửi cho *Khách hàng tiềm năng*; gửi cho khách thuộc mô-đun khác thì biến **không được thay**. CRM có nhắc điều này khi bạn chọn mẫu.
+
+Bấm **Lưu** để xem chi tiết mẫu:
+
+![Chi tiết mẫu email](images/emails-05-chi-tiet-mau-email.png)
+
+---
+
+## 6. Gửi email cho một khách
+
+**Bước 1 — Mở hồ sơ khách** (vd. *Khách hàng tiềm năng* → bấm tên khách) rồi bấm **Gửi Email**. Khách cần có *Email chính*.
+
+![Nút Gửi Email](images/emails-06-nut-gui-email.png)
+
+**Bước 2 — Hộp "Soạn email"** mở ra, ô **ĐẾN** tự điền email khách.
+
+![Hộp soạn email](images/emails-07-hop-soan-email.png)
+
+| Ô | Cách dùng |
+|---|---|
+| **ĐẾN** | Đã có người nhận. Muốn thêm người khác: gõ thẳng địa chỉ email vào ô rồi nhấn **Enter** (đã thử). Bên phải còn có biểu tượng kính lúp để chọn người nhận từ CRM (chưa thử) |
+| **Thêm Cc / Thêm Bcc** | Hiện ô Cc/Bcc; nhập nhiều địa chỉ cách nhau bằng dấu phẩy |
+| **Chủ thể** | Tiêu đề thư (bắt buộc) |
+| **Tệp đính kèm** | *Choose File* chọn tệp từ máy, hoặc *Duyệt qua CRM* chọn từ mô-đun Tài liệu |
+| **Chọn mẫu email** | Điền sẵn chủ thể và nội dung từ một mẫu |
+| **Bao gồm chữ ký** | Tick để chèn chữ ký cá nhân của bạn vào cuối thư |
+| **Khung soạn thảo** | Gõ nội dung như trong Word |
+
+**Bước 3 — (Tuỳ chọn) Chọn mẫu email.** Bấm **Chọn mẫu email** → bấm vào dòng mẫu muốn dùng.
+
+![Chọn mẫu email](images/emails-08-chon-mau-email.png)
+
+Sau khi chọn, chủ thể và nội dung được điền sẵn; bạn vẫn **sửa/ thêm** tuỳ ý. Dưới đây là ví dụ đã thêm Cc và gõ thêm dòng "P/S":
+
+![Soạn email có mẫu và Cc](images/emails-09-soan-email-co-mau-cc.png)
+
+> Trong ô soạn, biến vẫn hiện nguyên dạng (`$leads-lastname$`). **Khi gửi mới được thay bằng thông tin thật** của khách.
+
+**Bước 4 — Bấm Gửi Email.** Hộp thoại **"Đã gửi thư thành công"** hiện ra.
+
+![Kết quả gửi](images/emails-10-ket-qua-gui.png)
+
+**Khách nhận được** thư như sau (đây là thư thật bắt được ở máy chủ thử nghiệm): biến đã được thay đúng tên và số điện thoại, có người Cc, và khi khách bấm *Trả lời* thì thư về email của nhân viên gửi.
+
+![Thư khách nhận được](images/emails-13-khach-nhan-duoc.png)
+
+Lưu ý:
 - Khách **không có email**: hộp soạn vẫn mở nhưng ô ĐẾN trống, phải nhập tay.
-- Thư gửi đi có **From** là "Tên người gửi" + *Email người gửi* đã cấu hình, và **Reply-To** là email của chính người gửi → khách bấm Trả lời sẽ về hộp thư của nhân viên.
+- Thư gửi đi có **Từ** là *Email người gửi* đã cấu hình ở mục 3 và **Reply-To** là email của nhân viên.
 
-## 4. Mẫu email (soạn một lần, dùng nhiều lần)
+---
 
-**Tạo mẫu:** menu **Công cụ → Mẫu email** (hoặc `Mẫu Email`) → **Thêm mẫu email**.
+## 7. Xem lịch sử email
 
-![Sửa mẫu email](images/emails-07-sua-mau-email.png)
+Mọi email gửi từ CRM được lưu ở tab **Email** (biểu tượng phong bì, kèm số lượng) trong hồ sơ khách.
 
-- **Chọn Mô-đun & Trường:** chọn mô-đun mẫu áp dụng (vd. Khách hàng tiềm năng) rồi chọn trường để chèn **biến** vào nội dung.
-- Biến có dạng `$leads-lastname$` (tên), `$leads-phone$` (SĐT) — viết đúng theo mô-đun: KH tiềm năng dùng `$leads-…$`, KH đã giao dịch dùng `$contacts-…$`. **Biến sai mô-đun sẽ không được thay** (CRM cũng cảnh báo điều này khi bạn chọn mẫu).
-- Biến dùng được ở cả **Chủ đề** lẫn **nội dung**.
+![Tab Email](images/emails-11-tab-email.png)
 
-**Dùng mẫu khi soạn email:** trong hộp Soạn email bấm **Chọn mẫu email** → chọn mẫu.
+| Cột | Ý nghĩa |
+|---|---|
+| Tên người gửi | Nhân viên đã gửi |
+| Chủ đề | Tiêu đề thư |
+| Hồ sơ phụ huynh | Thực chất là **hồ sơ liên quan** — khách mà thư thuộc về (tên chưa dịch chuẩn) |
+| Ngày gửi, Thời gian đã gửi | Lúc gửi |
+| Access Count / Click Count | Số lần khách **mở** thư / **bấm liên kết** (luôn là 0 nếu chưa bật theo dõi, mục 11) |
+| Trạng thái | **Đã gửi** hoặc **Nháp** |
 
-![Chọn mẫu email](images/emails-06-chon-mau-email.png)
+**Bấm vào chủ đề** để xem nội dung thư. Có 3 nút: **Trả lời**, **Phía trước** (nghĩa là *Chuyển tiếp*, tên chưa dịch chuẩn) và **In**.
 
-> Trong ô soạn, biến vẫn hiện dạng `$leads-lastname$`. **Khi gửi mới được thay thành giá trị thật** — đã kiểm tra: thư gửi đi có chủ đề "Chào Nguyễn Văn An, …" và nội dung có đúng số điện thoại khách.
+![Xem email đã gửi](images/emails-12-xem-email-da-gui.png)
 
-Các mẫu mặc định của vtiger đều bằng **tiếng Anh** (Invite Users, Follow Up, Thanks Note …); nên tạo mẫu tiếng Việt riêng.
+> Cột *Chủ đề* của thư gửi bằng mẫu vẫn hiện **dạng biến** (`Chào $leads-lastname$ …`) vì CRM lưu bản gốc; thư thực tế khách nhận đã được thay tên (xem ảnh ở mục 6).
 
-## 5. Gửi hàng loạt
+---
 
-Trong danh sách (vd. Khách hàng tiềm năng): tick các khách → bấm **Thêm** → **Gửi Email**.
+## 8. Gửi hàng loạt
 
-![Menu hàng loạt](images/emails-08-gui-hang-loat-menu.png)
+Dùng khi cần gửi cùng một nội dung cho nhiều khách (thông báo mở bán, mời tham quan…).
 
-![Soạn email hàng loạt](images/emails-09-gui-hang-loat-soan.png)
+**Bước 1 — Tick các khách** trong danh sách (vd. *Khách hàng tiềm năng*).
 
-CRM gửi **một thư riêng cho từng người nhận**: mỗi người chỉ thấy địa chỉ của chính mình, và biến mẫu (`$leads-lastname$`…) trong chủ đề lẫn nội dung được thay theo đúng người đó. Cc/Bcc (nếu có) được gắn vào **mỗi** thư.
+![Chọn nhiều khách](images/emails-14-chon-nhieu-khach.png)
 
-> ✅ Đã sửa lỗi #2 ở mục 9 (trước đây chỉ người cuối danh sách nhận được thư) và đã triển khai lên production ngày 05/10/2026. Cần cấu hình máy chủ gửi (mục 2) thì mới gửi được.
+**Bước 2 — Bấm Thêm → Gửi Email.**
 
-### Khách "Từ chối nhận email"
+![Menu gửi hàng loạt](images/emails-15-menu-gui-hang-loat.png)
 
-Trong hồ sơ khách có ô **Từ chối nhận email**. Tick ô này thì khách bị **tự động loại** khỏi danh sách người nhận khi gửi hàng loạt (đã kiểm tra: chọn 3 khách, 1 khách bị tick → ô ĐẾN chỉ còn 2 người).
+**Bước 3 — Soạn thư** (hoặc chọn mẫu) rồi **Gửi Email**. Ô ĐẾN liệt kê tất cả người nhận.
 
-![Từ chối nhận email](images/emails-10-tu-choi-nhan-email.png)
+![Soạn hàng loạt](images/emails-16-soan-hang-loat.png)
 
-## 6. Lưu bản nháp
+Ví dụ này tick **4 khách** nhưng hộp soạn chỉ còn **3 người nhận** — khách thứ 4 đã đánh dấu *Từ chối nhận email* (mục 9) nên CRM tự loại.
 
-Trong hộp Soạn email bấm **Lưu dưới dạng bản nháp**: email **không gửi đi**, được lưu ở tab Email với trạng thái **Nháp**.
+CRM gửi **một thư riêng cho từng người**:
+- mỗi người chỉ thấy địa chỉ của chính mình (không lộ email của người khác);
+- chủ đề và nội dung (nếu dùng mẫu) mang **đúng tên, số điện thoại của người đó**;
+- Cc/Bcc (nếu có) được gắn vào **mỗi** thư, nên người được Cc sẽ nhận N bản khi gửi cho N khách.
 
-![Bản nháp](images/emails-12-ban-nhap.png)
+![Thư khách nhận được khi gửi hàng loạt](images/emails-17-khach-nhan-hang-loat.png)
 
-## 7. Báo cáo Email Reports
+## 9. Khách từ chối nhận email
 
-Báo cáo → thư mục **Email Reports** có 4 báo cáo mẫu: Contacts / Leads / Accounts / Vendors Email Report.
+Trong hồ sơ khách (bấm **Sửa**) có ô **Từ chối nhận email**. Tick ô này nếu khách yêu cầu không gửi email nữa.
 
-![Báo cáo Leads Email Report](images/emails-11-bao-cao-email.png)
+![Từ chối nhận email](images/emails-18-tu-choi-nhan-email.png)
 
-- Mỗi báo cáo liệt kê **khách đã mở email** (điều kiện: *Email Access Count* khác rỗng) kèm chủ đề và số lượt mở.
-- ✅ *Contacts* và *Leads Email Report* đã mở được (hết lỗi "Bị từ chối quyền"), đã kiểm tra với tài khoản quản trị.
-- ⛔ *Accounts* và *Vendors Email Report* vẫn báo "Bị từ chối quyền" vì mô-đun Accounts/Vendors đang **tắt** trên production.
-- ⚠️ **Hiện báo cáo luôn trống (0 bản ghi)** vì chức năng **theo dõi lượt mở email đang tắt** và không bật được từ giao diện — xem lỗi #3.
+Khách đã tick sẽ **tự động bị loại** khỏi danh sách người nhận: khi gửi hàng loạt họ không có trong ô ĐẾN, và khi gửi riêng từ hồ sơ của họ thì hộp soạn mở ra nhưng **ô ĐẾN để trống** (đã kiểm tra).
 
-## 8. Quyền sử dụng
+## 10. Bản nháp
 
-- Hồ sơ (profile) nào có quyền mô-đun **Emails** mới gửi được. Đã thêm quyền này cho cả 52 hồ sơ trên production.
-- Đã kiểm tra thêm bằng tài khoản **nhân viên thường** (vai trò Sales Person): thấy nút **Gửi Email**, tab Email, menu gửi hàng loạt, và **gửi được email** (không cần là admin).
-- Nhân viên không có quyền xuất dữ liệu thì không thấy "Xuất dữ liệu" trong menu — không liên quan Emails.
+Đang soạn dở? Bấm **Lưu dưới dạng bản nháp** trong hộp soạn: email **không gửi đi**, được lưu ở tab Email với trạng thái **Nháp**.
 
-## 9. Lỗi phát hiện khi test
+![Bản nháp](images/emails-19-ban-nhap.png)
 
-| # | Mức độ | Hiện tượng | Nguyên nhân | Đề xuất |
-|---|---|---|---|---|
-| 1 | ✅ Đã sửa | **Không có ô soạn nội dung email** (khung soạn trống; cũng không sửa được nội dung mẫu email) | Từ khi gộp JS thành 1 file (commit `c56d04af`), trình soạn thảo CKEditor không còn tìm được thư mục của nó (`CKEDITOR.basePath` thành `/`). Đã xác nhận: khai báo `CKEDITOR_BASEPATH` thì editor hiện bình thường. Production dùng cùng cơ chế gộp JS và không khai báo nên cũng bị lỗi y hệt | **Đã sửa:** khai báo `window.CKEDITOR_BASEPATH` trong [Header.tpl](../layouts/v7/modules/Vtiger/Header.tpl) trước bundle. Đã kiểm tra lại trên bản local: editor `ready` ở hộp soạn email và trang sửa mẫu. **Đã triển khai production 05/10/2026** (trang đăng nhập bản 7.4 đã có khai báo; chưa mở hộp soạn trên production để xem trực tiếp) |
-| 2 | ✅ Đã sửa | Gửi hàng loạt: CRM ghi "đã gửi cho N người", nhưng SMTP chỉ nhận **1 thư (người cuối)** | Trong `send()` của [Record.php](../modules/Emails/models/Record.php) (trước khi sửa): biến `$emails` bị gán lại rỗng mỗi vòng lặp → chỉ giữ người nhận cuối. Là **lỗi có sẵn trong mã gốc vtiger 7.4.0** (file chỉ khác bản gốc 1 chữ `static`) | **Đã sửa:** `send()` trong [Record.php](../modules/Emails/models/Record.php) gửi một thư riêng cho từng người. Kiểm tra lại: chọn 3 khách → 3 thư riêng, mỗi thư chỉ gửi cho 1 người, chủ đề/nội dung mang đúng tên người đó. **Đã triển khai production 05/10/2026**; chưa thử gửi thật trên production vì chưa có máy chủ gửi |
-| 3 | 🟠 TB | Báo cáo Email Reports luôn 0 dòng | Cần bật theo dõi email (`$email_tracking = 'Yes'` trong `config.inc.php`), màn *Trình chỉnh sửa cấu hình* của bản này **không có** tuỳ chọn này. Ngoài ra link theo dõi dạng `domain//shorturl.php` (2 dấu `/`) bị server PHP tích hợp trả về **trang đăng nhập** (đã thử trên production: `//shorturl.php` → trang đăng nhập 15 KB, `/shorturl.php` → đúng handler) → bật theo dõi thì **link trong email cũng hỏng** | **Đừng bật theo dõi** cho đến khi sửa đường dẫn `shorturl.php` |
-| 4 | 🟠 TB | Production **chưa cấu hình máy chủ gửi** | Bảng cấu hình trống ở cả bản cũ và mới | Admin cấu hình theo mục 2 |
-| 5 | 🟡 Thấp | Phần **văn bản thuần** (text/plain) của email bị mất dấu, vd. "Nguya>>n VAn An" | Hàm `convertToAscii` của vtiger cố ý chuyển sang ASCII. Phần HTML (cái hầu hết khách xem) **vẫn đúng tiếng Việt** | Giữ UTF-8 cho phần văn bản thuần |
-| 6 | 🟡 Thấp | Còn chữ tiếng Anh/dịch sai | "Access Count", "Click Count" (cột tab Email); "Parent ID" dịch thành **"Hồ sơ phụ huynh"** (nên là "Liên quan đến"); cảnh báo "Please make sure that the template…" khi chọn mẫu; tiêu đề hộp thoại "Result"; nhãn "Templatename", "Message" ở chi tiết mẫu | Bổ sung bản dịch trong `languages/vi_vn/Emails.php` |
+---
 
-## 10. Cách đã test
+## 11. Báo cáo Email Reports
 
-- Môi trường: bản local (PHP 7.4, DB dev, dữ liệu mẫu), SMTP giả `127.0.0.1:1025` lưu thư ra file — **không gửi email thật**, không đụng dữ liệu khách production.
-- Đã chạy: cấu hình máy chủ gửi; gửi 1 email; dùng mẫu có biến; gửi hàng loạt; khách từ chối nhận; bản nháp; khách không có email; báo cáo Email Reports (kể cả mô phỏng khách mở email); gửi bằng tài khoản nhân viên thường.
-- Test lại sau khi sửa lỗi #1 và #2: editor tải đúng ở hộp soạn email và trang sửa mẫu (không dùng thủ thuật nào); gửi hàng loạt 3 khách → 3 thư riêng đúng người; ca khách + địa chỉ gõ tay + Cc → mỗi người một thư, Cc gắn vào mỗi thư (địa chỉ gõ tay không có bản ghi khách nên biến mẫu giữ nguyên).
-- **Chưa test:** nhận email (MailManager, cần IMAP); email tự động từ workflow; đính kèm tệp; tài khoản nhân viên có hồ sơ tuỳ biến trên production.
+**Báo cáo** → thư mục **Báo cáo email** có 4 báo cáo mẫu: *Contacts / Leads / Accounts / Vendors Email Report*.
+
+![Danh sách báo cáo](images/emails-21-danh-sach-bao-cao.png)
+
+Mỗi báo cáo liệt kê **những khách đã mở email** (điều kiện: *Email Access Count* khác rỗng) kèm chủ đề thư và số lượt mở:
+
+![Báo cáo Leads Email Report](images/emails-22-bao-cao-co-du-lieu.png)
+
+Cần biết:
+- ✅ *Contacts* và *Leads Email Report* mở được. *Accounts* và *Vendors Email Report* báo "Bị từ chối quyền" vì hai mô-đun Accounts/Vendors đang **tắt** trên production.
+- ⚠️ **Báo cáo trống (0 bản ghi) nếu chưa bật theo dõi lượt mở**. Theo dõi chèn một ảnh ẩn và đổi liên kết trong thư để biết khách mở/bấm. Hiện **chưa bật** và không bật được từ giao diện (cần thêm `$email_tracking = 'Yes';` vào `config.inc.php`). **Chưa nên bật**: liên kết theo dõi có dạng `…//shorturl.php` (2 dấu `/`), trên server hiện tại sẽ dẫn về trang đăng nhập, làm hỏng cả liên kết trong email.
+
+## 12. Trình quản lý thư
+
+Menu ☰ → **Trình quản lý thư**: ứng dụng email tích hợp, cho phép **đọc thư đến** ngay trong CRM và tạo khách hàng, phiếu hỗ trợ, tác vụ… từ chính thư nhận được.
+
+![Trình quản lý thư](images/emails-20-trinh-quan-ly-thu.png)
+
+Cần bấm **Cấu hình hộp thư** và có máy chủ **IMAP**. Máy chủ production hiện **chưa hỗ trợ IMAP** nên chức năng này **chưa dùng được**.
+
+## 13. Quyền sử dụng
+
+- Hồ sơ (profile) có quyền mô-đun **Emails** mới gửi được. Ngày 05/10/2026 đã bật mô-đun Emails và cấp quyền cho cả 52 hồ sơ trên production.
+- Đã kiểm tra bằng tài khoản **nhân viên thường** (vai trò Sales Person): thấy nút *Gửi Email*, tab Email, menu gửi hàng loạt và **gửi được** (không cần là admin).
+
+## 14. Lưu ý và hạn chế đã biết
+
+| Vấn đề | Chi tiết |
+|---|---|
+| Chưa có máy chủ gửi trên production | Phải cấu hình theo mục 3 mới dùng được |
+| Một số nhãn dịch chưa chuẩn | "Hồ sơ phụ huynh" (= hồ sơ liên quan), "Phía trước" (= Chuyển tiếp), "Access Count"/"Click Count", "Templatename"/"Message", tiêu đề hộp thoại "Result" còn tiếng Anh |
+| Phần văn bản thuần của thư mất dấu tiếng Việt | Chỉ ảnh hưởng người xem thư ở chế độ văn bản thuần; bản HTML (hầu hết khách xem) đúng tiếng Việt |
+| Theo dõi lượt mở chưa dùng được | Xem mục 11 |
+| Mẫu mặc định bằng tiếng Anh | Nên tạo mẫu riêng (mục 5) |
+| Chưa thử | Đính kèm tệp, chọn người nhận bằng kính lúp, nhận thư qua Trình quản lý thư, email tự động từ workflow, gửi cho Khách hàng đã giao dịch (cách làm giống Khách hàng tiềm năng) |
+
+**Lịch sử sửa lỗi liên quan:** ngày 05/10/2026 đã sửa 2 lỗi nặng và triển khai lên production — (1) khung soạn nội dung email/mẫu email bị trống; (2) gửi hàng loạt chỉ tới người cuối danh sách.
