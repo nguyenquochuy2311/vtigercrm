@@ -178,6 +178,15 @@ jQuery.Class("Vtiger_Helper_Js",{
 		return aDeferred.promise();
 	},
 
+    /**
+     * Dịch nhãn theo ngôn ngữ người dùng. app.vtranslate trả về chính tên khoá khi chưa có bản dịch,
+     * nên dùng bản dự phòng (tiếng Anh) trong trường hợp đó.
+     */
+    vtranslateOr: function(key, fallback) {
+        var text = app.vtranslate(key);
+        return (text === key) ? fallback : text;
+    },
+
     showConfirmationBox: function(data) {
         var aDeferred = jQuery.Deferred();
                 var buttonsInfo, title;
@@ -186,11 +195,11 @@ jQuery.Class("Vtiger_Helper_Js",{
                 }else{
                     buttonsInfo = {
 				cancel: {
-					label: 'No',
+					label: app.helper.vtranslateOr('LBL_NO', 'No'),
 					className : 'btn-default confirm-box-btn-pad pull-right'
 				},
 				confirm: {
-					label: 'Yes',
+					label: app.helper.vtranslateOr('LBL_YES', 'Yes'),
 					className : 'confirm-box-ok confirm-box-btn-pad btn-primary'
 				}
                                 }
