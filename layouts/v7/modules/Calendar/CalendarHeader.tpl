@@ -17,7 +17,7 @@
 					{if $VIEW === 'SharedCalendar'}
 						{assign var="VIEW_HEADER_LABEL" value="LBL_SHARED_CALENDAR"}
 					{/if}
-					<a href='javascript:void(0)'><h4 class="module-title pull-left"><span style="cursor: default;"> {strtoupper(vtranslate($VIEW_HEADER_LABEL, $MODULE))} </span></h4></a>
+					<a href='javascript:void(0)'><h4 class="module-title pull-left"><span style="cursor: default;"> {vtranslate($VIEW_HEADER_LABEL, $MODULE)} </span></h4></a>
 				</span>
 			</div>
 			<div class="col-lg-7 col-md-7 pull-right">

@@ -455,9 +455,86 @@
   html.tsm.tsm-mod .recordEditView .select2-container .select2-choice .select2-arrow b { background-position: 0 8px; }
   html.tsm.tsm-mod .modal-overlay-footer { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)) !important; }
   html.tsm.tsm-mod .modal-overlay-footer .btn { min-width: 110px; height: 44px; font-size: 16px; border-radius: 10px; }
+
+  /* ============ Screens that keep vtiger's own layout (no cards): Calendar, Documents, Tickets, Reports, Mail Manager, Settings ============
+     The desktop CSS reserves room for side panels that do not exist on a phone, or lets fixed-width boxes stick out. */
+
+  /* --- Mail Manager: 230px left padding was reserved for the folder sidebar, which is hidden on a phone --- */
+  html.tsm .main-container-MailManager .module-nav { width: auto; }
+  html.tsm .main-container-MailManager .listViewPageDiv { padding-left: 0 !important; }
+  html.tsm .mmDescription {
+    width: auto; height: auto; margin: 20px 12px 0; padding: 22px 16px 28px; line-height: 1.5;
+  }
+  html.tsm .mmDescription br { display: none; }
+  html.tsm .mmDescription center > div { margin-bottom: 22px; }
+  html.tsm .mmDescription .mailbox_setting { max-width: 100%; height: 44px; padding: 0 16px; white-space: normal; border-radius: 10px; }
+  html.tsm #mailmanagerContainer { padding: 0 12px; }
+  html.tsm #mails_container, html.tsm #mailPreviewContainer { float: none !important; width: 100% !important; min-height: 0; border-right: 0; }
+  html.tsm #mailPreviewContainer .mmListMainContainer { padding-top: 28px; }
+
+  /* --- Compose-email popup: the editor (CKEditor, or the plain box before it loads) has a fixed pixel width and sticks out of the popup --- */
+  html.tsm .modal .cke, html.tsm .modal .cke_chrome, html.tsm .modal .cke_inner,
+  html.tsm .modal textarea#description { width: 100% !important; max-width: 100% !important; box-sizing: border-box; }
+  html.tsm .modal .cke_contents { width: 100% !important; }
+  html.tsm .modal .cke_top { white-space: normal; }
+  html.tsm .modal .cke_toolgroup, html.tsm .modal .cke_toolbar { float: left; }
+  html.tsm .modal .modal-body { overflow-x: hidden; }
+
+  /* --- Webforms and other Settings forms: the Save bar kept a 230px dark strip meant for the settings menu and clipped the Cancel link --- */
+  html.tsm .modal-overlay-footer, html.tsm .settingsPageDiv .modal-overlay-footer { border-left: 0 !important; height: auto; min-height: 64px; }
+  html.tsm .modal-overlay-footer .row { margin: 0; }
+  html.tsm .modal-overlay-footer .textAlignCenter {
+    display: flex; align-items: center; justify-content: center; gap: 18px; float: none; width: 100%;
+    padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  }
+  html.tsm .modal-overlay-footer .textAlignCenter .btn { min-width: 120px; height: 44px; font-size: 16px; border-radius: 10px; }
+  html.tsm .modal-overlay-footer .cancelLink, html.tsm .modal-overlay-footer .cancelLink a { display: inline-block; padding: 12px 6px; font-size: 16px; }
+  html.tsm .settingsPageDiv { padding-bottom: 90px; }
+
+  /* --- Title next to the module icon (same as the card screens) for Calendar / Documents / Tickets / Reports --- */
+  /* only for headers laid out as "icon row, then bar below" (col-xs-12 + col-xs-12); the Leads-style header already sits beside the icon */
+  html.tsm-side .app-nav .app-indicator-icon-container.col-xs-12 { width: 42px !important; position: relative; z-index: 2; }
+  html.tsm-side .app-nav .app-indicator-icon-container.col-xs-12 ~ .module-action-bar.col-xs-12 { margin-top: -42px; }
+  html.tsm-side .app-nav .app-indicator-icon-container.col-xs-12 ~ .module-action-bar.col-xs-12 .module-action-content > :first-child { margin-left: 27px; }
+  html.tsm-side .app-nav .app-indicator-icon-container.col-xs-12 ~ .module-action-bar.col-xs-12 .module-action-content > span:first-child { display: block; height: 42px; overflow: hidden; }
+  html.tsm-cal .module-action-bar .module-action-content > div:first-child { height: 42px; padding: 0; }
+  html.tsm-cal .module-action-bar .module-action-content > div:first-child > span > a { display: block; }
+  html.tsm-cal .module-action-bar .module-title {
+    float: none !important; margin: 0 !important; padding-left: 10px; font-size: 17px !important; font-weight: 600 !important;
+    line-height: 42px !important; color: var(--tsm-text) !important; text-transform: none !important;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  /* --- Calendar buttons: three buttons in two floats overflowed the header and sat on top of the sidebar title --- */
+  html.tsm-cal .module-action-content > .pull-right { float: none !important; width: 100%; height: auto; padding: 4px 0 10px; }
+  html.tsm-cal #appnav { float: none !important; height: auto !important; margin: 0; }
+  html.tsm-cal #appnav .navbar-nav { display: flex; flex-wrap: wrap; gap: 8px; float: none; margin: 0; padding: 0; }
+  html.tsm-cal #appnav .navbar-nav > li { float: none; display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; }
+  html.tsm-cal #appnav .btn { height: 38px; margin: 0 !important; border-radius: 8px; }
+
+  /* --- Collapsible side panel: lists / folders / activity types took the first screen. Collapsed behind one button (ts-mobile.js) --- */
+  html.tsm-side .essentials-toggle { display: none !important; }
+  html.tsm-side #sidebar-essentials { display: none !important; }
+  html.tsm-side.tsm-side-open #sidebar-essentials { display: block !important; max-height: 70vh; overflow-y: auto; border-bottom: 1px solid var(--tsm-line); background: #fff; }
+  html.tsm-side #sidebar-essentials .sidebar-menu, html.tsm-side #sidebar-essentials .menu-scroller,
+  html.tsm-side #sidebar-essentials .list-menu-content { height: auto !important; max-height: none !important; }
+  html.tsm-side #sidebar-essentials a.filterName { display: block; padding: 9px 4px; }
+  html.tsm .tsm-side-toggle { display: none; }
+  html.tsm-side .tsm-side-toggle {
+    -webkit-appearance: none; appearance: none; display: flex; align-items: center; gap: 10px; width: 100%; height: 46px; margin: 0; padding: 0 16px;
+    border: 0; border-top: 1px solid var(--tsm-line); border-bottom: 1px solid var(--tsm-line); background: #fff;
+    color: var(--tsm-text); font: inherit; font-size: 15px; font-weight: 600; text-align: left;
+  }
+  html.tsm-side .tsm-side-toggle .fa { color: var(--tsm-muted); font-size: 15px; }
+  html.tsm-side .tsm-side-toggle .tsm-side-label { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  html.tsm-side .tsm-side-toggle .tsm-caret { transition: transform .2s ease; }
+  html.tsm-side.tsm-side-open .tsm-side-toggle .tsm-caret { transform: rotate(180deg); }
+
+  /* --- Touch targets: links in the footer and in empty lists were 13-18px tall --- */
+  html.tsm .app-footer a { display: inline-block; padding: 10px 6px; }
+  html.tsm .emptyRecordsDiv a { display: inline-block; padding: 9px 6px; }
 }
 
 /* Outside the phone layout the helper elements stay hidden */
 @media (min-width: 768px) {
-  .tsm-toolbar, .tsm-fab, .tsm-pager, .tsm-backdrop, .tsm-sheet, .tsm-sheet-bar, .tsm-sheet-head, .tsm-call, .tsm-call-inline, .tsm-tab-text { display: none !important; }
+  .tsm-toolbar, .tsm-fab, .tsm-pager, .tsm-backdrop, .tsm-sheet, .tsm-sheet-bar, .tsm-sheet-head, .tsm-call, .tsm-call-inline, .tsm-tab-text, .tsm-side-toggle { display: none !important; }
 }

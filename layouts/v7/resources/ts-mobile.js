@@ -396,14 +396,54 @@
     }
   }
 
+  /* ---------------- side panel on screens without cards (Documents, Tickets, Reports, Calendar...) ----------------
+     vtiger puts lists / folders / activity types in a panel above the content, which takes most of a phone screen.
+     CSS hides it; this adds one button to open and close it. */
+  var SIDE_LABEL = { Calendar: 'Loại hoạt động', Documents: 'Danh sách và thư mục', Reports: 'Thư mục báo cáo' };
+  function syncSidePanel(mod) {
+    var m = w._META || {};
+    var on = !mod && m.parent !== 'Settings' && (m.view === 'List' || m.module === 'Calendar');
+    root.classList.toggle('tsm-side', on);
+    root.classList.toggle('tsm-cal', on && m.module === 'Calendar');
+    var btn = $('.tsm-side-toggle'), side = $('#sidebar-essentials');
+    if (!on || !side) { if (btn) btn.parentNode.removeChild(btn); root.classList.remove('tsm-side-open'); return; }
+    if (btn && btn.nextElementSibling === side) return;
+    if (btn) btn.parentNode.removeChild(btn);
+    btn = el('button', 'tsm-side-toggle', '<i class="fa fa-list"></i><span class="tsm-side-label"></span><i class="fa fa-chevron-down tsm-caret"></i>');
+    btn.type = 'button'; btn.setAttribute('aria-expanded', root.classList.contains('tsm-side-open') ? 'true' : 'false');
+    setText($('.tsm-side-label', btn), SIDE_LABEL[m.module] || T.lists);
+    side.parentNode.insertBefore(btn, side);
+  }
+  d.addEventListener('click', function (e) {
+    if (!isOn() || !root.classList.contains('tsm-side')) return;
+    var btn = closest(e.target, '.tsm-side-toggle');
+    if (btn) {
+      e.preventDefault();
+      btn.setAttribute('aria-expanded', root.classList.toggle('tsm-side-open') ? 'true' : 'false');
+      return;
+    }
+    // choosing a list / folder: close the panel so the result is visible
+    if (closest(e.target, '#sidebar-essentials a.filterName, #sidebar-essentials .tagLabel')) {
+      w.setTimeout(function () {
+        root.classList.remove('tsm-side-open');
+        var b = $('.tsm-side-toggle'); if (b) b.setAttribute('aria-expanded', 'false');
+      }, 60);
+    }
+  });
+
   /* ---------------- main loop ---------------- */
   function enhance() {
     var on = isOn();
     guardVtigerResize();
     root.classList.toggle('tsm', on);
-    if (!on) { closeSheets(); root.classList.remove('tsm-list', 'tsm-mod'); if (listScrollerReleased) { listScrollerReleased = false; w.location.reload(); } return; }
+    if (!on) {
+      closeSheets(); root.classList.remove('tsm-list', 'tsm-mod', 'tsm-side', 'tsm-cal', 'tsm-side-open'); syncSidePanel(true);
+      if (listScrollerReleased) { listScrollerReleased = false; w.location.reload(); }
+      return;
+    }
     syncHeader();
     var mod = !!MODULES[currentModule()];
+    syncSidePanel(mod);
     root.classList.toggle('tsm-mod', mod);
     if (!mod) { root.classList.remove('tsm-list'); return; }
     syncAccent();
