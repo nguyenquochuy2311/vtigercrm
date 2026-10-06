@@ -37,7 +37,9 @@ class Settings_Webforms_Save_Action extends Settings_Vtiger_Index_Action {
 		$fieldsList = $recordModel->getModule()->getFields();
 		foreach ($fieldsList as $fieldName => $fieldModel) {
 			$fieldValue = $request->get($fieldName);
-			if (!$fieldValue) {
+			// Chỉ dùng giá trị mặc định khi KHÔNG có dữ liệu gửi lên. Không dùng !$fieldValue vì checkbox bỏ tick
+			// gửi chuỗi "0" (falsy trong PHP) => bị thay bằng mặc định "1" của "Trạng thái" nên không tắt được biểu mẫu.
+			if ($fieldValue === null || $fieldValue === '' || $fieldValue === array()) {
 				$fieldValue = $fieldModel->get('defaultvalue');
 			}
 			$recordModel->set($fieldName, $fieldValue);
